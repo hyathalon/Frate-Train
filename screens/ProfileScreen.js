@@ -1,12 +1,30 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import RaceEditModal from '../components/RaceEditModal';
 import { colors, radii, spacing } from '../constants/theme';
+import { useAthlete } from '../context/AthleteContext';
+import { daysUntil, formatRaceDate, useRace } from '../context/RaceContext';
+
+const initialConnectedApps = [
+  { id: 'strava', name: 'Strava', connected: true },
+  { id: 'garmin', name: 'Garmin Connect', connected: false },
+  { id: 'apple-health', name: 'Apple Health', connected: false },
+  { id: 'whoop', name: 'Whoop', connected: false },
+  { id: 'final-surge', name: 'Final Surge', connected: false },
+  { id: 'training-peaks', name: 'TrainingPeaks', connected: false },
+];
 
 const athlete = {
   name: 'Sam Carter',
   coach: 'Hyathlon Performance',
   division: 'Men’s Open',
 };
+
+const ATHLETE_TYPES = [
+  { value: 'hyrox', label: 'Hyrox / Hyathlon' },
+  { value: 'runner', label: 'Runner' },
+];
 
 const personalBests = [
   { label: 'HYROX', value: '1:12:04' },
@@ -24,6 +42,17 @@ const settingsItems = [
 ];
 
 export default function ProfileScreen() {
+  const { athleteType, setAthleteType } = useAthlete();
+  const { race, setRace } = useRace();
+  const [raceModalVisible, setRaceModalVisible] = useState(false);
+  const [connectedApps, setConnectedApps] = useState(initialConnectedApps);
+
+  const toggleConnectedApp = (id) => {
+    setConnectedApps((prev) =>
+      prev.map((app) => (app.id === id ? { ...app, connected: !app.connected } : app)),
+    );
+  };
+
   const initials = athlete.name
     .split(' ')
     .map((part) => part[0])
@@ -43,6 +72,47 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        <Text style={styles.sectionTitle}>Athlete Type</Text>
+        <View style={styles.athleteTypeRow}>
+          {ATHLETE_TYPES.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.athleteTypeChip,
+                athleteType === option.value && styles.athleteTypeChipActive,
+              ]}
+              onPress={() => setAthleteType(option.value)}
+            >
+              <Text
+                style={[
+                  styles.athleteTypeChipText,
+                  athleteType === option.value && styles.athleteTypeChipTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.sectionTitle}>Upcoming Races</Text>
+        <TouchableOpacity
+          style={styles.raceCard}
+          onPress={() => setRaceModalVisible(true)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.raceCardHeader}>
+            <View style={styles.raceTypeTag}>
+              <Text style={styles.raceTypeTagText}>{race.type}</Text>
+            </View>
+            <Text style={styles.raceDays}>{Math.max(daysUntil(race.date), 0)} days to go</Text>
+          </View>
+          <Text style={styles.raceName}>{race.name}</Text>
+          <Text style={styles.raceMeta}>
+            {formatRaceDate(race.date)} · {race.location}
+          </Text>
+        </TouchableOpacity>
+
         <Text style={styles.sectionTitle}>Personal Bests</Text>
         <View style={styles.pbGrid}>
           {personalBests.map((pb) => (
@@ -51,6 +121,26 @@ export default function ProfileScreen() {
               <Text style={styles.pbLabel}>{pb.label}</Text>
             </View>
           ))}
+        </View>
+
+        <View style={styles.connectedAppsSection}>
+          <Text style={styles.sectionTitle}>Connected Apps</Text>
+          <View style={styles.connectedAppsCard}>
+            {connectedApps.map((app) => (
+              <View key={app.id} style={styles.connectedAppRow}>
+                <Text style={styles.connectedAppName}>{app.name}</Text>
+                <Switch
+                  value={app.connected}
+                  onValueChange={() => toggleConnectedApp(app.id)}
+                  trackColor={{ false: colors.border, true: colors.primaryMuted }}
+                  thumbColor={app.connected ? colors.primary : colors.textOnSurfaceFaint}
+                />
+              </View>
+            ))}
+          </View>
+          <Text style={styles.connectedAppsWarning}>
+            Only connect one of these or multiple workloads will be uploaded to your calendar.
+          </Text>
         </View>
 
         <Text style={styles.sectionTitle}>Settings</Text>
@@ -70,6 +160,16 @@ export default function ProfileScreen() {
           ))}
         </View>
       </ScrollView>
+
+      <RaceEditModal
+        visible={raceModalVisible}
+        race={race}
+        onClose={() => setRaceModalVisible(false)}
+        onSave={(updatedRace) => {
+          setRace(updatedRace);
+          setRaceModalVisible(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -129,6 +229,69 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  athleteTypeRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  athleteTypeChip: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  athleteTypeChipActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
+  },
+  athleteTypeChipText: {
+    color: colors.textOnSurfaceMuted,
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  athleteTypeChipTextActive: {
+    color: colors.primary,
+  },
+  raceCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  raceCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  raceTypeTag: {
+    backgroundColor: colors.primaryMuted,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  raceTypeTagText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  raceDays: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  raceName: {
+    color: colors.textOnSurface,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  raceMeta: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 13,
+  },
   pbGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -152,6 +315,35 @@ const styles = StyleSheet.create({
   pbLabel: {
     color: colors.textOnSurfaceMuted,
     fontSize: 12,
+  },
+  connectedAppsSection: {
+    gap: spacing.sm,
+  },
+  connectedAppsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  connectedAppRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  connectedAppName: {
+    color: colors.textOnSurface,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  connectedAppsWarning: {
+    color: colors.warning,
+    fontSize: 12,
+    fontWeight: '600',
   },
   settingsList: {
     backgroundColor: colors.surface,

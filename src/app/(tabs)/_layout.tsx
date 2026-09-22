@@ -34,18 +34,27 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="rehab"
         options={{
-          title: 'Rehab',
+          title: 'Body Check',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="fitness" color={color} size={size} />
           ),
         }}
       />
       <Tabs.Screen
-        name="integrations"
+        name="calendar"
         options={{
-          title: 'Integrations',
+          title: 'Calendar',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="link" color={color} size={size} />
+            <Ionicons name="calendar" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="graphs"
+        options={{
+          title: 'Graphs',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart" color={color} size={size} />
           ),
         }}
       />
