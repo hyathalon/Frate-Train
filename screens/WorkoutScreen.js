@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   stationName: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   stationTarget: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 13,
   },
   sectionTitle: {
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryMuted,
   },
   rpeChipText: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontWeight: '600',
   },
   rpeChipTextActive: {

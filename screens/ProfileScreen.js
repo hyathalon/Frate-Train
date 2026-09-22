@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   divisionTagText: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -145,12 +145,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   pbValue: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 20,
     fontWeight: '700',
   },
   pbLabel: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 12,
   },
   settingsList: {
@@ -170,14 +170,14 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   settingsLabel: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 15,
   },
   settingsLabelDanger: {
     color: colors.primary,
   },
   chevron: {
-    color: colors.textFaint,
+    color: colors.textOnSurfaceFaint,
     fontSize: 14,
   },
 });

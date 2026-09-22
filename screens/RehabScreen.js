@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   routineName: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   routineDuration: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 13,
   },
   tipsCard: {
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   tipText: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 14,
     lineHeight: 20,
   },

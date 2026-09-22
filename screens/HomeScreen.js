@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   raceLabel: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
   },
   raceName: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -166,16 +166,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   duration: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 13,
   },
   sessionTitle: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 20,
     fontWeight: '700',
   },
   sessionDetail: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 14,
   },
   startButton: {
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statValue: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 20,
     fontWeight: '700',
   },
   statLabel: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 12,
   },
   quickLinks: {
@@ -223,12 +223,12 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   quickLinkTitle: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 15,
     fontWeight: '600',
   },
   quickLinkSubtitle: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 13,
   },
 });

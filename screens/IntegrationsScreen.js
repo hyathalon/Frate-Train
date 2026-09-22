@@ -49,7 +49,7 @@ export default function IntegrationsScreen() {
                 value={item.connected}
                 onValueChange={() => toggleConnection(item.id)}
                 trackColor={{ false: colors.border, true: colors.primaryMuted }}
-                thumbColor={item.connected ? colors.primary : colors.textFaint}
+                thumbColor={item.connected ? colors.primary : colors.textOnSurfaceFaint}
               />
             </View>
           ))}
@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   rowName: {
-    color: colors.text,
+    color: colors.textOnSurface,
     fontSize: 15,
     fontWeight: '600',
   },
   rowDetail: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 13,
   },
   rowStatus: {
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   rowStatusDisconnected: {
-    color: colors.textFaint,
+    color: colors.textOnSurfaceMuted,
   },
   noteCard: {
     backgroundColor: colors.surfaceAlt,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   noteText: {
-    color: colors.textMuted,
+    color: colors.textOnSurfaceMuted,
     fontSize: 13,
     lineHeight: 19,
   },
