@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,26 +13,28 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../lib/supabase';
+import { getPillarById } from '../constants/pillars';
 import { radii, spacing } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
+import { supabase } from '../lib/supabase';
 
-const GOALS = ['Hyrox', 'Running', 'General Fitness'];
-const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
-const FREQUENCIES = [3, 4, 5];
+const STRENGTH_WEAKNESS_OPTIONS = ['Running', 'Strength', 'Stations', 'Recovery'];
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MIN_HOURS = 3;
+const MAX_HOURS = 15;
 
-function ChipGroup({ label, options, value, onChange, styles }) {
+function MultiSelectChips({ label, options, value, onToggle, styles }) {
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View style={styles.chipRow}>
         {options.map((option) => {
-          const selected = value === option;
+          const selected = value.includes(option);
           return (
             <TouchableOpacity
               key={option}
               style={[styles.chip, selected && styles.chipSelected]}
-              onPress={() => onChange(option)}
+              onPress={() => onToggle(option)}
               activeOpacity={0.7}
             >
               <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{option}</Text>
@@ -48,35 +51,35 @@ export default function ProgramBuilderScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [name, setName] = useState('');
-  const [goal, setGoal] = useState(GOALS[0]);
-  const [level, setLevel] = useState(LEVELS[0]);
-  const [sessionsPerWeek, setSessionsPerWeek] = useState(FREQUENCIES[1]);
-  const [equipment, setEquipment] = useState('');
-  const [injuries, setInjuries] = useState('');
+  const [weeklyHours, setWeeklyHours] = useState(8);
+  const [weeksUntilRace, setWeeksUntilRace] = useState('');
+  const [strengths, setStrengths] = useState([]);
+  const [weaknesses, setWeaknesses] = useState([]);
+  const [availability, setAvailability] = useState([]);
+  const [goal, setGoal] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [program, setProgram] = useState(null);
 
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-  const [saved, setSaved] = useState(false);
+  const toggleInArray = (setter) => (value) => {
+    setter((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
     setProgram(null);
-    setSaved(false);
-    setSaveError(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('generate-program', {
         body: {
           name: name.trim() || undefined,
-          goal,
-          level,
-          sessionsPerWeek,
-          equipment: equipment.trim() || undefined,
-          injuries: injuries.trim() || undefined,
+          weeklyHours,
+          weeksUntilRace: Number(weeksUntilRace) || undefined,
+          strengths,
+          weaknesses,
+          availability,
+          goal: goal.trim(),
         },
       });
       if (fnError) throw fnError;
@@ -89,79 +92,13 @@ export default function ProgramBuilderScreen() {
     }
   };
 
-  const handleSave = async () => {
-    if (!program) return;
-    setSaving(true);
-    setSaveError(null);
-    setSaved(false);
-    try {
-      const { data: programRow, error: programError } = await supabase
-        .from('programs')
-        .insert({
-          code: `AI-${Date.now()}`,
-          name: program.program_name || name.trim() || 'AI Generated Program',
-          goal: program.goal || goal,
-          level: program.level || level,
-          frequency: program.frequency || `${sessionsPerWeek}x/week`,
-          category: 'AI',
-          source: 'ai_generated',
-          athlete_name: name.trim() || null,
-          sessions_per_week: sessionsPerWeek,
-          injuries: injuries.trim() || null,
-          equipment: equipment.trim() || null,
-          program_json: program,
-        })
-        .select()
-        .single();
-      if (programError) throw programError;
-
-      const blocks = program.blocks || [];
-      for (let i = 0; i < blocks.length; i += 1) {
-        const block = blocks[i];
-        const { data: blockRow, error: blockError } = await supabase
-          .from('blocks')
-          .insert({
-            program_id: programRow.id,
-            name: block.name,
-            focus: block.focus || null,
-            block_order: i + 1,
-          })
-          .select()
-          .single();
-        if (blockError) throw blockError;
-
-        const exercises = (block.exercises || []).map((ex, idx) => ({
-          block_id: blockRow.id,
-          name: ex.name,
-          sets: ex.sets != null ? String(ex.sets) : null,
-          reps: ex.reps != null ? String(ex.reps) : null,
-          rest: ex.rest != null ? String(ex.rest) : null,
-          notes: ex.notes || null,
-          exercise_order: idx + 1,
-        }));
-        if (exercises.length) {
-          const { error: exError } = await supabase.from('exercises').insert(exercises);
-          if (exError) throw exError;
-        }
-      }
-      setSaved(true);
-    } catch (err) {
-      setSaveError(err.message || 'Failed to save program.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Program Builder</Text>
           <Text style={styles.subtitle}>
-            AI-generated training programs, grounded in Hyathlon Performance methodology.
+            AI-generated training programs built on The Hyathlon System.
           </Text>
 
           <View style={styles.card}>
@@ -176,24 +113,69 @@ export default function ProgramBuilderScreen() {
               />
             </View>
 
-            <ChipGroup label="Goal" options={GOALS} value={goal} onChange={setGoal} styles={styles} />
-            <ChipGroup label="Level" options={LEVELS} value={level} onChange={setLevel} styles={styles} />
+            <View style={styles.field}>
+              <View style={styles.sliderLabelRow}>
+                <Text style={styles.fieldLabel}>Current weekly training hours</Text>
+                <Text style={styles.sliderValue}>{weeklyHours}h</Text>
+              </View>
+              <Slider
+                minimumValue={MIN_HOURS}
+                maximumValue={MAX_HOURS}
+                step={1}
+                value={weeklyHours}
+                onValueChange={setWeeklyHours}
+                minimumTrackTintColor={colors.primary}
+                maximumTrackTintColor={colors.border}
+                thumbTintColor={colors.primary}
+              />
+            </View>
 
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Sessions per week</Text>
+              <Text style={styles.fieldLabel}>Weeks until race</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. 12"
+                placeholderTextColor={colors.textOnSurfaceFaint}
+                value={weeksUntilRace}
+                onChangeText={setWeeksUntilRace}
+                keyboardType="number-pad"
+              />
+            </View>
+
+            <MultiSelectChips
+              label="Current strengths"
+              options={STRENGTH_WEAKNESS_OPTIONS}
+              value={strengths}
+              onToggle={toggleInArray(setStrengths)}
+              styles={styles}
+            />
+
+            <MultiSelectChips
+              label="Current weaknesses"
+              options={STRENGTH_WEAKNESS_OPTIONS}
+              value={weaknesses}
+              onToggle={toggleInArray(setWeaknesses)}
+              styles={styles}
+            />
+
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Training availability</Text>
               <View style={styles.chipRow}>
-                {FREQUENCIES.map((freq) => {
-                  const selected = sessionsPerWeek === freq;
+                {DAYS.map((day) => {
+                  const selected = availability.includes(day);
                   return (
                     <TouchableOpacity
-                      key={freq}
-                      style={[styles.chip, selected && styles.chipSelected]}
-                      onPress={() => setSessionsPerWeek(freq)}
+                      key={day}
+                      style={styles.checkboxRow}
+                      onPress={() => toggleInArray(setAvailability)(day)}
                       activeOpacity={0.7}
                     >
-                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                        {freq}
-                      </Text>
+                      <Ionicons
+                        name={selected ? 'checkbox' : 'square-outline'}
+                        size={18}
+                        color={selected ? colors.primary : colors.textOnSurfaceFaint}
+                      />
+                      <Text style={styles.checkboxLabel}>{day}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -201,26 +183,13 @@ export default function ProgramBuilderScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Available equipment</Text>
+              <Text style={styles.fieldLabel}>Goal</Text>
               <TextInput
-                style={[styles.input, styles.inputMultiline]}
-                placeholder="e.g. Dumbbells, sled, rower, no barbell"
+                style={styles.input}
+                placeholder='e.g. "Sub 90 min Hyrox"'
                 placeholderTextColor={colors.textOnSurfaceFaint}
-                value={equipment}
-                onChangeText={setEquipment}
-                multiline
-              />
-            </View>
-
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Injuries / limitations</Text>
-              <TextInput
-                style={[styles.input, styles.inputMultiline]}
-                placeholder="e.g. Left knee — avoid deep lunges"
-                placeholderTextColor={colors.textOnSurfaceFaint}
-                value={injuries}
-                onChangeText={setInjuries}
-                multiline
+                value={goal}
+                onChangeText={setGoal}
               />
             </View>
 
@@ -243,52 +212,38 @@ export default function ProgramBuilderScreen() {
             {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
 
-          {program && (
-            <View style={styles.card}>
-              <View style={styles.outputHeaderRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.programName}>{program.program_name || 'Generated Program'}</Text>
-                  <Text style={styles.programMeta}>
-                    {[program.goal, program.level, program.frequency].filter(Boolean).join(' · ')}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={[styles.saveButton, saving && styles.generateButtonDisabled]}
-                  onPress={handleSave}
-                  disabled={saving}
-                  activeOpacity={0.8}
-                >
-                  {saving ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Text style={styles.saveButtonText}>{saved ? 'Saved ✓' : 'Save Program'}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
+          {program?.weeks?.map((week) => (
+            <View key={week.week} style={styles.card}>
+              <Text style={styles.weekTitle}>
+                Week {week.week}
+                {week.focus ? ` — ${week.focus}` : ''}
+              </Text>
 
-              {saveError && <Text style={styles.errorText}>{saveError}</Text>}
-
-              {(program.blocks || []).map((block, blockIndex) => (
-                <View key={blockIndex} style={styles.block}>
-                  <Text style={styles.blockTitle}>
-                    {block.name}
-                    {block.focus ? ` — ${block.focus}` : ''}
-                  </Text>
-                  {(block.exercises || []).map((ex, exIndex) => (
-                    <View key={exIndex} style={styles.exerciseRow}>
-                      <Text style={styles.exerciseName}>{ex.name}</Text>
-                      <Text style={styles.exerciseMeta}>
-                        {[ex.sets && `${ex.sets} sets`, ex.reps, ex.rest && `rest ${ex.rest}`]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </Text>
-                      {ex.notes ? <Text style={styles.exerciseNotes}>{ex.notes}</Text> : null}
+              {(week.sessions || []).map((session, sessionIndex) => {
+                const pillar = getPillarById(session.pillar);
+                return (
+                  <View key={sessionIndex} style={styles.sessionRow}>
+                    <View style={styles.sessionHeaderRow}>
+                      <Text style={styles.sessionDay}>{session.day}</Text>
+                      {pillar && (
+                        <View style={[styles.pillarChip, { backgroundColor: `${pillar.color}22` }]}>
+                          <View style={[styles.pillarDot, { backgroundColor: pillar.color }]} />
+                          <Text style={[styles.pillarChipText, { color: pillar.color }]}>
+                            {pillar.name}
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                  ))}
-                </View>
-              ))}
+                    <Text style={styles.sessionTitle}>{session.title}</Text>
+                    <Text style={styles.sessionMeta}>
+                      {[session.duration && `${session.duration} min`].filter(Boolean).join(' · ')}
+                    </Text>
+                    {session.notes ? <Text style={styles.sessionNotes}>{session.notes}</Text> : null}
+                  </View>
+                );
+              })}
             </View>
-          )}
+          ))}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -344,9 +299,15 @@ function createStyles(colors) {
       color: colors.textOnSurface,
       fontSize: 14,
     },
-    inputMultiline: {
-      minHeight: 60,
-      textAlignVertical: 'top',
+    sliderLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    sliderValue: {
+      color: colors.primary,
+      fontSize: 13,
+      fontWeight: '700',
     },
     chipRow: {
       flexDirection: 'row',
@@ -373,6 +334,20 @@ function createStyles(colors) {
     chipTextSelected: {
       color: '#FFFFFF',
     },
+    checkboxRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingVertical: 6,
+      paddingHorizontal: spacing.xs,
+      borderRadius: radii.sm,
+      backgroundColor: colors.surfaceAlt,
+    },
+    checkboxLabel: {
+      color: colors.textOnSurface,
+      fontSize: 13,
+      fontWeight: '600',
+    },
     generateButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -394,64 +369,58 @@ function createStyles(colors) {
       color: '#EF4444',
       fontSize: 13,
     },
-    outputHeaderRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: spacing.sm,
-    },
-    programName: {
+    weekTitle: {
       color: colors.textOnSurface,
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '700',
     },
-    programMeta: {
-      color: colors.textOnSurfaceMuted,
-      fontSize: 12,
-      marginTop: 2,
-    },
-    saveButton: {
-      backgroundColor: colors.primary,
+    sessionRow: {
+      backgroundColor: colors.surfaceAlt,
       borderRadius: radii.md,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
-      minWidth: 96,
-      alignItems: 'center',
-      justifyContent: 'center',
+      padding: spacing.sm,
+      gap: 4,
     },
-    saveButtonText: {
-      color: '#FFFFFF',
-      fontSize: 13,
+    sessionHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    sessionDay: {
+      color: colors.textOnSurfaceMuted,
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
+    pillarChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 3,
+      borderRadius: radii.pill,
+    },
+    pillarDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    pillarChipText: {
+      fontSize: 10,
       fontWeight: '700',
     },
-    block: {
-      gap: spacing.xs,
-      paddingTop: spacing.sm,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    blockTitle: {
+    sessionTitle: {
       color: colors.textOnSurface,
       fontSize: 14,
       fontWeight: '700',
     },
-    exerciseRow: {
-      backgroundColor: colors.surfaceAlt,
-      borderRadius: radii.sm,
-      padding: spacing.xs,
-      gap: 2,
-    },
-    exerciseName: {
-      color: colors.textOnSurface,
-      fontSize: 13,
-      fontWeight: '600',
-    },
-    exerciseMeta: {
+    sessionMeta: {
       color: colors.textOnSurfaceMuted,
       fontSize: 12,
     },
-    exerciseNotes: {
+    sessionNotes: {
       color: colors.textOnSurfaceFaint,
-      fontSize: 11,
+      fontSize: 12,
       fontStyle: 'italic',
     },
   });
