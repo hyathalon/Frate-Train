@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MoveSessionModal from '../components/MoveSessionModal';
 import RaceEditModal from '../components/RaceEditModal';
 import SessionEditModal from '../components/SessionEditModal';
-import { colors, radii, spacing } from '../constants/theme';
+import RehabScreen from './RehabScreen';
+import { radii, spacing } from '../constants/theme';
 import { getBrandName, useAthlete } from '../context/AthleteContext';
+import { useTheme } from '../context/ThemeContext';
 import { daysUntil, formatRaceDate, useRace } from '../context/RaceContext';
 import { formatDate, todayISODate } from '../utils/date';
 
@@ -68,6 +70,8 @@ function summarizeExercises(exercises) {
 }
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const router = useRouter();
   const { athleteType } = useAthlete();
   const { race, setRace } = useRace();
@@ -75,6 +79,7 @@ export default function HomeScreen() {
   const [session, setSession] = useState(initialSession);
   const [moveModalVisible, setMoveModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [rehabModalVisible, setRehabModalVisible] = useState(false);
   const [dailyPhrase] = useState(getDailyPhrase);
 
   const isToday = session.date === todayISODate();
@@ -122,14 +127,13 @@ export default function HomeScreen() {
             Scheduled: {isToday ? 'Today' : formatDate(session.date)}
           </Text>
 
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={() => router.push('/(tabs)/workout')}
-          >
-            <Text style={styles.startButtonText}>Start Session</Text>
-          </TouchableOpacity>
-
-          <View style={styles.secondaryActionsRow}>
+          <View style={styles.primaryActionsRow}>
+            <TouchableOpacity
+              style={styles.startButton}
+              onPress={() => router.push('/(tabs)/workout')}
+            >
+              <Text style={styles.startButtonText}>Start</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.secondaryButton}
               onPress={() => setMoveModalVisible(true)}
@@ -170,7 +174,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.quickLinks}>
-          <TouchableOpacity style={styles.quickLink} onPress={() => router.push('/(tabs)/rehab')}>
+          <TouchableOpacity style={styles.quickLink} onPress={() => setRehabModalVisible(true)}>
             <View style={styles.quickLinkRow}>
               <Ionicons name="body" size={20} color={colors.primary} />
               <View style={styles.quickLinkTextGroup}>
@@ -201,6 +205,20 @@ export default function HomeScreen() {
         }}
       />
 
+      <Modal visible={rehabModalVisible} transparent animationType="slide" onRequestClose={() => setRehabModalVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Body Check</Text>
+              <TouchableOpacity onPress={() => setRehabModalVisible(false)}>
+                <Ionicons name="close" size={22} color={colors.textOnSurfaceMuted} />
+              </TouchableOpacity>
+            </View>
+            <RehabScreen />
+          </View>
+        </View>
+      </Modal>
+
       <MoveSessionModal
         visible={moveModalVisible}
         currentDate={session.date}
@@ -224,7 +242,8 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -329,8 +348,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  startButton: {
+  primaryActionsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
     marginTop: spacing.xs,
+  },
+  startButton: {
+    flex: 1,
     backgroundColor: colors.primary,
     borderRadius: radii.md,
     paddingVertical: spacing.sm,
@@ -341,10 +365,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
-  secondaryActionsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
   secondaryButton: {
     flex: 1,
     alignItems: 'center',
@@ -352,10 +372,37 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.primary,
+    backgroundColor: 'transparent',
   },
   secondaryButtonText: {
     color: colors.primary,
     fontSize: 13,
+    fontWeight: '700',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(17, 17, 17, 0.7)',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  modalSheet: {
+    backgroundColor: colors.background,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    color: colors.text,
+    fontSize: 18,
     fontWeight: '700',
   },
   weekCard: {
@@ -433,4 +480,5 @@ const styles = StyleSheet.create({
     color: colors.textOnSurfaceMuted,
     fontSize: 13,
   },
-});
+  });
+}

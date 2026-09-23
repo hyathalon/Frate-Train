@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ModifyWorkoutModal from '../components/ModifyWorkoutModal';
 import MoveSessionModal from '../components/MoveSessionModal';
 import QuickWorkoutModal from '../components/QuickWorkoutModal';
-import { colors, radii, spacing } from '../constants/theme';
+import { radii, spacing } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { formatDate, todayISODate } from '../utils/date';
 import { generateQuickWorkout } from '../utils/workoutGenerator';
 
@@ -40,6 +41,8 @@ function formatSetsReps(sets, reps) {
 }
 
 export default function WorkoutScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [workout, setWorkout] = useState(initialWorkout);
   const [completed, setCompleted] = useState({});
   const [rpe, setRpe] = useState(null);
@@ -167,7 +170,8 @@ export default function WorkoutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -267,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.surface,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -330,4 +334,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
-});
+  });
+}

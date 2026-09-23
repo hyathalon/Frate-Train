@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Polyline } from 'react-native-svg';
-import { colors, radii, spacing } from '../constants/theme';
+import { radii, spacing } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const TABS = ['Load', 'Progress', 'Race', 'Pace', 'Run'];
 
@@ -27,6 +28,8 @@ function secondsToClock(totalSeconds, showSign = false) {
 // ---------- shared mini components ----------
 
 function BarRow({ label, value, max, displayValue }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const width = max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0;
   return (
     <View style={styles.barRow}>
@@ -40,6 +43,8 @@ function BarRow({ label, value, max, displayValue }) {
 }
 
 function TrendLineChart({ data, width = 300, height = 140 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const values = data.map((point) => point.value);
   const maxValue = Math.max(...values);
   const minValue = Math.min(...values);
@@ -103,6 +108,8 @@ const muscleLoad = [
 ];
 
 function LoadTab() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const max = Math.max(...muscleLoad.map((item) => item.value));
   return (
     <View style={styles.card}>
@@ -137,6 +144,8 @@ const volumeTrend = [
 ];
 
 function ProgressTab() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const first = volumeTrend[0].value;
   const last = volumeTrend[volumeTrend.length - 1].value;
   const change = Math.round(((last - first) / first) * 100);
@@ -194,6 +203,8 @@ function getStationTip(name) {
 }
 
 function RaceTab() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const analyzed = raceSplits.map((split) => {
     const actualSeconds = parseTimeToSeconds(split.actual);
     const targetSeconds = parseTimeToSeconds(split.target);
@@ -253,6 +264,8 @@ const RUN_SHARE = 0.45;
 const STATION_SHARE = 0.55;
 
 function PaceTab() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [goalSeconds, setGoalSeconds] = useState(GOAL_TIME_OPTIONS[1].seconds);
   const [customTime, setCustomTime] = useState('');
 
@@ -339,6 +352,8 @@ const runSplits = [
 ];
 
 function RunTab() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const seconds = runSplits.map((split) => parseTimeToSeconds(split.time));
   const fastest = Math.min(...seconds);
   const slowest = Math.max(...seconds);
@@ -396,6 +411,8 @@ function RunTab() {
 // ---------- screen ----------
 
 export default function GraphsScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [activeTab, setActiveTab] = useState(TABS[0]);
 
   return (
@@ -435,7 +452,8 @@ export default function GraphsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -660,4 +678,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'center',
   },
-});
+  });
+}

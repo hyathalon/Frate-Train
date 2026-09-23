@@ -25,7 +25,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="workout"
         options={{
-          title: 'Workout',
+          title: 'Workouts',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="barbell" color={color} size={size} />
           ),
@@ -34,10 +34,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="rehab"
         options={{
-          title: 'Body Check',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="fitness" color={color} size={size} />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen

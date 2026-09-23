@@ -1,50 +1,60 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MoveSessionModal from '../components/MoveSessionModal';
-import SessionEditModal from '../components/SessionEditModal';
-import { colors, radii, spacing } from '../constants/theme';
+import { radii, spacing } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 import { formatDate, toISODateString, todayISODate } from '../utils/date';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const SESSION_ROTATION = [
-  {
-    title: 'HYROX Simulation',
-    type: 'Hyrox',
-    duration: '65 min',
-    exercises: ['SkiErg', 'Sled Push', 'Burpee Broad Jumps', 'Wall Balls'],
-  },
-  {
-    title: 'Strength Session',
-    type: 'Strength',
-    duration: '50 min',
-    exercises: ['Back Squat', 'Bench Press', 'Bent-Over Row'],
-  },
-  {
-    title: 'Easy Run',
-    type: 'Running',
-    duration: '40 min',
-    exercises: ['Warm-Up Jog', 'Steady Run', 'Cool-Down Jog'],
-  },
-  {
-    title: 'Recovery Flow',
-    type: 'Recovery',
-    duration: '30 min',
-    exercises: ['Foam Rolling', 'Mobility Flow', 'Stretching'],
-  },
-  {
-    title: 'Long Run',
-    type: 'Running',
-    duration: '75 min',
-    exercises: ['Warm-Up Jog', 'Long Steady Run', 'Cool-Down Jog'],
-  },
-];
+const WORKOUT_TYPES = {
+  Strength: '#FF4D1A',
+  Power: '#FF8C00',
+  Endurance: '#3B82F6',
+  'Hyrox Specific': '#EF4444',
+  'Running Specific': '#10B981',
+  Mobility: '#8B5CF6',
+  Rest: '#6B7280',
+};
 
-function isRestDay(date) {
-  return date.getDay() === 1; // Monday
+const PRESCRIBED_TEMPLATES = {
+  Strength: [
+    { name: 'Back Squat', sets: 4, reps: '6-8', rest: '90s' },
+    { name: 'Romanian Deadlift', sets: 3, reps: '8-10', rest: '75s' },
+    { name: 'Bench Press', sets: 4, reps: '5-6', rest: '90s' },
+  ],
+  Endurance: [
+    { name: 'Steady State Run', sets: 1, reps: '40 min', rest: '-' },
+    { name: 'Rowing Intervals', sets: 6, reps: '500m', rest: '90s' },
+  ],
+  'Hyrox Specific': [
+    { name: 'Sled Push', sets: 4, reps: '25m', rest: '90s' },
+    { name: 'Wall Balls', sets: 4, reps: '20', rest: '60s' },
+    { name: 'Sled Pull', sets: 4, reps: '25m', rest: '90s' },
+  ],
+  Mobility: [
+    { name: 'Hip Flow', sets: 2, reps: '5 min', rest: '-' },
+    { name: 'Thoracic Rotations', sets: 2, reps: '10 each side', rest: '30s' },
+  ],
+};
+
+const STREAK_DAYS = 14;
+
+let idCounter = 0;
+function generateId() {
+  idCounter += 1;
+  return `local-${idCounter}`;
 }
 
 function buildMonthMatrix(viewDate) {
@@ -64,99 +74,282 @@ function buildMonthMatrix(viewDate) {
   return weeks;
 }
 
-function buildMockData() {
+/** Mock sessions for a handful of days in the current real-world month. */
+function buildMockSessions() {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const history = {};
-  const streaks = {};
-  let streak = 0;
-  let rotationIndex = 0;
+  const sample = [
+    { day: 3, type: 'Strength' },
+    { day: 8, type: 'Endurance' },
+    { day: 14, type: 'Hyrox Specific' },
+    { day: 21, type: 'Mobility' },
+  ];
 
-  const cursor = new Date(monthStart);
-  while (cursor < today) {
-    const iso = toISODateString(cursor);
-    if (isRestDay(cursor)) {
-      streak = 0;
-    } else {
-      const template = SESSION_ROTATION[rotationIndex % SESSION_ROTATION.length];
-      history[iso] = {
-        title: template.title,
-        type: template.type,
-        duration: template.duration,
-        rpe: 6 + (rotationIndex % 4),
-        completedCount: 6 + (rotationIndex % 3),
-        totalCount: 9,
-      };
-      streak += 1;
-      streaks[iso] = streak;
-      rotationIndex += 1;
-    }
-    cursor.setDate(cursor.getDate() + 1);
-  }
-
-  const schedule = {};
-  rotationIndex = 0;
-  const futureCursor = new Date(today);
-  while (futureCursor <= monthEnd) {
-    if (!isRestDay(futureCursor)) {
-      const template = SESSION_ROTATION[rotationIndex % SESSION_ROTATION.length];
-      schedule[toISODateString(futureCursor)] = {
-        title: template.title,
-        type: template.type,
-        duration: template.duration,
-        exercises: [...template.exercises],
-      };
-      rotationIndex += 1;
-    }
-    futureCursor.setDate(futureCursor.getDate() + 1);
-  }
-
-  return { history, streaks, schedule };
+  const sessions = {};
+  sample.forEach(({ day, type }) => {
+    const clampedDay = Math.min(day, daysInMonth);
+    const iso = toISODateString(new Date(year, month, clampedDay));
+    sessions[iso] = {
+      type,
+      prescribed: PRESCRIBED_TEMPLATES[type] ?? [],
+    };
+  });
+  return sessions;
 }
 
-const { history, streaks, schedule: initialSchedule } = buildMockData();
+function createBlankExercise() {
+  return {
+    id: generateId(),
+    name: '',
+    sets: [{ id: generateId(), reps: '', weight: '', comment: '' }],
+  };
+}
+
+function DaySheet({ visible, date, session, savedExercises, onClose, onSave, colors, styles }) {
+  const [exercises, setExercises] = useState([]);
+  const [weightUnit, setWeightUnit] = useState('kg');
+  const [prescribedExpanded, setPrescribedExpanded] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setExercises(savedExercises ?? []);
+      setPrescribedExpanded(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, date]);
+
+  const updateExerciseName = (exerciseId, name) => {
+    setExercises((prev) => prev.map((ex) => (ex.id === exerciseId ? { ...ex, name } : ex)));
+  };
+
+  const updateSetField = (exerciseId, setId, field, value) => {
+    setExercises((prev) =>
+      prev.map((ex) =>
+        ex.id !== exerciseId
+          ? ex
+          : { ...ex, sets: ex.sets.map((s) => (s.id === setId ? { ...s, [field]: value } : s)) }
+      )
+    );
+  };
+
+  const addSet = (exerciseId) => {
+    setExercises((prev) =>
+      prev.map((ex) =>
+        ex.id !== exerciseId
+          ? ex
+          : { ...ex, sets: [...ex.sets, { id: generateId(), reps: '', weight: '', comment: '' }] }
+      )
+    );
+  };
+
+  const addExercise = () => {
+    setExercises((prev) => [...prev, createBlankExercise()]);
+  };
+
+  const prescribed = session?.prescribed ?? [];
+  const typeColor = session ? WORKOUT_TYPES[session.type] : null;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.sheetBackdrop}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View style={styles.sheetContainer}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetDateLabel}>{date ? formatDate(date) : ''}</Text>
+            {session && (
+              <View style={[styles.sheetTypeTag, { backgroundColor: `${typeColor}22` }]}>
+                <View style={[styles.sheetTypeDot, { backgroundColor: typeColor }]} />
+                <Text style={[styles.sheetTypeText, { color: typeColor }]}>{session.type}</Text>
+              </View>
+            )}
+
+            <ScrollView style={styles.sheetScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>Actual Workout</Text>
+                <View style={styles.unitToggle}>
+                  {['kg', 'lbs'].map((unit) => (
+                    <TouchableOpacity
+                      key={unit}
+                      style={[styles.unitOption, weightUnit === unit && styles.unitOptionActive]}
+                      onPress={() => setWeightUnit(unit)}
+                    >
+                      <Text
+                        style={[
+                          styles.unitOptionText,
+                          weightUnit === unit && styles.unitOptionTextActive,
+                        ]}
+                      >
+                        {unit}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {exercises.length === 0 && (
+                <Text style={styles.emptyText}>
+                  No exercises logged yet — tap &quot;Add exercise&quot; to start.
+                </Text>
+              )}
+
+              {exercises.map((exercise) => (
+                <View key={exercise.id} style={styles.exerciseCard}>
+                  <TextInput
+                    style={styles.exerciseNameInput}
+                    placeholder="Exercise name"
+                    placeholderTextColor={colors.textOnSurfaceFaint}
+                    value={exercise.name}
+                    onChangeText={(text) => updateExerciseName(exercise.id, text)}
+                  />
+
+                  <View style={styles.setHeaderRow}>
+                    <Text style={[styles.setHeaderCell, styles.setNumberCol]}>Set</Text>
+                    <Text style={[styles.setHeaderCell, styles.setInputCol]}>Reps</Text>
+                    <Text style={[styles.setHeaderCell, styles.setInputCol]}>
+                      Weight ({weightUnit})
+                    </Text>
+                  </View>
+
+                  {exercise.sets.map((set, index) => (
+                    <View key={set.id} style={styles.setRow}>
+                      <View style={styles.setRowTop}>
+                        <Text style={[styles.setNumberText, styles.setNumberCol]}>{index + 1}</Text>
+                        <TextInput
+                          style={[styles.setInput, styles.setInputCol]}
+                          placeholder="0"
+                          placeholderTextColor={colors.textOnSurfaceFaint}
+                          keyboardType="numeric"
+                          value={set.reps}
+                          onChangeText={(text) => updateSetField(exercise.id, set.id, 'reps', text)}
+                        />
+                        <TextInput
+                          style={[styles.setInput, styles.setInputCol]}
+                          placeholder="0"
+                          placeholderTextColor={colors.textOnSurfaceFaint}
+                          keyboardType="numeric"
+                          value={set.weight}
+                          onChangeText={(text) =>
+                            updateSetField(exercise.id, set.id, 'weight', text)
+                          }
+                        />
+                      </View>
+                      <TextInput
+                        style={styles.commentInput}
+                        placeholder="Comment (optional)"
+                        placeholderTextColor={colors.textOnSurfaceFaint}
+                        value={set.comment}
+                        onChangeText={(text) =>
+                          updateSetField(exercise.id, set.id, 'comment', text)
+                        }
+                      />
+                    </View>
+                  ))}
+
+                  <TouchableOpacity style={styles.addSetButton} onPress={() => addSet(exercise.id)}>
+                    <Ionicons name="add" size={14} color={colors.primary} />
+                    <Text style={styles.addSetButtonText}>Add set</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              <TouchableOpacity style={styles.addExerciseButton} onPress={addExercise}>
+                <Ionicons name="add-circle-outline" size={16} color={colors.primary} />
+                <Text style={styles.addExerciseButtonText}>Add exercise</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.prescribedHeader}
+                onPress={() => setPrescribedExpanded((prev) => !prev)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.sectionTitleSecondary}>Prescribed Workout</Text>
+                <Ionicons
+                  name={prescribedExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color={colors.textOnSurfaceMuted}
+                />
+              </TouchableOpacity>
+
+              {prescribedExpanded && (
+                <View style={styles.prescribedList}>
+                  {prescribed.length === 0 ? (
+                    <Text style={styles.emptyText}>No prescribed workout for this day.</Text>
+                  ) : (
+                    prescribed.map((item, index) => (
+                      <View key={index} style={styles.prescribedRow}>
+                        <Text style={styles.prescribedName}>{item.name}</Text>
+                        <Text style={styles.prescribedMeta}>
+                          {item.sets} × {item.reps} · rest {item.rest}
+                        </Text>
+                      </View>
+                    ))
+                  )}
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={styles.sheetActions}>
+              <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={() => onSave(exercises)}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
+  );
+}
 
 export default function CalendarScreen() {
-  const router = useRouter();
-  const [viewDate] = useState(() => new Date());
-  const [schedule, setSchedule] = useState(initialSchedule);
-  const [selectedPastDate, setSelectedPastDate] = useState(null);
-  const [selectedFutureDate, setSelectedFutureDate] = useState(null);
-  const [moveModalVisible, setMoveModalVisible] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const [viewDate, setViewDate] = useState(() => new Date());
+  const [sessions] = useState(buildMockSessions);
+  const [actualLogs, setActualLogs] = useState({});
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  const weeks = buildMonthMatrix(viewDate);
+  const weeks = useMemo(() => buildMonthMatrix(viewDate), [viewDate]);
   const monthLabel = viewDate.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
   const todayISO = todayISODate();
-  const todayDateOnly = new Date();
-  todayDateOnly.setHours(0, 0, 0, 0);
 
-  const handleDayPress = (date) => {
-    if (!date) return;
-    const iso = toISODateString(date);
-    if (date < todayDateOnly) {
-      setSelectedPastDate(iso);
-    } else {
-      setSelectedFutureDate(iso);
-    }
+  const goToPrevMonth = () => setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const goToNextMonth = () => setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+
+  const handleDayPress = (date) => setSelectedDate(toISODateString(date));
+
+  const handleSaveActual = (exercises) => {
+    setActualLogs((prev) => ({ ...prev, [selectedDate]: exercises }));
+    setSelectedDate(null);
   };
 
-  const handleStart = () => {
-    setSelectedFutureDate(null);
-    router.push('/(tabs)/workout');
-  };
+  const selectedSession = selectedDate ? sessions[selectedDate] : null;
+  const selectedExercises = selectedDate ? actualLogs[selectedDate] : null;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Calendar</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>Calendar</Text>
+          <View style={styles.streakPill}>
+            <Text style={styles.streakText}>🔥 {STREAK_DAYS} day streak</Text>
+          </View>
+        </View>
 
         <View style={styles.calendarCard}>
           <View style={styles.monthHeader}>
+            <TouchableOpacity onPress={goToPrevMonth} hitSlop={8}>
+              <Ionicons name="chevron-back" size={20} color={colors.textOnSurface} />
+            </TouchableOpacity>
             <Text style={styles.monthLabel}>{monthLabel}</Text>
+            <TouchableOpacity onPress={goToNextMonth} hitSlop={8}>
+              <Ionicons name="chevron-forward" size={20} color={colors.textOnSurface} />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.weekdayRow}>
@@ -170,15 +363,11 @@ export default function CalendarScreen() {
           {weeks.map((week, weekIndex) => (
             <View key={weekIndex} style={styles.weekRow}>
               {week.map((date, dayIndex) => {
-                if (!date) {
-                  return <View key={dayIndex} style={styles.dayCell} />;
-                }
+                if (!date) return <View key={dayIndex} style={styles.dayCell} />;
                 const iso = toISODateString(date);
                 const isToday = iso === todayISO;
-                const isPast = date < todayDateOnly;
-                const historyEntry = history[iso];
-                const streak = streaks[iso];
-                const scheduleEntry = schedule[iso];
+                const session = sessions[iso];
+                const dotColor = session ? WORKOUT_TYPES[session.type] : null;
 
                 return (
                   <TouchableOpacity
@@ -190,172 +379,40 @@ export default function CalendarScreen() {
                     <Text style={[styles.dayNumber, isToday && styles.dayNumberToday]}>
                       {date.getDate()}
                     </Text>
-                    {isPast && historyEntry && (
-                      <View style={styles.dayIndicatorRow}>
-                        <Text style={styles.tickText}>✓</Text>
-                        <Ionicons name="flame" size={9} color={colors.primary} />
-                        <Text style={styles.streakDigit}>{streak}</Text>
-                      </View>
-                    )}
-                    {!isPast && scheduleEntry && <View style={styles.scheduledDot} />}
+                    {dotColor && <View style={[styles.dot, { backgroundColor: dotColor }]} />}
                   </TouchableOpacity>
                 );
               })}
             </View>
           ))}
 
-          <View style={styles.legendRow}>
-            <View style={styles.legendItem}>
-              <Text style={styles.tickText}>✓</Text>
-              <Ionicons name="flame" size={9} color={colors.primary} />
-              <Text style={styles.legendText}>Completed + streak</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={styles.scheduledDot} />
-              <Text style={styles.legendText}>Scheduled</Text>
-            </View>
+          <View style={styles.legendWrap}>
+            {Object.entries(WORKOUT_TYPES).map(([type, color]) => (
+              <View key={type} style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: color }]} />
+                <Text style={styles.legendText}>{type}</Text>
+              </View>
+            ))}
           </View>
         </View>
       </ScrollView>
 
-      <Modal
-        visible={!!selectedPastDate}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSelectedPastDate(null)}
-      >
-        <View style={styles.backdrop}>
-          <View style={styles.sheet}>
-            {selectedPastDate && history[selectedPastDate] ? (
-              <>
-                <Text style={styles.sheetDate}>{formatDate(selectedPastDate)}</Text>
-                <View style={styles.sheetTag}>
-                  <Text style={styles.sheetTagText}>{history[selectedPastDate].type}</Text>
-                </View>
-                <Text style={styles.sheetTitle}>{history[selectedPastDate].title}</Text>
-                <Text style={styles.sheetMeta}>
-                  {history[selectedPastDate].duration} · RPE {history[selectedPastDate].rpe}
-                </Text>
-                <Text style={styles.sheetMeta}>
-                  {history[selectedPastDate].completedCount}/{history[selectedPastDate].totalCount}{' '}
-                  exercises completed
-                </Text>
-                <View style={styles.sheetStreakRow}>
-                  <Ionicons name="flame" size={16} color={colors.primary} />
-                  <Text style={styles.sheetStreakText}>
-                    {streaks[selectedPastDate]}-day streak
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <>
-                <Text style={styles.sheetDate}>
-                  {selectedPastDate && formatDate(selectedPastDate)}
-                </Text>
-                <Text style={styles.sheetTitle}>Rest Day</Text>
-                <Text style={styles.sheetMeta}>No workout logged.</Text>
-              </>
-            )}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setSelectedPastDate(null)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={!!selectedFutureDate}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSelectedFutureDate(null)}
-      >
-        <View style={styles.backdrop}>
-          <View style={styles.sheet}>
-            {selectedFutureDate && schedule[selectedFutureDate] ? (
-              <>
-                <Text style={styles.sheetDate}>{formatDate(selectedFutureDate)}</Text>
-                <View style={styles.sheetTag}>
-                  <Text style={styles.sheetTagText}>{schedule[selectedFutureDate].type}</Text>
-                </View>
-                <Text style={styles.sheetTitle}>{schedule[selectedFutureDate].title}</Text>
-                <Text style={styles.sheetMeta}>{schedule[selectedFutureDate].duration}</Text>
-
-                <TouchableOpacity style={styles.startButton} onPress={handleStart}>
-                  <Text style={styles.startButtonText}>Start</Text>
-                </TouchableOpacity>
-                <View style={styles.secondaryRow}>
-                  <TouchableOpacity
-                    style={styles.secondaryButton}
-                    onPress={() => setMoveModalVisible(true)}
-                  >
-                    <Text style={styles.secondaryButtonText}>Move</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.secondaryButton}
-                    onPress={() => setEditModalVisible(true)}
-                  >
-                    <Text style={styles.secondaryButtonText}>Edit</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              <>
-                <Text style={styles.sheetDate}>
-                  {selectedFutureDate && formatDate(selectedFutureDate)}
-                </Text>
-                <Text style={styles.sheetTitle}>Rest Day</Text>
-                <Text style={styles.sheetMeta}>No session scheduled.</Text>
-              </>
-            )}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setSelectedFutureDate(null)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <MoveSessionModal
-        visible={moveModalVisible}
-        currentDate={selectedFutureDate ?? todayISO}
-        label="Workout"
-        onClose={() => setMoveModalVisible(false)}
-        onSave={(newDate) => {
-          setSchedule((prev) => {
-            const next = { ...prev };
-            const entry = next[selectedFutureDate];
-            delete next[selectedFutureDate];
-            if (entry) next[newDate] = entry;
-            return next;
-          });
-          setMoveModalVisible(false);
-          setSelectedFutureDate(null);
-        }}
-      />
-
-      <SessionEditModal
-        visible={editModalVisible}
-        session={selectedFutureDate ? schedule[selectedFutureDate] : null}
-        onClose={() => setEditModalVisible(false)}
-        onSave={(updatedSession) => {
-          setSchedule((prev) => ({
-            ...prev,
-            [selectedFutureDate]: { ...prev[selectedFutureDate], ...updatedSession },
-          }));
-          setEditModalVisible(false);
-          setSelectedFutureDate(null);
-        }}
+      <DaySheet
+        visible={!!selectedDate}
+        date={selectedDate}
+        session={selectedSession}
+        savedExercises={selectedExercises}
+        colors={colors}
+        styles={styles}
+        onClose={() => setSelectedDate(null)}
+        onSave={handleSaveActual}
       />
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -365,9 +422,25 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     gap: spacing.lg,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   title: {
     color: colors.text,
     fontSize: 26,
+    fontWeight: '700',
+  },
+  streakPill: {
+    backgroundColor: colors.primaryMuted,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+  },
+  streakText: {
+    color: colors.primary,
+    fontSize: 13,
     fontWeight: '700',
   },
   calendarCard: {
@@ -379,7 +452,10 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   monthHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
   monthLabel: {
@@ -421,35 +497,19 @@ const styles = StyleSheet.create({
   dayNumberToday: {
     color: colors.primary,
   },
-  dayIndicatorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 1,
-    marginTop: 2,
-  },
-  tickText: {
-    color: colors.success,
-    fontSize: 9,
-    fontWeight: '700',
-  },
-  streakDigit: {
-    color: colors.primary,
-    fontSize: 9,
-    fontWeight: '700',
-  },
-  scheduledDot: {
-    width: 5,
-    height: 5,
+  dot: {
+    width: 6,
+    height: 6,
     borderRadius: 3,
-    backgroundColor: colors.primary,
     marginTop: 3,
   },
-  legendRow: {
+  legendWrap: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.md,
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     marginTop: spacing.xs,
     paddingTop: spacing.sm,
+    paddingHorizontal: spacing.xs,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
@@ -458,101 +518,253 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
   legendText: {
     color: colors.textOnSurfaceMuted,
     fontSize: 11,
   },
-  backdrop: {
+  sheetBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    padding: spacing.md,
+    justifyContent: 'flex-end',
   },
-  sheet: {
+  sheetContainer: {
     backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    padding: spacing.lg,
-    gap: spacing.xs,
+    borderTopLeftRadius: radii.lg,
+    borderTopRightRadius: radii.lg,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+    maxHeight: '85%',
   },
-  sheetDate: {
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    marginBottom: spacing.sm,
+  },
+  sheetDateLabel: {
     color: colors.textOnSurfaceMuted,
     fontSize: 13,
     fontWeight: '600',
   },
-  sheetTag: {
+  sheetTypeTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     alignSelf: 'flex-start',
-    backgroundColor: colors.primaryMuted,
     borderRadius: radii.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
-    marginTop: 2,
+    marginTop: spacing.xs,
   },
-  sheetTagText: {
+  sheetTypeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sheetTypeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  sheetScroll: {
+    marginTop: spacing.sm,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    color: colors.textOnSurface,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sectionTitleSecondary: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  unitToggle: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radii.pill,
+    padding: 2,
+  },
+  unitOption: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radii.pill,
+  },
+  unitOptionActive: {
+    backgroundColor: colors.primary,
+  },
+  unitOptionText: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  unitOptionTextActive: {
+    color: '#FFFFFF',
+  },
+  emptyText: {
+    color: colors.textOnSurfaceFaint,
+    fontSize: 13,
+    marginBottom: spacing.sm,
+  },
+  exerciseCard: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radii.md,
+    padding: spacing.sm,
+    marginBottom: spacing.sm,
+    gap: spacing.xs,
+  },
+  exerciseNameInput: {
+    color: colors.textOnSurface,
+    fontSize: 15,
+    fontWeight: '700',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: spacing.xs,
+  },
+  setHeaderRow: {
+    flexDirection: 'row',
+    marginTop: spacing.xs,
+  },
+  setHeaderCell: {
+    color: colors.textOnSurfaceFaint,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  setNumberCol: {
+    width: 28,
+  },
+  setInputCol: {
+    flex: 1,
+  },
+  setRow: {
+    gap: 4,
+  },
+  setRowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  setNumberText: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  setInput: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    color: colors.textOnSurface,
+    fontSize: 13,
+  },
+  commentInput: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    color: colors.textOnSurface,
+    fontSize: 12,
+    marginLeft: 32,
+  },
+  addSetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  addSetButtonText: {
     color: colors.primary,
     fontSize: 12,
     fontWeight: '700',
   },
-  sheetTitle: {
-    color: colors.textOnSurface,
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: spacing.xs,
-  },
-  sheetMeta: {
-    color: colors.textOnSurfaceMuted,
-    fontSize: 14,
-  },
-  sheetStreakRow: {
+  addExerciseButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: spacing.xs,
-  },
-  sheetStreakText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  startButton: {
-    marginTop: spacing.md,
-    backgroundColor: colors.primary,
-    borderRadius: radii.md,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  secondaryRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  secondaryButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderRadius: radii.md,
+    justifyContent: 'center',
+    gap: 6,
     borderWidth: 1,
     borderColor: colors.primary,
+    borderRadius: radii.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
   },
-  secondaryButtonText: {
+  addExerciseButtonText: {
     color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
   },
-  closeButton: {
-    marginTop: spacing.md,
+  prescribedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  prescribedList: {
+    gap: spacing.xs,
+    paddingBottom: spacing.sm,
+  },
+  prescribedRow: {
+    paddingVertical: spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  prescribedName: {
+    color: colors.textOnSurface,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  prescribedMeta: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  sheetActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  cancelButton: {
+    flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  closeButtonText: {
+  cancelButtonText: {
     color: colors.textOnSurface,
     fontWeight: '600',
   },
-});
+  saveButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md,
+    backgroundColor: colors.primary,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  });
+}

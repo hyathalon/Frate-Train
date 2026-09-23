@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, radii, spacing } from '../constants/theme';
+import { radii, spacing } from '../constants/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const activeIssues = [
   { id: '1', area: 'Right Achilles', status: 'Managing', severity: 'warning' },
@@ -22,6 +23,8 @@ const recoveryTips = [
 ];
 
 export default function RehabScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [checked, setChecked] = useState({});
 
   const toggleItem = (id) => {
@@ -89,7 +92,8 @@ export default function RehabScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.surface,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -211,4 +215,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-});
+  });
+}

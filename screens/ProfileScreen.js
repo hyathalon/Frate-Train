@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RaceEditModal from '../components/RaceEditModal';
-import { colors, radii, spacing } from '../constants/theme';
+import { radii, spacing } from '../constants/theme';
 import { useAthlete } from '../context/AthleteContext';
 import { daysUntil, formatRaceDate, useRace } from '../context/RaceContext';
+import { useTheme } from '../context/ThemeContext';
 
 const initialConnectedApps = [
-  { id: 'strava', name: 'Strava', connected: true },
-  { id: 'garmin', name: 'Garmin Connect', connected: false },
-  { id: 'apple-health', name: 'Apple Health', connected: false },
-  { id: 'whoop', name: 'Whoop', connected: false },
-  { id: 'final-surge', name: 'Final Surge', connected: false },
-  { id: 'training-peaks', name: 'TrainingPeaks', connected: false },
+  { id: 'strava', name: 'Strava', color: '#FC5200', connected: true },
+  { id: 'garmin', name: 'Garmin', color: '#007BFF', connected: false },
+  { id: 'apple-health', name: 'Apple Health', color: '#FF4D5A', connected: false },
+  { id: 'whoop', name: 'Whoop', color: '#7C3AED', connected: false },
+  { id: 'final-surge', name: 'Final Surge', color: '#F97316', connected: false },
+  { id: 'training-peaks', name: 'TrainingPeaks', color: '#16A34A', connected: false },
 ];
 
 const athlete = {
@@ -22,7 +24,7 @@ const athlete = {
 };
 
 const ATHLETE_TYPES = [
-  { value: 'hyrox', label: 'Hyrox / Hyathlon' },
+  { value: 'hyrox', label: 'Hyrox Athlete' },
   { value: 'runner', label: 'Runner' },
 ];
 
@@ -42,6 +44,8 @@ const settingsItems = [
 ];
 
 export default function ProfileScreen() {
+  const { colors, isDark, toggleTheme } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { athleteType, setAthleteType } = useAthlete();
   const { race, setRace } = useRace();
   const [raceModalVisible, setRaceModalVisible] = useState(false);
@@ -128,7 +132,22 @@ export default function ProfileScreen() {
           <View style={styles.connectedAppsCard}>
             {connectedApps.map((app) => (
               <View key={app.id} style={styles.connectedAppRow}>
-                <Text style={styles.connectedAppName}>{app.name}</Text>
+                <View style={styles.connectedAppInfo}>
+                  <View style={[styles.appIconBadge, { backgroundColor: app.color }]} />
+                  <View style={styles.connectedAppLabelGroup}>
+                    <Text style={styles.connectedAppName}>{app.name}</Text>
+                    <Text
+                      style={[
+                        styles.connectedAppStatus,
+                        app.connected
+                          ? styles.connectedAppStatusConnected
+                          : styles.connectedAppStatusDisconnected,
+                      ]}
+                    >
+                      {app.connected ? 'Connected' : 'Disconnected'}
+                    </Text>
+                  </View>
+                </View>
                 <Switch
                   value={app.connected}
                   onValueChange={() => toggleConnectedApp(app.id)}
@@ -139,12 +158,28 @@ export default function ProfileScreen() {
             ))}
           </View>
           <Text style={styles.connectedAppsWarning}>
-            Only connect one of these or multiple workloads will be uploaded to your calendar.
+            Only connect one app at a time, or a double upload may occur on your training calendar.
           </Text>
         </View>
 
         <Text style={styles.sectionTitle}>Settings</Text>
         <View style={styles.settingsList}>
+          <View style={styles.settingsRow}>
+            <View style={styles.themeRowLabel}>
+              <Ionicons
+                name={isDark ? 'moon' : 'sunny'}
+                size={18}
+                color={isDark ? colors.textOnSurfaceMuted : colors.warning}
+              />
+              <Text style={styles.settingsLabel}>Dark Mode</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.primaryMuted }}
+              thumbColor={isDark ? colors.primary : colors.textOnSurfaceFaint}
+            />
+          </View>
           {settingsItems.map((item) => (
             <TouchableOpacity key={item.id} style={styles.settingsRow}>
               <Text
@@ -174,7 +209,8 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -335,10 +371,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  connectedAppInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
+  appIconBadge: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  connectedAppLabelGroup: {
+    gap: 2,
+  },
   connectedAppName: {
     color: colors.textOnSurface,
     fontSize: 15,
     fontWeight: '600',
+  },
+  connectedAppStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  connectedAppStatusConnected: {
+    color: colors.success,
+  },
+  connectedAppStatusDisconnected: {
+    color: colors.textOnSurfaceFaint,
   },
   connectedAppsWarning: {
     color: colors.warning,
@@ -361,6 +422,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  themeRowLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   settingsLabel: {
     color: colors.textOnSurface,
     fontSize: 15,
@@ -372,4 +438,5 @@ const styles = StyleSheet.create({
     color: colors.textOnSurfaceFaint,
     fontSize: 14,
   },
-});
+  });
+}
