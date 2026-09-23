@@ -12,8 +12,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PILLARS, WORKOUT_PILLAR_MAP, getPillarById } from '../constants/pillars';
 import { radii, spacing } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
+import { useWeightUnit } from '../hooks/useWeightUnit';
 import { formatDate, toISODateString, todayISODate } from '../utils/date';
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -108,15 +110,21 @@ function createBlankExercise() {
   };
 }
 
-function DaySheet({ visible, date, session, savedExercises, onClose, onSave, colors, styles }) {
+function DaySheet({ visible, date, session, savedLog, onClose, onSave, colors, styles }) {
   const [exercises, setExercises] = useState([]);
-  const [weightUnit, setWeightUnit] = useState('kg');
+  const [weightUnit, setWeightUnit] = useWeightUnit();
   const [prescribedExpanded, setPrescribedExpanded] = useState(false);
+  const [pillarId, setPillarId] = useState(null);
+  const [pillarPickerExpanded, setPillarPickerExpanded] = useState(false);
+
+  const autoPillarId = session ? WORKOUT_PILLAR_MAP[session.type] : undefined;
 
   useEffect(() => {
     if (visible) {
-      setExercises(savedExercises ?? []);
+      setExercises(savedLog?.exercises ?? []);
+      setPillarId(savedLog?.pillarId ?? autoPillarId ?? null);
       setPrescribedExpanded(false);
+      setPillarPickerExpanded(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, date]);
@@ -163,6 +171,61 @@ function DaySheet({ visible, date, session, savedExercises, onClose, onSave, col
               <View style={[styles.sheetTypeTag, { backgroundColor: `${typeColor}22` }]}>
                 <View style={[styles.sheetTypeDot, { backgroundColor: typeColor }]} />
                 <Text style={[styles.sheetTypeText, { color: typeColor }]}>{session.type}</Text>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={styles.pillarHeaderRow}
+              onPress={() => setPillarPickerExpanded((prev) => !prev)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.pillarHeaderLeft}>
+                {pillarId ? (
+                  <>
+                    <View style={[styles.pillarDot, { backgroundColor: getPillarById(pillarId)?.color }]} />
+                    <Text style={styles.pillarHeaderText}>{getPillarById(pillarId)?.name}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.pillarHeaderTextMuted}>Tap to tag a pillar</Text>
+                )}
+              </View>
+              <Ionicons
+                name={pillarPickerExpanded ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={colors.textOnSurfaceMuted}
+              />
+            </TouchableOpacity>
+
+            {pillarPickerExpanded && (
+              <View style={styles.pillarChipRow}>
+                {PILLARS.map((pillar) => {
+                  const selected = pillar.id === pillarId;
+                  return (
+                    <TouchableOpacity
+                      key={pillar.id}
+                      style={[
+                        styles.pillarChip,
+                        { borderColor: pillar.color },
+                        selected && { backgroundColor: pillar.color },
+                      ]}
+                      onPress={() => {
+                        setPillarId(pillar.id);
+                        setPillarPickerExpanded(false);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        style={[
+                          styles.pillarChipDot,
+                          { backgroundColor: selected ? '#FFFFFF' : pillar.color },
+                        ]}
+                      />
+                      <Text style={[styles.pillarChipText, selected && styles.pillarChipTextSelected]}>
+                        {pillar.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             )}
 
@@ -291,11 +354,23 @@ function DaySheet({ visible, date, session, savedExercises, onClose, onSave, col
               )}
             </ScrollView>
 
+            {pillarId && (
+              <View style={styles.pillarConfirmRow}>
+                <View style={[styles.pillarDot, { backgroundColor: getPillarById(pillarId)?.color }]} />
+                <Text style={styles.pillarConfirmText}>
+                  Logging under{' '}
+                  <Text style={{ fontWeight: '700', color: getPillarById(pillarId)?.color }}>
+                    {getPillarById(pillarId)?.name}
+                  </Text>
+                </Text>
+              </View>
+            )}
+
             <View style={styles.sheetActions}>
               <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.saveButton} onPress={() => onSave(exercises)}>
+              <TouchableOpacity style={styles.saveButton} onPress={() => onSave(exercises, pillarId)}>
                 <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
@@ -323,13 +398,13 @@ export default function CalendarScreen() {
 
   const handleDayPress = (date) => setSelectedDate(toISODateString(date));
 
-  const handleSaveActual = (exercises) => {
-    setActualLogs((prev) => ({ ...prev, [selectedDate]: exercises }));
+  const handleSaveActual = (exercises, pillarId) => {
+    setActualLogs((prev) => ({ ...prev, [selectedDate]: { exercises, pillarId } }));
     setSelectedDate(null);
   };
 
   const selectedSession = selectedDate ? sessions[selectedDate] : null;
-  const selectedExercises = selectedDate ? actualLogs[selectedDate] : null;
+  const selectedLog = selectedDate ? actualLogs[selectedDate] : null;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -401,7 +476,7 @@ export default function CalendarScreen() {
         visible={!!selectedDate}
         date={selectedDate}
         session={selectedSession}
-        savedExercises={selectedExercises}
+        savedLog={selectedLog}
         colors={colors}
         styles={styles}
         onClose={() => setSelectedDate(null)}
@@ -572,6 +647,74 @@ function createStyles(colors) {
   sheetTypeText: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  pillarHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.sm,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceAlt,
+  },
+  pillarHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pillarDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  pillarHeaderText: {
+    color: colors.textOnSurface,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  pillarHeaderTextMuted: {
+    color: colors.textOnSurfaceFaint,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  pillarChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  pillarChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+  },
+  pillarChipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  pillarChipText: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  pillarChipTextSelected: {
+    color: '#FFFFFF',
+  },
+  pillarConfirmRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: spacing.sm,
+  },
+  pillarConfirmText: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 12,
   },
   sheetScroll: {
     marginTop: spacing.sm,

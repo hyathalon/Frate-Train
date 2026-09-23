@@ -40,3 +40,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# large local source assets — too big for git (upload to R2 instead, see .env)
+/assets/hyrox
+/gifs
+/pdfs

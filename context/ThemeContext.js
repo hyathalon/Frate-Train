@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { darkColors, lightColors } from '../constants/theme';
 
+/** @type {import('react').Context<any>} */
 const ThemeContext = createContext(null);
 const STORAGE_KEY = 'frateTrain.themeMode';
 
