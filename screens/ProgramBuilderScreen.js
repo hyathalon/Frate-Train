@@ -13,12 +13,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getPillarById } from '../constants/pillars';
+import { PILLAR_MAP } from '../constants/pillars';
 import { radii, spacing } from '../constants/theme';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 
-const STRENGTH_WEAKNESS_OPTIONS = ['Running', 'Strength', 'Stations', 'Recovery'];
+const STRENGTH_WEAKNESS_OPTIONS = ['Running', 'Strength', 'Stations', 'Endurance', 'Recovery'];
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MIN_HOURS = 3;
 const MAX_HOURS = 15;
@@ -55,7 +55,7 @@ export default function ProgramBuilderScreen() {
   const [weeksUntilRace, setWeeksUntilRace] = useState('');
   const [strengths, setStrengths] = useState([]);
   const [weaknesses, setWeaknesses] = useState([]);
-  const [availability, setAvailability] = useState([]);
+  const [trainingDays, setTrainingDays] = useState([]);
   const [goal, setGoal] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -78,7 +78,7 @@ export default function ProgramBuilderScreen() {
           weeksUntilRace: Number(weeksUntilRace) || undefined,
           strengths,
           weaknesses,
-          availability,
+          trainingDays,
           goal: goal.trim(),
         },
       });
@@ -114,8 +114,20 @@ export default function ProgramBuilderScreen() {
             </View>
 
             <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Weeks until race</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. 12"
+                placeholderTextColor={colors.textOnSurfaceFaint}
+                value={weeksUntilRace}
+                onChangeText={setWeeksUntilRace}
+                keyboardType="number-pad"
+              />
+            </View>
+
+            <View style={styles.field}>
               <View style={styles.sliderLabelRow}>
-                <Text style={styles.fieldLabel}>Current weekly training hours</Text>
+                <Text style={styles.fieldLabel}>Weekly training hours available</Text>
                 <Text style={styles.sliderValue}>{weeklyHours}h</Text>
               </View>
               <Slider
@@ -131,19 +143,26 @@ export default function ProgramBuilderScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Weeks until race</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. 12"
-                placeholderTextColor={colors.textOnSurfaceFaint}
-                value={weeksUntilRace}
-                onChangeText={setWeeksUntilRace}
-                keyboardType="number-pad"
-              />
+              <Text style={styles.fieldLabel}>Training days available</Text>
+              <View style={styles.chipRow}>
+                {DAYS.map((day) => {
+                  const selected = trainingDays.includes(day);
+                  return (
+                    <TouchableOpacity
+                      key={day}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                      onPress={() => toggleInArray(setTrainingDays)(day)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{day}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
             <MultiSelectChips
-              label="Current strengths"
+              label="Strengths"
               options={STRENGTH_WEAKNESS_OPTIONS}
               value={strengths}
               onToggle={toggleInArray(setStrengths)}
@@ -151,7 +170,7 @@ export default function ProgramBuilderScreen() {
             />
 
             <MultiSelectChips
-              label="Current weaknesses"
+              label="Weaknesses"
               options={STRENGTH_WEAKNESS_OPTIONS}
               value={weaknesses}
               onToggle={toggleInArray(setWeaknesses)}
@@ -159,34 +178,10 @@ export default function ProgramBuilderScreen() {
             />
 
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Training availability</Text>
-              <View style={styles.chipRow}>
-                {DAYS.map((day) => {
-                  const selected = availability.includes(day);
-                  return (
-                    <TouchableOpacity
-                      key={day}
-                      style={styles.checkboxRow}
-                      onPress={() => toggleInArray(setAvailability)(day)}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name={selected ? 'checkbox' : 'square-outline'}
-                        size={18}
-                        color={selected ? colors.primary : colors.textOnSurfaceFaint}
-                      />
-                      <Text style={styles.checkboxLabel}>{day}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Goal</Text>
+              <Text style={styles.fieldLabel}>Race goal</Text>
               <TextInput
                 style={styles.input}
-                placeholder='e.g. "Sub 90 min Hyrox"'
+                placeholder="e.g. Sub 90 min"
                 placeholderTextColor={colors.textOnSurfaceFaint}
                 value={goal}
                 onChangeText={setGoal}
@@ -200,7 +195,10 @@ export default function ProgramBuilderScreen() {
               activeOpacity={0.8}
             >
               {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <>
+                  <ActivityIndicator color="#FFFFFF" />
+                  <Text style={styles.generateButtonText}>Building your program...</Text>
+                </>
               ) : (
                 <>
                   <Ionicons name="sparkles" size={16} color="#FFFFFF" />
@@ -220,7 +218,7 @@ export default function ProgramBuilderScreen() {
               </Text>
 
               {(week.sessions || []).map((session, sessionIndex) => {
-                const pillar = getPillarById(session.pillar);
+                const pillar = PILLAR_MAP[session.pillar];
                 return (
                   <View key={sessionIndex} style={styles.sessionRow}>
                     <View style={styles.sessionHeaderRow}>
@@ -333,20 +331,6 @@ function createStyles(colors) {
     },
     chipTextSelected: {
       color: '#FFFFFF',
-    },
-    checkboxRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      paddingVertical: 6,
-      paddingHorizontal: spacing.xs,
-      borderRadius: radii.sm,
-      backgroundColor: colors.surfaceAlt,
-    },
-    checkboxLabel: {
-      color: colors.textOnSurface,
-      fontSize: 13,
-      fontWeight: '600',
     },
     generateButton: {
       flexDirection: 'row',

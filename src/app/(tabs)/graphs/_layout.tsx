@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { TopTabs } from 'expo-router/js-top-tabs';
 import { useTheme } from '../../../../context/ThemeContext';
 
@@ -19,7 +20,16 @@ export default function GraphsTopTabsLayout() {
       <TopTabs.Screen name="strength" options={{ title: 'Strength' }} />
       <TopTabs.Screen name="running" options={{ title: 'Running' }} />
       <TopTabs.Screen name="races" options={{ title: 'Races' }} />
-      <TopTabs.Screen name="pillars" options={{ title: 'Pillars' }} />
+      <TopTabs.Screen
+        name="pillars"
+        options={{
+          title: 'Pillars',
+          tabBarShowIcon: true,
+          tabBarIcon: ({ color }: { focused: boolean; color: string }) => (
+            <MaterialCommunityIcons name="hexagon-multiple-outline" color={color} size={20} />
+          ),
+        }}
+      />
     </TopTabs>
   );
 }

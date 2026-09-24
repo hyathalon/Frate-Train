@@ -1,3 +1,3 @@
-import SpiderScreen from '../../../../screens/graphs/SpiderScreen';
+import PillarSpiderScreen from '../../../../screens/PillarSpiderScreen';
 
-export default SpiderScreen;
+export default PillarSpiderScreen;

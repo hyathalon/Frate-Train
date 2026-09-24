@@ -64,6 +64,21 @@ export default function TabsLayout() {
           ),
         }}
       />
+            <Tabs.Screen
+        name="race-tools"
+        options={{
+          title: 'Race Tools',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="speedometer" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="coaching-enquiry"
+        options={{
+          href: null,
+        }}
+      />
       <Tabs.Screen
         name="profile"
         options={{
