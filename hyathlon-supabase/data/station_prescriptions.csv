@@ -1,0 +1,1288 @@
+station_id,level,sort_order,exercise_id,dose,primary_pillar,secondary_pillar,load,list,where_setting,best_with
+run,Foundation,1,EX0001,"30–60 min, Zone 2",Aerobic Engine,Fatigue Management,Low,Core list,Outdoor or track,Solo OK
+run,Foundation,2,EX0002,,Aerobic Engine,Fatigue Management,Low,Core list,Outdoor or track,Solo OK
+run,Foundation,3,EX0003,6 × 20 s,Economy,Threshold,Low,Core list,Outdoor or track,Solo OK
+run,Foundation,4,EX0004,,Economy,Balanced Athleticism,Low,Core list,Outdoor or track,Solo OK
+run,Foundation,5,EX0005,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+run,Foundation,6,EX0006,Bodyweight,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+run,Foundation,7,EX0007,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+run,Foundation,8,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+run,Foundation,9,EX0009,Low-level,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+run,Foundation,10,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+run,Foundation,11,EX0011,1% incline,Aerobic Engine,,Low,Core list,Gym,Solo OK
+run,Foundation,12,EX0012,Zone 2,Aerobic Engine,Fatigue Management,Low,Core list,Gym,Solo OK
+run,Foundation,13,EX0013,3 × 1 min,Economy,Aerobic Engine,Low,Core list,Home or gym,Solo OK
+run,Foundation,14,EX0014,,Economy,,Low,Core list,Outdoor or track,Solo OK
+run,Foundation,15,EX0015,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+run,Foundation,16,EX0016,Bodyweight,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+run,Foundation,17,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+run,Foundation,18,EX0018,Short lever,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+run,Foundation,19,EX0019,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+run,Foundation,20,EX0020,,Aerobic Engine,Fatigue Management,Low,Core list,Outdoor or track,Solo OK
+run,Foundation,21,EX0021,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,22,EX0022,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,23,EX0023,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,24,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,25,EX0025,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,26,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,27,EX0027,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+run,Foundation,28,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+run,Foundation,29,EX0029,,Balanced Athleticism,Durability,Low,Added,Home or gym,Solo OK
+run,Foundation,30,EX0030,Recovery,Fatigue Management,Aerobic Engine,Low,Added,Gym,Solo OK
+run,Development,1,EX0031,20–30 min at threshold,Threshold,,Moderate,Core list,Outdoor or track,Solo OK
+run,Development,2,EX0032,"5 × 1 km at threshold, 60 s rest",Threshold,,High,Core list,Outdoor or track,Solo OK
+run,Development,3,EX0033,8 × 60 s,Threshold,Balanced Athleticism,High,Core list,Outdoor or track,Solo OK
+run,Development,4,EX0034,75–100 min,Aerobic Engine,Durability,Moderate,Core list,Outdoor or track,Solo OK
+run,Development,5,EX0035,Easy → steady → tempo,Aerobic Engine,Threshold,Moderate,Core list,Outdoor or track,Solo OK
+run,Development,6,EX0036,5 × 3 min,Threshold,,High,Core list,Outdoor or track,Solo OK
+run,Development,7,EX0037,30–40 min,Threshold,Aerobic Engine,Moderate,Core list,Outdoor or track,Solo OK
+run,Development,8,EX0038,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+run,Development,9,EX0039,4 × 30 m,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+run,Development,10,EX0040,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+run,Development,11,EX0041,3 × 10 min,Threshold,,High,Core list,Outdoor or track,Solo OK
+run,Development,12,EX0042,At 5 km pace,Threshold,,High,Core list,Outdoor or track,Solo OK
+run,Development,13,EX0043,At 10 km pace,Threshold,,High,Core list,Outdoor or track,Solo OK
+run,Development,14,EX0044,AM / PM sessions,Threshold,Aerobic Engine,High,Core list,Outdoor or track,Solo OK
+run,Development,15,EX0045,,Aerobic Engine,Durability,Moderate,Core list,Outdoor or track,Solo OK
+run,Development,16,EX0046,,Threshold,Balanced Athleticism,High,Core list,Gym,Solo OK
+run,Development,17,EX0047,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+run,Development,18,EX0048,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+run,Development,19,EX0049,20 m (acceleration),Economy,Balanced Athleticism,High,Core list,Gym,Solo OK
+run,Development,20,EX0050,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+run,Development,21,EX0022,Weighted,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+run,Development,22,EX0051,,Balanced Athleticism,,High,Added,Gym,Solo OK
+run,Development,23,EX0052,Heavy,Balanced Athleticism,,High,Added,Gym,Solo OK
+run,Development,24,EX0007,Heavy,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+run,Development,25,EX0053,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+run,Development,26,EX0054,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+run,Development,27,EX0055,Low box,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Coach helpful
+run,Development,28,EX0056,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+run,Development,29,EX0016,Weighted,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+shortrun,Foundation,1,EX0001,"30–45 min, Zone 2",Aerobic Engine,Fatigue Management,Low,Core list,Outdoor or track,Solo OK
+shortrun,Foundation,2,EX0057,6 × 20 s strides,Aerobic Engine,Economy,Low,Core list,Outdoor or track,Solo OK
+shortrun,Foundation,3,EX0004,,Economy,Balanced Athleticism,Low,Core list,Outdoor or track,Solo OK
+shortrun,Foundation,4,EX0058,Acceleration posture,Economy,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,5,EX0059,,Economy,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,6,EX0060,,Economy,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,7,EX0013,3 × 1 min,Economy,Aerobic Engine,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,8,EX0009,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,9,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,10,EX0015,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,11,EX0006,Bodyweight,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,12,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,13,EX0007,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,14,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,15,EX0062,"10 × 200 m, walk-back recovery",Economy,Aerobic Engine,Low,Core list,Outdoor or track,Solo OK
+shortrun,Foundation,16,EX0002,400 m repeats,Aerobic Engine,Fatigue Management,Low,Core list,Outdoor or track,Solo OK
+shortrun,Foundation,17,EX0063,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,18,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,19,EX0064,20 s efforts,Economy,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,20,EX0021,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+shortrun,Foundation,21,EX0022,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+shortrun,Foundation,22,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+shortrun,Foundation,23,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+shortrun,Foundation,24,EX0029,,Balanced Athleticism,Durability,Low,Added,Home or gym,Solo OK
+shortrun,Foundation,25,EX0023,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+shortrun,Foundation,26,EX0065,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+shortrun,Foundation,27,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+shortrun,Development,1,EX0042,"12 × at 5 km pace, 60 s rest",Threshold,,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,2,EX0043,6 × at 10 km pace,Threshold,,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,3,EX0066,10 × at mile pace,Threshold,Economy,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,4,EX0031,20 min,Threshold,,Moderate,Core list,Outdoor or track,Solo OK
+shortrun,Development,5,EX0067,10 × 15 s,Economy,Balanced Athleticism,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,6,EX0068,30 s on / 30 s off × 16,Threshold,,High,Core list,Outdoor or track,Group-friendly
+shortrun,Development,7,EX0069,200-400-600-800-600-400-200 m,Threshold,,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,8,EX0070,30 m,Economy,Balanced Athleticism,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,9,EX0039,4 × 30 m,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+shortrun,Development,10,EX0048,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+shortrun,Development,11,EX0041,5 × 1 km,Threshold,,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,12,EX0037,1 min hard / 1 min easy × 10,Threshold,Aerobic Engine,Moderate,Core list,Outdoor or track,Solo OK
+shortrun,Development,13,EX0042,3 sets × (4 × 400 m),Threshold,,High,Core list,Outdoor or track,Solo OK
+shortrun,Development,14,EX0047,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+shortrun,Development,15,EX0006,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+shortrun,Development,16,EX0040,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+shortrun,Development,17,EX0050,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+shortrun,Development,18,EX0053,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+shortrun,Development,19,EX0049,20 m,Economy,Balanced Athleticism,High,Core list,Gym,Solo OK
+shortrun,Development,20,EX0034,60–75 min,Aerobic Engine,Durability,Moderate,Core list,Outdoor or track,Solo OK
+shortrun,Development,21,EX0038,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+shortrun,Development,22,EX0022,Weighted,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+shortrun,Development,23,EX0052,Heavy,Balanced Athleticism,,High,Added,Gym,Solo OK
+shortrun,Development,24,EX0054,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+shortrun,Development,25,EX0055,Low box,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Coach helpful
+shortrun,Development,26,EX0071,,Balanced Athleticism,Economy,High,Added,Gym,Coach helpful
+shortrun,Development,27,EX0056,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+shortrun,Development,28,EX0041,3 × 1600 m,Threshold,,High,Added,Outdoor or track,Solo OK
+ski,Foundation,1,EX0072,"10–20 min, Zone 2",Aerobic Engine,Fatigue Management,Low,Core list,Gym,Solo OK
+ski,Foundation,2,EX0073,,Economy,,Low,Core list,Gym,Solo OK
+ski,Foundation,3,EX0074,No knee bend,Economy,,Low,Core list,Gym,Solo OK
+ski,Foundation,4,EX0075,,Balanced Athleticism,Economy,Low,Core list,Gym,Solo OK
+ski,Foundation,5,EX0076,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+ski,Foundation,6,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+ski,Foundation,7,EX0078,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+ski,Foundation,8,EX0079,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+ski,Foundation,9,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+ski,Foundation,10,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+ski,Foundation,11,EX0082,With dowel,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+ski,Foundation,12,EX0083,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+ski,Foundation,13,EX0084,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+ski,Foundation,14,EX0085,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+ski,Foundation,15,EX0086,Kneeling,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+ski,Foundation,16,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+ski,Foundation,17,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+ski,Foundation,18,EX0088,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+ski,Foundation,19,EX0089,5 × 2 min,Economy,Aerobic Engine,Low,Core list,Gym,Solo OK
+ski,Foundation,20,EX0090,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+ski,Foundation,21,EX0091,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Foundation,22,EX0092,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Foundation,23,EX0093,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+ski,Foundation,24,EX0094,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Foundation,25,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Foundation,26,EX0095,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Foundation,27,EX0027,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Foundation,28,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+ski,Development,1,EX0096,"5 × 500 m, 90 s rest",Threshold,,High,Core list,Gym,Solo OK
+ski,Development,2,EX0097,10 × 1 min on / 1 min off,Threshold,,High,Core list,Gym,Group-friendly
+ski,Development,3,EX0098,3 × 1000 m,Threshold,Aerobic Engine,Moderate,Core list,Gym,Solo OK
+ski,Development,4,EX0099,250-500-750-500-250 m,Threshold,,High,Core list,Gym,Solo OK
+ski,Development,5,EX0075,Heavy,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+ski,Development,6,EX0091,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+ski,Development,7,EX0100,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+ski,Development,8,EX0101,,Balanced Athleticism,Threshold,Moderate,Core list,Home or gym,Solo OK
+ski,Development,9,EX0102,Or close-grip push-up,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+ski,Development,10,EX0103,40 / 45 / 50 spm,Economy,Threshold,Moderate,Core list,Gym,Solo OK
+ski,Development,11,EX0104,20 × 30 s on / 30 s off,Threshold,,High,Core list,Gym,Group-friendly
+ski,Development,12,EX0096,4 × 4 min,Threshold,,High,Core list,Gym,Solo OK
+ski,Development,13,EX0105,2000 m,Aerobic Engine,,Moderate,Core list,Gym,Solo OK
+ski,Development,14,EX0106,500 m ski + 400 m run × 4,Fatigue Management,Threshold,High,Core list,Gym,Solo OK
+ski,Development,15,EX0107,,Economy,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+ski,Development,16,EX0077,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+ski,Development,17,EX0108,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+ski,Development,18,EX0109,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+ski,Development,19,EX0110,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+ski,Development,20,EX0111,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+ski,Development,21,EX0112,,Balanced Athleticism,,High,Added,Gym,Solo OK
+ski,Development,22,EX0113,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+ski,Development,23,EX0086,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+ski,Development,24,EX0114,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+ski,Development,25,EX0115,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+ski,Development,26,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+ski,Development,27,EX0116,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+ski,Development,28,EX0117,,Balanced Athleticism,,High,Added,Gym,Solo OK
+row,Foundation,1,EX0118,"20 min, Zone 2",Aerobic Engine,Fatigue Management,Low,Core list,Gym,Solo OK
+row,Foundation,2,EX0119,Arms → body → legs,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,3,EX0120,,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,4,EX0121,,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,5,EX0076,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,6,EX0093,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+row,Foundation,7,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,8,EX0123,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+row,Foundation,9,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,10,EX0124,,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,11,EX0082,With dowel,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+row,Foundation,12,EX0125,,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,13,EX0126,Strap-free control,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,14,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,15,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,16,EX0028,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+row,Foundation,17,EX0127,10 × 1 min,Economy,Aerobic Engine,Low,Core list,Gym,Solo OK
+row,Foundation,18,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,19,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+row,Foundation,20,EX0128,Seated,Economy,,Low,Core list,Gym,Solo OK
+row,Foundation,21,EX0129,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+row,Foundation,22,EX0094,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+row,Foundation,23,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+row,Foundation,24,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+row,Foundation,25,EX0131,Single-arm,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+row,Foundation,26,EX0027,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+row,Foundation,27,EX0063,,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+row,Foundation,28,EX0087,,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+row,Development,1,EX0132,5 × 500 m,Threshold,,High,Core list,Gym,Solo OK
+row,Development,2,EX0133,3 × 2000 m,Aerobic Engine,,Moderate,Core list,Gym,Solo OK
+row,Development,3,EX0134,8 × 250 m,Threshold,,High,Core list,Gym,Solo OK
+row,Development,4,EX0135,20 / 22 / 24 / 26 spm,Economy,Threshold,Moderate,Core list,Gym,Solo OK
+row,Development,5,EX0133,30 min,Aerobic Engine,,Moderate,Core list,Gym,Solo OK
+row,Development,6,EX0091,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+row,Development,7,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+row,Development,8,EX0112,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+row,Development,9,EX0077,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+row,Development,10,EX0136,10 × 30 s on / 30 s off,Threshold,,High,Core list,Gym,Group-friendly
+row,Development,11,EX0132,4 × 1000 m,Threshold,,High,Core list,Gym,Solo OK
+row,Development,12,EX0133,2 × 15 min at rate 22,Aerobic Engine,Economy,Moderate,Core list,Gym,Solo OK
+row,Development,13,EX0137,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+row,Development,14,EX0138,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+row,Development,15,EX0109,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+row,Development,16,EX0139,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+row,Development,17,EX0134,"6 × 500 m, short rest",Threshold,,High,Core list,Gym,Solo OK
+row,Development,18,EX0140,60 s,Threshold,Balanced Athleticism,High,Core list,Gym,Solo OK
+row,Development,19,EX0141,,Threshold,,High,Core list,Gym,Solo OK
+row,Development,20,EX0142,Rate 20,Economy,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+row,Development,21,EX0143,,Balanced Athleticism,,High,Added,Gym,Solo OK
+row,Development,22,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+row,Development,23,EX0113,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+row,Development,24,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+row,Development,25,EX0071,,Balanced Athleticism,Economy,High,Added,Gym,Coach helpful
+row,Development,26,EX0053,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+row,Development,27,EX0114,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+row,Development,28,EX0145,Weighted,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+bike,Foundation,1,EX0146,"20–30 min, Zone 2",Aerobic Engine,Fatigue Management,Low,Core list,Gym,Solo OK
+bike,Foundation,2,EX0147,Saddle height and position,Economy,,Low,Core list,Gym,Solo OK
+bike,Foundation,3,EX0148,85–95 rpm,Economy,,Low,Core list,Gym,Solo OK
+bike,Foundation,4,EX0149,4 × 30 s each leg,Economy,,Low,Core list,Gym,Solo OK
+bike,Foundation,5,EX0150,,Economy,,Low,Core list,Gym,Solo OK
+bike,Foundation,6,EX0151,,Economy,,Low,Core list,Gym,Solo OK
+bike,Foundation,7,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,8,EX0022,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,9,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,10,EX0137,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bike,Foundation,11,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,12,EX0152,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bike,Foundation,13,EX0123,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bike,Foundation,14,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,15,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,16,EX0153,,Economy,,Low,Core list,Gym,Solo OK
+bike,Foundation,17,EX0154,10 × 1 min steady,Aerobic Engine,,Low,Core list,Gym,Solo OK
+bike,Foundation,18,EX0155,,Fatigue Management,Aerobic Engine,Low,Core list,Gym,Solo OK
+bike,Foundation,19,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+bike,Foundation,20,EX0157,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bike,Foundation,21,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bike,Foundation,22,EX0021,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bike,Foundation,23,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bike,Foundation,24,EX0017,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bike,Foundation,25,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+bike,Development,1,EX0158,5 × 4 min,Threshold,,High,Core list,Gym,Solo OK
+bike,Development,2,EX0159,3 × 10 min,Threshold,Aerobic Engine,Moderate,Core list,Gym,Solo OK
+bike,Development,3,EX0097,10 × 1 min on / 1 min off,Threshold,,High,Core list,Gym,Group-friendly
+bike,Development,4,EX0104,20 × 30 s on / 30 s off,Threshold,,High,Core list,Gym,Group-friendly
+bike,Development,5,EX0160,1-2-3-4-3-2-1 min,Threshold,,High,Core list,Gym,Solo OK
+bike,Development,6,EX0161,40 min,Aerobic Engine,,Moderate,Core list,Gym,Solo OK
+bike,Development,7,EX0162,2 min over / 2 min under × 4,Threshold,,High,Core list,Gym,Solo OK
+bike,Development,8,EX0163,6 × 1000 m,Threshold,,High,Core list,Gym,Solo OK
+bike,Development,9,EX0164,Low cadence,Balanced Athleticism,Threshold,Moderate,Core list,Gym,Solo OK
+bike,Development,10,EX0165,8 × 15 s,Threshold,Balanced Athleticism,High,Core list,Gym,Solo OK
+bike,Development,11,EX0144,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bike,Development,12,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bike,Development,13,EX0038,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bike,Development,14,EX0166,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+bike,Development,15,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bike,Development,16,EX0137,High reps,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+bike,Development,17,EX0167,30 min bike + 20 min run,Fatigue Management,Aerobic Engine,Moderate,Core list,Gym,Solo OK
+bike,Development,18,EX0161,"2 × 20 min, Zone 3",Aerobic Engine,Threshold,Moderate,Core list,Gym,Solo OK
+bike,Development,19,EX0168,,Threshold,Economy,Moderate,Core list,Gym,Solo OK
+bike,Development,20,EX0169,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bike,Development,21,EX0016,Weighted,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+bike,Development,22,EX0022,Heavy,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+bike,Development,23,EX0056,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+bike,Development,24,EX0053,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+bike,Development,25,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+airbike,Foundation,1,EX0170,10–15 min,Aerobic Engine,Fatigue Management,Low,Core list,Gym,Solo OK
+airbike,Foundation,2,EX0171,,Economy,,Low,Core list,Gym,Solo OK
+airbike,Foundation,3,EX0120,,Economy,,Low,Core list,Gym,Solo OK
+airbike,Foundation,4,EX0172,,Economy,,Low,Core list,Gym,Solo OK
+airbike,Foundation,5,EX0173,,Economy,,Low,Core list,Gym,Solo OK
+airbike,Foundation,6,EX0174,,Economy,,Low,Core list,Gym,Solo OK
+airbike,Foundation,7,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,8,EX0175,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,9,EX0129,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,10,EX0022,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,11,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,12,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,13,EX0176,10 × 30 s moderate,Aerobic Engine,Economy,Low,Core list,Gym,Solo OK
+airbike,Foundation,14,EX0177,Easy pace,Economy,Fatigue Management,Low,Core list,Gym,Solo OK
+airbike,Foundation,15,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,16,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,17,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,18,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,19,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+airbike,Foundation,20,EX0178,5 min easy,Fatigue Management,,Low,Core list,Gym,Solo OK
+airbike,Foundation,21,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+airbike,Foundation,22,EX0179,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+airbike,Foundation,23,EX0021,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+airbike,Foundation,24,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+airbike,Foundation,25,EX0080,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+airbike,Development,1,EX0180,"10 × 15 cal, 1 min rest",Threshold,,High,Core list,Gym,Solo OK
+airbike,Development,2,EX0181,30 s on / 90 s off × 8,Threshold,,High,Core list,Gym,Group-friendly
+airbike,Development,3,EX0182,2 blocks,Threshold,,High,Core list,Gym,Solo OK
+airbike,Development,4,EX0183,5 × 3 min,Threshold,,High,Core list,Gym,Solo OK
+airbike,Development,5,EX0184,20 min,Aerobic Engine,,Moderate,Core list,Gym,Solo OK
+airbike,Development,6,EX0185,5-10-15-20-15-10-5 cal,Threshold,,High,Core list,Gym,Solo OK
+airbike,Development,7,EX0186,6 × 10 s all-out,Threshold,Balanced Athleticism,High,Core list,Gym,Solo OK
+airbike,Development,8,EX0187,12 cal × 10,Threshold,Durability,High,Core list,Gym,Solo OK
+airbike,Development,9,EX0188,,Threshold,Durability,High,Core list,Gym,Solo OK
+airbike,Development,10,EX0189,,Durability,Threshold,High,Core list,Gym,Group-friendly
+airbike,Development,11,EX0190,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+airbike,Development,12,EX0191,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+airbike,Development,13,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+airbike,Development,14,EX0016,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+airbike,Development,15,EX0131,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+airbike,Development,16,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+airbike,Development,17,EX0192,3 × 5 min,Threshold,Aerobic Engine,Moderate,Core list,Gym,Solo OK
+airbike,Development,18,EX0193,40 s on / 20 s off × 10,Threshold,,High,Core list,Gym,Group-friendly
+airbike,Development,19,EX0194,2 min air bike + 400 m run × 4,Fatigue Management,Threshold,High,Core list,Gym,Group-friendly
+airbike,Development,20,EX0195,Heavy,Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+airbike,Development,21,EX0196,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+airbike,Development,22,EX0197,,Durability,Threshold,Moderate,Added,Home or gym,Solo OK
+airbike,Development,23,EX0198,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+airbike,Development,24,EX0199,,Durability,Balanced Athleticism,Moderate,Added,Gym,Solo OK
+airbike,Development,25,EX0038,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+push,Foundation,1,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,2,EX0200,Sled posture,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+push,Foundation,3,EX0021,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,4,EX0137,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+push,Foundation,5,EX0029,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+push,Foundation,6,EX0201,Body-angle focus,Economy,,Low,Core list,Gym,Solo OK
+push,Foundation,7,EX0202,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,8,EX0022,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,9,EX0175,Arm lockout focus,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,10,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+push,Foundation,11,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+push,Foundation,12,EX0203,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,13,EX0204,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+push,Foundation,14,EX0179,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,15,EX0205,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+push,Foundation,16,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+push,Foundation,17,EX0195,"4 × 20 m light, technique",Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+push,Foundation,18,EX0005,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+push,Foundation,19,EX0152,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+push,Foundation,20,EX0206,Forward,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+push,Foundation,21,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,22,EX0006,Bodyweight,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,23,EX0008,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,24,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,25,EX0015,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,26,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,27,EX0080,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,28,EX0023,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Foundation,29,EX0207,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+push,Foundation,30,EX0208,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+push,Development,1,EX0144,4–6 reps,Balanced Athleticism,,High,Core list,Gym,Solo OK
+push,Development,2,EX0047,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+push,Development,3,EX0038,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+push,Development,4,EX0049,"Heavy, 10–15 m",Balanced Athleticism,Economy,High,Core list,Gym,Solo OK
+push,Development,5,EX0056,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+push,Development,6,EX0195,6 × 25 m intervals,Durability,Threshold,High,Core list,Gym,Group-friendly
+push,Development,7,EX0016,Weighted,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+push,Development,8,EX0209,,Balanced Athleticism,Economy,High,Core list,Gym,Solo OK
+push,Development,9,EX0022,Heavy box,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+push,Development,10,EX0210,"Sled posture, 30 s",Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+push,Development,11,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+push,Development,12,EX0211,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+push,Development,13,EX0195,3 × 50 m moderate,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+push,Development,14,EX0166,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+push,Development,15,EX0052,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+push,Development,16,EX0212,Heavy 10 m push + light 20 m sprint,Balanced Athleticism,Economy,High,Core list,Gym,Solo OK
+push,Development,17,EX0053,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+push,Development,18,EX0137,20–30 reps,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+push,Development,19,EX0213,6 × 20 m,Economy,Balanced Athleticism,High,Core list,Outdoor or track,Solo OK
+push,Development,20,EX0214,Heavy,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+push,Development,21,EX0215,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+push,Development,22,EX0216,,Balanced Athleticism,,High,Added,Gym,Solo OK
+push,Development,23,EX0051,,Balanced Athleticism,,High,Added,Gym,Solo OK
+push,Development,24,EX0040,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+push,Development,25,EX0217,,Balanced Athleticism,,High,Added,Gym,Solo OK
+push,Development,26,EX0169,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+pull,Foundation,1,EX0093,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+pull,Foundation,2,EX0131,Single-arm,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,3,EX0094,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,4,EX0218,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+pull,Foundation,5,EX0219,Grip base,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+pull,Foundation,6,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,7,EX0220,Athletic stance,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,8,EX0129,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,9,EX0221,Light,Balanced Athleticism,Durability,Low,Core list,Gym,Solo OK
+pull,Foundation,10,EX0222,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+pull,Foundation,11,EX0223,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+pull,Foundation,12,EX0224,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+pull,Foundation,13,EX0225,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,14,EX0226,20–30 s,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+pull,Foundation,15,EX0227,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,16,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+pull,Foundation,17,EX0026,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,18,EX0228,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+pull,Foundation,19,EX0229,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+pull,Foundation,20,EX0230,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Foundation,21,EX0075,,Balanced Athleticism,Economy,Low,Added,Gym,Solo OK
+pull,Foundation,22,EX0081,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+pull,Foundation,23,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+pull,Foundation,24,EX0095,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+pull,Foundation,25,EX0231,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+pull,Foundation,26,EX0082,,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+pull,Foundation,27,EX0083,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+pull,Foundation,28,EX0232,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+pull,Development,1,EX0112,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+pull,Development,2,EX0218,Heavy,Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+pull,Development,3,EX0113,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+pull,Development,4,EX0233,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+pull,Development,5,EX0221,Heavy,Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+pull,Development,6,EX0139,Conventional,Balanced Athleticism,,High,Core list,Gym,Solo OK
+pull,Development,7,EX0115,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+pull,Development,8,EX0234,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+pull,Development,9,EX0221,6 × 25 m intervals,Durability,Threshold,High,Core list,Gym,Group-friendly
+pull,Development,10,EX0235,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+pull,Development,11,EX0138,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+pull,Development,12,EX0236,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+pull,Development,13,EX0237,Heavy,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+pull,Development,14,EX0238,4 × 50 m moderate,Durability,Balanced Athleticism,High,Core list,Gym,Solo OK
+pull,Development,15,EX0239,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+pull,Development,16,EX0218,Max distance in 60 s,Durability,Threshold,High,Core list,Gym,Solo OK
+pull,Development,17,EX0240,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+pull,Development,18,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+pull,Development,19,EX0241,,Durability,Balanced Athleticism,High,Core list,Gym,Solo OK
+pull,Development,20,EX0242,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+pull,Development,21,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+pull,Development,22,EX0243,Heavy,Balanced Athleticism,Durability,High,Added,Home or gym,Solo OK
+pull,Development,23,EX0091,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+pull,Development,24,EX0077,Heavy,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+pull,Development,25,EX0244,Heavy,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+pull,Development,26,EX0245,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+pull,Development,27,EX0075,Heavy,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+pull,Development,28,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+farm,Foundation,1,EX0219,30–45 s,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+farm,Foundation,2,EX0243,Light,Economy,Durability,Low,Core list,Home or gym,Solo OK
+farm,Foundation,3,EX0231,Single side,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,4,EX0226,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+farm,Foundation,5,EX0246,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,6,EX0244,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,7,EX0247,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,8,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,9,EX0139,Light,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+farm,Foundation,10,EX0248,"Tall, short fast steps",Economy,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,11,EX0232,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,12,EX0249,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,13,EX0250,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,14,EX0251,Light,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,15,EX0027,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,16,EX0252,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+farm,Foundation,17,EX0253,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,18,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,19,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,20,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Foundation,21,EX0076,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+farm,Foundation,22,EX0008,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+farm,Foundation,23,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+farm,Foundation,24,EX0122,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+farm,Foundation,25,EX0129,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+farm,Foundation,26,EX0082,,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+farm,Foundation,27,EX0131,Single-arm,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+farm,Development,1,EX0243,"Heavy, 4 × 40 m",Balanced Athleticism,Durability,High,Core list,Home or gym,Solo OK
+farm,Development,2,EX0047,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+farm,Development,3,EX0234,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+farm,Development,4,EX0244,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+farm,Development,5,EX0254,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+farm,Development,6,EX0243,6 × 50 m intervals,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+farm,Development,7,EX0255,Uneven loads,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+farm,Development,8,EX0256,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+farm,Development,9,EX0257,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Development,10,EX0258,For time,Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+farm,Development,11,EX0231,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+farm,Development,12,EX0219,"Heavy, 3 × 60 s",Balanced Athleticism,Durability,High,Core list,Home or gym,Solo OK
+farm,Development,13,EX0236,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+farm,Development,14,EX0245,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+farm,Development,15,EX0131,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+farm,Development,16,EX0243,400 m moderate,Durability,Aerobic Engine,Moderate,Core list,Home or gym,Solo OK
+farm,Development,17,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+farm,Development,18,EX0247,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+farm,Development,19,EX0259,Farmers + front rack + suitcase,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+farm,Development,20,EX0260,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+farm,Development,21,EX0091,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+farm,Development,22,EX0261,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+farm,Development,23,EX0112,,Balanced Athleticism,,High,Added,Gym,Solo OK
+farm,Development,24,EX0076,Heavy,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+farm,Development,25,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+farm,Development,26,EX0221,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+farm,Development,27,EX0262,,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+frontcarry,Foundation,1,EX0263,30 s,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,2,EX0250,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,3,EX0264,Light,Economy,Durability,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,4,EX0265,Light,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,5,EX0266,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Foundation,6,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,7,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,8,EX0027,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,9,EX0267,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,10,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,11,EX0268,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,12,EX0269,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Foundation,13,EX0270,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,14,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,15,EX0244,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,16,EX0271,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,17,EX0219,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,18,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,19,EX0231,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Foundation,20,EX0272,"Ribs down, walk tall",Economy,,Low,Core list,Home or gym,Solo OK
+frontcarry,Foundation,21,EX0273,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+frontcarry,Foundation,22,EX0122,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+frontcarry,Foundation,23,EX0226,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+frontcarry,Foundation,24,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+frontcarry,Foundation,25,EX0274,Lockout drill,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+frontcarry,Foundation,26,EX0143,Light,Balanced Athleticism,,Low,Added,Gym,Solo OK
+frontcarry,Foundation,27,EX0083,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+frontcarry,Foundation,28,EX0232,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+frontcarry,Development,1,EX0264,"Heavy, 4 × 60 m",Balanced Athleticism,Durability,High,Core list,Home or gym,Solo OK
+frontcarry,Development,2,EX0275,"Heavy, 4 × 40 m",Balanced Athleticism,Durability,High,Core list,Home or gym,Solo OK
+frontcarry,Development,3,EX0262,,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+frontcarry,Development,4,EX0276,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,5,EX0254,Double,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,6,EX0277,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,7,EX0278,3 × 45 s,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,8,EX0269,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,9,EX0191,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+frontcarry,Development,10,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+frontcarry,Development,11,EX0270,Hold,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,12,EX0259,Front + overhead + farmers,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,13,EX0231,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+frontcarry,Development,14,EX0279,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+frontcarry,Development,15,EX0280,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+frontcarry,Development,16,EX0281,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,17,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Development,18,EX0282,Plate on back,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,19,EX0094,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+frontcarry,Development,20,EX0283,6 × 60 m,Durability,Threshold,Moderate,Core list,Home or gym,Solo OK
+frontcarry,Development,21,EX0190,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+frontcarry,Development,22,EX0284,,Balanced Athleticism,Economy,Moderate,Added,Home or gym,Solo OK
+frontcarry,Development,23,EX0285,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+frontcarry,Development,24,EX0286,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+frontcarry,Development,25,EX0255,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+frontcarry,Development,26,EX0257,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+frontcarry,Development,27,EX0198,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+lunge,Foundation,1,EX0006,Bodyweight,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,2,EX0021,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,3,EX0016,Bodyweight,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,4,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,5,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,6,EX0022,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,7,EX0287,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,8,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,9,EX0288,Hip flexors,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,10,EX0289,Controlled,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,11,EX0023,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,12,EX0290,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,13,EX0276,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+lunge,Foundation,14,EX0291,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,15,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+lunge,Foundation,16,EX0024,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,17,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,18,EX0284,"Light, technique",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,19,EX0025,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,20,EX0130,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+lunge,Foundation,21,EX0204,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+lunge,Foundation,22,EX0292,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+lunge,Foundation,23,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+lunge,Foundation,24,EX0293,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+lunge,Foundation,25,EX0015,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+lunge,Foundation,26,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+lunge,Foundation,27,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+lunge,Development,1,EX0016,"Weighted, 4 × 20",Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,2,EX0038,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,3,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+lunge,Development,4,EX0294,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,5,EX0295,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,6,EX0016,3 × 50 m intervals,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+lunge,Development,7,EX0022,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+lunge,Development,8,EX0007,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+lunge,Development,9,EX0296,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,10,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+lunge,Development,11,EX0297,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,12,EX0051,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+lunge,Development,13,EX0016,"Light, 200 m",Durability,Aerobic Engine,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,14,EX0298,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,15,EX0169,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+lunge,Development,16,EX0052,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+lunge,Development,17,EX0299,Bottom-half reps,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,18,EX0300,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,19,EX0301,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+lunge,Development,20,EX0144,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+lunge,Development,21,EX0195,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+lunge,Development,22,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+lunge,Development,23,EX0025,Heavy,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+lunge,Development,24,EX0040,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+lunge,Development,25,EX0302,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+lunge,Development,26,EX0166,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+squat,Foundation,1,EX0130,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,2,EX0204,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+squat,Foundation,3,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,4,EX0220,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,5,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+squat,Foundation,6,EX0303,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,7,EX0304,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+squat,Foundation,8,EX0028,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+squat,Foundation,9,EX0305,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+squat,Foundation,10,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,11,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,12,EX0306,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+squat,Foundation,13,EX0006,Bodyweight,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,14,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,15,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+squat,Foundation,16,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,17,EX0307,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,18,EX0207,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+squat,Foundation,19,EX0157,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,20,EX0308,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+squat,Foundation,21,EX0021,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+squat,Foundation,22,EX0022,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+squat,Foundation,23,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+squat,Foundation,24,EX0082,,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+squat,Foundation,25,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+squat,Foundation,26,EX0271,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+squat,Foundation,27,EX0309,,Balanced Athleticism,Economy,Low,Added,Gym,Solo OK
+squat,Foundation,28,EX0015,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+squat,Development,1,EX0144,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+squat,Development,2,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+squat,Development,3,EX0122,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+squat,Development,4,EX0306,5 × 20,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+squat,Development,5,EX0310,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+squat,Development,6,EX0122,5 × 20,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+squat,Development,7,EX0311,1 min on / 1 min off × 6,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+squat,Development,8,EX0137,High reps,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+squat,Development,9,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+squat,Development,10,EX0038,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+squat,Development,11,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+squat,Development,12,EX0166,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+squat,Development,13,EX0313,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+squat,Development,14,EX0294,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+squat,Development,15,EX0311,EMOM × 15,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+squat,Development,16,EX0314,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+squat,Development,17,EX0315,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Group-friendly
+squat,Development,18,EX0053,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+squat,Development,19,EX0156,Weighted,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+squat,Development,20,EX0216,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+squat,Development,21,EX0016,Weighted,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+squat,Development,22,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+squat,Development,23,EX0195,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+squat,Development,24,EX0199,,Durability,Balanced Athleticism,Moderate,Added,Gym,Solo OK
+squat,Development,25,EX0190,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+squat,Development,26,EX0276,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+squat,Development,27,EX0204,Heavy,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+kbdl,Foundation,1,EX0082,With dowel,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,2,EX0076,Light,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,3,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,4,EX0091,Light,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,5,EX0316,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,6,EX0026,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,7,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,8,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,9,EX0123,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,10,EX0219,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,11,EX0092,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,12,EX0007,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,13,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,14,EX0237,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+kbdl,Foundation,15,EX0317,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,16,EX0145,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+kbdl,Foundation,17,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+kbdl,Foundation,18,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,19,EX0318,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+kbdl,Foundation,20,EX0226,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+kbdl,Foundation,21,EX0077,Light,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+kbdl,Foundation,22,EX0122,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+kbdl,Foundation,23,EX0231,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+kbdl,Foundation,24,EX0129,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+kbdl,Foundation,25,EX0309,,Balanced Athleticism,Economy,Low,Added,Gym,Solo OK
+kbdl,Foundation,26,EX0203,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+kbdl,Development,1,EX0076,"Heavy, 5 × 10",Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+kbdl,Development,2,EX0047,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+kbdl,Development,3,EX0139,Conventional,Balanced Athleticism,,High,Core list,Gym,Solo OK
+kbdl,Development,4,EX0091,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,5,EX0319,,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+kbdl,Development,6,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,7,EX0077,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+kbdl,Development,8,EX0007,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,9,EX0320,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,10,EX0236,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+kbdl,Development,11,EX0145,Weighted,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+kbdl,Development,12,EX0052,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+kbdl,Development,13,EX0076,EMOM × 10,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Group-friendly
+kbdl,Development,14,EX0076,3 × 30,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,15,EX0111,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+kbdl,Development,16,EX0091,Tempo,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,17,EX0219,Heavy,Balanced Athleticism,Durability,High,Core list,Home or gym,Solo OK
+kbdl,Development,18,EX0040,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,19,EX0321,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,20,EX0115,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+kbdl,Development,21,EX0243,Heavy,Balanced Athleticism,Durability,High,Added,Home or gym,Solo OK
+kbdl,Development,22,EX0112,,Balanced Athleticism,,High,Added,Gym,Solo OK
+kbdl,Development,23,EX0234,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+kbdl,Development,24,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+kbdl,Development,25,EX0221,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+kbdl,Development,26,EX0322,,Balanced Athleticism,,High,Added,Gym,Solo OK
+box,Foundation,1,EX0022,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,2,EX0323,Low box,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+box,Foundation,3,EX0293,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,4,EX0053,Low box,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+box,Foundation,5,EX0324,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+box,Foundation,6,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Foundation,7,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,8,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,9,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,10,EX0063,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+box,Foundation,11,EX0325,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+box,Foundation,12,EX0015,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,13,EX0025,Box,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,14,EX0009,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+box,Foundation,15,EX0006,Bodyweight,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,16,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,17,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,18,EX0326,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+box,Foundation,19,EX0327,,Economy,,Low,Core list,Home or gym,Solo OK
+box,Foundation,20,EX0130,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+box,Foundation,21,EX0021,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+box,Foundation,22,EX0204,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+box,Foundation,23,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+box,Foundation,24,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+box,Foundation,25,EX0023,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+box,Foundation,26,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+box,Foundation,27,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+box,Development,1,EX0053,5 × 5,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Development,2,EX0323,4 × 20,Durability,Economy,Moderate,Core list,Home or gym,Solo OK
+box,Development,3,EX0022,Weighted,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+box,Development,4,EX0038,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+box,Development,5,EX0328,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Development,6,EX0329,5 × 10,Durability,Economy,Moderate,Core list,Home or gym,Solo OK
+box,Development,7,EX0323,Continuous 2 min,Durability,Threshold,Moderate,Core list,Home or gym,Solo OK
+box,Development,8,EX0055,Low box,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Coach helpful
+box,Development,9,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Development,10,EX0323,EMOM × 10,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+box,Development,11,EX0330,,Durability,Threshold,High,Core list,Home or gym,Group-friendly
+box,Development,12,EX0016,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+box,Development,13,EX0039,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Development,14,EX0048,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Development,15,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+box,Development,16,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+box,Development,17,EX0061,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+box,Development,18,EX0331,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+box,Development,19,EX0323,3 × 30 for time,Durability,Threshold,High,Core list,Home or gym,Solo OK
+box,Development,20,EX0144,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+box,Development,21,EX0195,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+box,Development,22,EX0054,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+box,Development,23,EX0332,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+box,Development,24,EX0040,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+box,Development,25,EX0006,Heavy,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+box,Development,26,EX0056,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+box,Development,27,EX0197,,Durability,Threshold,Moderate,Added,Home or gym,Solo OK
+bos,Foundation,1,EX0309,,Balanced Athleticism,Economy,Low,Core list,Gym,Solo OK
+bos,Foundation,2,EX0306,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+bos,Foundation,3,EX0082,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bos,Foundation,4,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,5,EX0076,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,6,EX0333,"Light, 3 × 10",Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+bos,Foundation,7,EX0334,,Economy,,Low,Core list,Gym,Solo OK
+bos,Foundation,8,EX0335,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bos,Foundation,9,EX0305,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bos,Foundation,10,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,11,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,12,EX0026,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,13,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,14,EX0219,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+bos,Foundation,15,EX0145,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+bos,Foundation,16,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,17,EX0123,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bos,Foundation,18,EX0271,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bos,Foundation,19,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bos,Foundation,20,EX0336,,Economy,,Low,Core list,Gym,Solo OK
+bos,Foundation,21,EX0091,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bos,Foundation,22,EX0077,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+bos,Foundation,23,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bos,Foundation,24,EX0231,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+bos,Foundation,25,EX0027,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bos,Foundation,26,EX0007,,Balanced Athleticism,Durability,Low,Added,Home or gym,Solo OK
+bos,Development,1,EX0333,"Heavy, 5 × 10",Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+bos,Development,2,EX0337,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+bos,Development,3,EX0338,,Balanced Athleticism,,High,Core list,Gym,Coach helpful
+bos,Development,4,EX0298,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+bos,Development,5,EX0077,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+bos,Development,6,EX0091,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bos,Development,7,EX0047,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bos,Development,8,EX0310,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bos,Development,9,EX0276,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bos,Development,10,EX0333,EMOM × 10,Durability,Threshold,Moderate,Core list,Gym,Group-friendly
+bos,Development,11,EX0339,4 × 10,Balanced Athleticism,Economy,Moderate,Core list,Gym,Solo OK
+bos,Development,12,EX0145,Weighted,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bos,Development,13,EX0052,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bos,Development,14,EX0340,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bos,Development,15,EX0341,,Durability,Threshold,High,Core list,Gym,Group-friendly
+bos,Development,16,EX0284,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bos,Development,17,EX0139,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bos,Development,18,EX0111,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bos,Development,19,EX0333,3 × 25,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+bos,Development,20,EX0342,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bos,Development,21,EX0076,Heavy,Balanced Athleticism,,High,Added,Home or gym,Solo OK
+bos,Development,22,EX0143,,Balanced Athleticism,,High,Added,Gym,Solo OK
+bos,Development,23,EX0071,,Balanced Athleticism,Economy,High,Added,Gym,Coach helpful
+bos,Development,24,EX0306,5 × 20,Durability,Balanced Athleticism,Moderate,Added,Gym,Solo OK
+bos,Development,25,EX0243,Heavy,Balanced Athleticism,Durability,High,Added,Home or gym,Solo OK
+bos,Development,26,EX0101,,Balanced Athleticism,Threshold,Moderate,Added,Home or gym,Solo OK
+wb,Foundation,1,EX0304,Air squat,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+wb,Foundation,2,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+wb,Foundation,3,EX0143,Light,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+wb,Foundation,4,EX0343,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+wb,Foundation,5,EX0199,"Light, 3 × 15",Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+wb,Foundation,6,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+wb,Foundation,7,EX0344,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+wb,Foundation,8,EX0204,"Bodyweight, to box",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+wb,Foundation,9,EX0345,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+wb,Foundation,10,EX0346,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+wb,Foundation,11,EX0347,Dowel,Balanced Athleticism,Economy,Low,Core list,Home or gym,Coach helpful
+wb,Foundation,12,EX0028,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+wb,Foundation,13,EX0348,Low target,Economy,,Low,Core list,Gym,Solo OK
+wb,Foundation,14,EX0122,Pulses,Durability,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+wb,Foundation,15,EX0349,,Economy,,Low,Core list,Home or gym,Solo OK
+wb,Foundation,16,EX0350,,Economy,,Low,Core list,Gym,Solo OK
+wb,Foundation,17,EX0351,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+wb,Foundation,18,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+wb,Foundation,19,EX0352,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+wb,Foundation,20,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+wb,Foundation,21,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+wb,Foundation,22,EX0207,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+wb,Foundation,23,EX0081,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+wb,Foundation,24,EX0094,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+wb,Foundation,25,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+wb,Foundation,26,EX0191,Light,Economy,Balanced Athleticism,Low,Added,Gym,Solo OK
+wb,Foundation,27,EX0220,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+wb,Development,1,EX0190,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+wb,Development,2,EX0199,EMOM × 15 reps,Durability,Threshold,Moderate,Core list,Gym,Group-friendly
+wb,Development,3,EX0143,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+wb,Development,4,EX0191,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+wb,Development,5,EX0199,5 × 25,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+wb,Development,6,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+wb,Development,7,EX0199,Heavy ball (9 kg),Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+wb,Development,8,EX0303,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+wb,Development,9,EX0353,,Durability,Threshold,High,Core list,Gym,Group-friendly
+wb,Development,10,EX0354,Shoulder endurance,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+wb,Development,11,EX0199,3 × 30,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+wb,Development,12,EX0353,21-15-9,Durability,Threshold,High,Core list,Gym,Group-friendly
+wb,Development,13,EX0355,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+wb,Development,14,EX0196,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+wb,Development,15,EX0269,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+wb,Development,16,EX0204,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+wb,Development,17,EX0199,1 min on / 30 s off × 6,Durability,Threshold,High,Core list,Gym,Group-friendly
+wb,Development,18,EX0122,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+wb,Development,19,EX0199,Death-by (add 1 rep per min),Durability,Threshold,High,Core list,Gym,Group-friendly
+wb,Development,20,EX0356,Ball held overhead,Balanced Athleticism,Durability,Moderate,Core list,Gym,Solo OK
+wb,Development,21,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+wb,Development,22,EX0357,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+wb,Development,23,EX0101,,Balanced Athleticism,Threshold,Moderate,Added,Home or gym,Solo OK
+wb,Development,24,EX0294,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+wb,Development,25,EX0280,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+wb,Development,26,EX0197,,Durability,Threshold,Moderate,Added,Home or gym,Solo OK
+wb,Development,27,EX0053,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+wb,Development,28,EX0137,High reps,Durability,Balanced Athleticism,Moderate,Added,Gym,Solo OK
+thr,Foundation,1,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,2,EX0143,Light,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+thr,Foundation,3,EX0358,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,4,EX0269,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+thr,Foundation,5,EX0191,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+thr,Foundation,6,EX0278,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,7,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+thr,Foundation,8,EX0359,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,9,EX0204,"Bodyweight, to box",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+thr,Foundation,10,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,11,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,12,EX0094,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,13,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,14,EX0175,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,15,EX0360,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,16,EX0303,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+thr,Foundation,17,EX0305,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+thr,Foundation,18,EX0357,"Light, 3 × 10",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+thr,Foundation,19,EX0361,"Light, 3 × 10",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+thr,Foundation,20,EX0156,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+thr,Foundation,21,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+thr,Foundation,22,EX0207,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+thr,Foundation,23,EX0344,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+thr,Foundation,24,EX0362,Light,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+thr,Foundation,25,EX0220,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+thr,Development,1,EX0190,Barbell,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+thr,Development,2,EX0196,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+thr,Development,3,EX0357,5 × 15,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+thr,Development,4,EX0361,5 × 12,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+thr,Development,5,EX0191,Barbell,Balanced Athleticism,,High,Core list,Gym,Solo OK
+thr,Development,6,EX0143,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+thr,Development,7,EX0269,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+thr,Development,8,EX0363,,Balanced Athleticism,Economy,High,Core list,Gym,Coach helpful
+thr,Development,9,EX0190,EMOM × 12,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+thr,Development,10,EX0191,EMOM × 12,Durability,Threshold,Moderate,Core list,Gym,Group-friendly
+thr,Development,11,EX0199,,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+thr,Development,12,EX0204,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+thr,Development,13,EX0280,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+thr,Development,14,EX0102,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+thr,Development,15,EX0364,,Durability,Threshold,High,Core list,Home or gym,Group-friendly
+thr,Development,16,EX0313,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+thr,Development,17,EX0279,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+thr,Development,18,EX0254,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+thr,Development,19,EX0191,3 × 25,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+thr,Development,20,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+thr,Development,21,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+thr,Development,22,EX0122,Heavy,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+thr,Development,23,EX0071,,Balanced Athleticism,Economy,High,Added,Gym,Coach helpful
+thr,Development,24,EX0285,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+thr,Development,25,EX0199,5 × 25,Durability,Balanced Athleticism,Moderate,Added,Gym,Solo OK
+thr,Development,26,EX0365,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+g2oh,Foundation,1,EX0366,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,2,EX0082,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,3,EX0269,Light,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,4,EX0270,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,5,EX0273,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,6,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,7,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,8,EX0367,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,9,EX0278,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,10,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,11,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,12,EX0191,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+g2oh,Foundation,13,EX0362,Light,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,14,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,15,EX0094,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,16,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,17,EX0267,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,18,EX0368,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,19,EX0285,"Light, 3 × 10",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,20,EX0359,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+g2oh,Foundation,21,EX0076,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+g2oh,Foundation,22,EX0284,Light,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+g2oh,Foundation,23,EX0130,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+g2oh,Foundation,24,EX0358,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+g2oh,Foundation,25,EX0080,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+g2oh,Foundation,26,EX0129,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+g2oh,Development,1,EX0285,5 × 15,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,2,EX0369,5 × 12,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,3,EX0071,,Balanced Athleticism,Economy,High,Core list,Gym,Coach helpful
+g2oh,Development,4,EX0370,,Balanced Athleticism,Economy,High,Core list,Gym,Coach helpful
+g2oh,Development,5,EX0191,Heavy,Balanced Athleticism,,High,Core list,Gym,Solo OK
+g2oh,Development,6,EX0269,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,7,EX0365,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,8,EX0284,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,9,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,10,EX0091,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,11,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+g2oh,Development,12,EX0190,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,13,EX0285,EMOM × 12,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+g2oh,Development,14,EX0369,Ladder,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+g2oh,Development,15,EX0371,,Balanced Athleticism,,High,Core list,Gym,Coach helpful
+g2oh,Development,16,EX0280,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+g2oh,Development,17,EX0251,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,18,EX0198,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+g2oh,Development,19,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+g2oh,Development,20,EX0285,3 × 30,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+g2oh,Development,21,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+g2oh,Development,22,EX0357,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+g2oh,Development,23,EX0372,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+g2oh,Development,24,EX0139,,Balanced Athleticism,,High,Added,Gym,Solo OK
+g2oh,Development,25,EX0363,,Balanced Athleticism,Economy,High,Added,Gym,Coach helpful
+g2oh,Development,26,EX0254,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+snatch,Foundation,1,EX0373,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,2,EX0374,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,3,EX0375,,Economy,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,4,EX0376,Single-arm,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,5,EX0082,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,6,EX0367,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,7,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,8,EX0081,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,9,EX0094,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,10,EX0377,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,11,EX0378,Light,Economy,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,12,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,13,EX0359,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,14,EX0251,Light walk,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,15,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,16,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+snatch,Foundation,17,EX0379,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,18,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,19,EX0380,,Economy,,Low,Core list,Home or gym,Solo OK
+snatch,Foundation,20,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+snatch,Foundation,21,EX0076,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+snatch,Foundation,22,EX0007,,Balanced Athleticism,Durability,Low,Added,Home or gym,Solo OK
+snatch,Foundation,23,EX0226,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+snatch,Foundation,24,EX0122,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+snatch,Foundation,25,EX0191,Light,Economy,Balanced Athleticism,Low,Added,Gym,Solo OK
+snatch,Foundation,26,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+snatch,Development,1,EX0372,5 × 10 each arm,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,2,EX0381,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,3,EX0071,,Balanced Athleticism,Economy,High,Core list,Gym,Coach helpful
+snatch,Development,4,EX0382,,Balanced Athleticism,Economy,High,Core list,Gym,Coach helpful
+snatch,Development,5,EX0361,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,6,EX0077,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+snatch,Development,7,EX0383,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,8,EX0374,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,9,EX0372,EMOM × 12,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+snatch,Development,10,EX0372,"Alternating, 3 × 30",Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,11,EX0347,Light,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Coach helpful
+snatch,Development,12,EX0053,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,13,EX0198,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+snatch,Development,14,EX0131,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,15,EX0280,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+snatch,Development,16,EX0384,,Durability,Threshold,High,Core list,Home or gym,Group-friendly
+snatch,Development,17,EX0372,Ladder,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+snatch,Development,18,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+snatch,Development,19,EX0385,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+snatch,Development,20,EX0219,,Balanced Athleticism,Durability,Low,Core list,Home or gym,Solo OK
+snatch,Development,21,EX0091,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+snatch,Development,22,EX0386,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+snatch,Development,23,EX0365,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+snatch,Development,24,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+snatch,Development,25,EX0115,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+snatch,Development,26,EX0251,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+devil,Foundation,1,EX0387,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+devil,Foundation,2,EX0373,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,3,EX0388,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+devil,Foundation,4,EX0191,Light,Economy,Balanced Athleticism,Low,Core list,Gym,Solo OK
+devil,Foundation,5,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,6,EX0175,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,7,EX0082,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+devil,Foundation,8,EX0389,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,9,EX0344,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,10,EX0390,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,11,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+devil,Foundation,12,EX0367,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+devil,Foundation,13,EX0391,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,14,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,15,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,16,EX0324,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+devil,Foundation,17,EX0131,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,18,EX0392,,Balanced Athleticism,Threshold,Low,Core list,Home or gym,Solo OK
+devil,Foundation,19,EX0359,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Foundation,20,EX0386,"Light, 3 × 5",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+devil,Foundation,21,EX0122,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+devil,Foundation,22,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+devil,Foundation,23,EX0393,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+devil,Foundation,24,EX0129,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+devil,Foundation,25,EX0076,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+devil,Foundation,26,EX0094,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+devil,Development,1,EX0386,5 × 8,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+devil,Development,2,EX0394,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+devil,Development,3,EX0395,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+devil,Development,4,EX0396,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+devil,Development,5,EX0397,,Durability,Balanced Athleticism,High,Core list,Home or gym,Solo OK
+devil,Development,6,EX0077,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+devil,Development,7,EX0196,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+devil,Development,8,EX0191,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+devil,Development,9,EX0197,EMOM,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+devil,Development,10,EX0386,EMOM × 10,Durability,Threshold,High,Core list,Home or gym,Group-friendly
+devil,Development,11,EX0131,Heavy,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+devil,Development,12,EX0091,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+devil,Development,13,EX0398,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+devil,Development,14,EX0386,Ladder 1–8,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+devil,Development,15,EX0053,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+devil,Development,16,EX0071,,Balanced Athleticism,Economy,High,Core list,Gym,Coach helpful
+devil,Development,17,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+devil,Development,18,EX0399,,Durability,Balanced Athleticism,High,Core list,Home or gym,Solo OK
+devil,Development,19,EX0198,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+devil,Development,20,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+devil,Development,21,EX0372,,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+devil,Development,22,EX0222,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+devil,Development,23,EX0251,,Balanced Athleticism,Durability,Moderate,Added,Home or gym,Solo OK
+devil,Development,24,EX0269,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+devil,Development,25,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+devil,Development,26,EX0400,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+bbj,Foundation,1,EX0387,No jump,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,2,EX0175,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,3,EX0332,Stick the landing,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,4,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Foundation,5,EX0390,Walk-out,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,6,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,7,EX0401,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,8,EX0053,Low box,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,9,EX0197,EMOM × 6 reps,Economy,Durability,Low,Core list,Home or gym,Group-friendly
+bbj,Foundation,10,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,11,EX0324,Landing drill,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,12,EX0179,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,13,EX0130,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,14,EX0392,,Balanced Athleticism,Threshold,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,15,EX0402,,Economy,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,16,EX0206,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Foundation,17,EX0063,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,18,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,19,EX0403,,Economy,,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,20,EX0332,"Light, 3 × 5",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bbj,Foundation,21,EX0008,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bbj,Foundation,22,EX0024,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bbj,Foundation,23,EX0015,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bbj,Foundation,24,EX0009,,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+bbj,Foundation,25,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bbj,Foundation,26,EX0080,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bbj,Foundation,27,EX0023,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bbj,Foundation,28,EX0028,Knee-to-wall,Balanced Athleticism,Fatigue Management,Low,Added,Home or gym,Solo OK
+bbj,Development,1,EX0197,10 × 10 intervals,Durability,Threshold,High,Core list,Home or gym,Group-friendly
+bbj,Development,2,EX0332,"Continuous, 5 × 10",Durability,Economy,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,3,EX0404,4 × 20 m sets,Durability,Threshold,High,Core list,Home or gym,Solo OK
+bbj,Development,4,EX0312,Weighted,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,5,EX0400,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,6,EX0196,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,7,EX0053,High box,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,8,EX0197,EMOM × 10–12 reps,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+bbj,Development,9,EX0039,4 × 30 m,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,10,EX0197,Max reps in 3 min,Threshold,Durability,High,Core list,Home or gym,Solo OK
+bbj,Development,11,EX0405,+ 10 m sprint,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,12,EX0406,,Durability,Balanced Athleticism,High,Core list,Home or gym,Solo OK
+bbj,Development,13,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,14,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bbj,Development,15,EX0398,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,16,EX0197,Ladder 1–10,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+bbj,Development,17,EX0197,30 s on / 30 s off × 10,Threshold,Durability,High,Core list,Home or gym,Group-friendly
+bbj,Development,18,EX0332,Double,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,19,EX0054,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,20,EX0296,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bbj,Development,21,EX0052,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+bbj,Development,22,EX0047,,Balanced Athleticism,,High,Added,Gym,Solo OK
+bbj,Development,23,EX0144,,Balanced Athleticism,,High,Added,Gym,Solo OK
+bbj,Development,24,EX0055,Low box,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Coach helpful
+bbj,Development,25,EX0050,Heavy,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+bbj,Development,26,EX0407,,Balanced Athleticism,Economy,High,Added,Gym,Coach helpful
+bbj,Development,27,EX0332,Weighted vest,Balanced Athleticism,Economy,Moderate,Added,Home or gym,Solo OK
+bbj,Development,28,EX0048,,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+burpee,Foundation,1,EX0387,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,2,EX0408,Hands on box,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,3,EX0175,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,4,EX0389,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,5,EX0390,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,6,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,7,EX0392,,Balanced Athleticism,Threshold,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,8,EX0130,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,9,EX0312,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+burpee,Foundation,10,EX0403,,Economy,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,11,EX0197,EMOM × 5,Economy,Durability,Low,Core list,Home or gym,Group-friendly
+burpee,Foundation,12,EX0063,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,13,EX0359,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,14,EX0324,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,15,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,16,EX0409,,Economy,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,17,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,18,EX0202,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,19,EX0061,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,20,EX0410,,Aerobic Engine,Economy,Low,Core list,Home or gym,Solo OK
+burpee,Foundation,21,EX0010,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+burpee,Foundation,22,EX0026,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+burpee,Foundation,23,EX0021,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+burpee,Foundation,24,EX0009,,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+burpee,Foundation,25,EX0205,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+burpee,Foundation,26,EX0179,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+burpee,Foundation,27,EX0053,Light,Economy,Balanced Athleticism,Low,Added,Home or gym,Solo OK
+burpee,Development,1,EX0197,10 × 10 intervals,Durability,Threshold,High,Core list,Home or gym,Group-friendly
+burpee,Development,2,EX0197,50 for time,Threshold,Durability,High,Core list,Home or gym,Solo OK
+burpee,Development,3,EX0197,Ladder 1–10,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+burpee,Development,4,EX0197,30 s on / 30 s off × 10,Threshold,Durability,High,Core list,Home or gym,Group-friendly
+burpee,Development,5,EX0406,,Durability,Balanced Athleticism,High,Core list,Home or gym,Solo OK
+burpee,Development,6,EX0395,With deadlift,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,7,EX0411,,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+burpee,Development,8,EX0412,,Durability,Threshold,Moderate,Core list,Gym,Solo OK
+burpee,Development,9,EX0175,Volume sets,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,10,EX0190,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,11,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+burpee,Development,12,EX0398,,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,13,EX0077,,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,14,EX0053,,Economy,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,15,EX0197,EMOM × 12,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+burpee,Development,16,EX0413,,Durability,Threshold,High,Core list,Gym,Group-friendly
+burpee,Development,17,EX0386,Light,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+burpee,Development,18,EX0197,Max reps in 5 min,Threshold,Durability,High,Core list,Home or gym,Solo OK
+burpee,Development,19,EX0122,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+burpee,Development,20,EX0400,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+burpee,Development,21,EX0102,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+burpee,Development,22,EX0414,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+burpee,Development,23,EX0199,,Durability,Balanced Athleticism,Moderate,Added,Gym,Solo OK
+burpee,Development,24,EX0329,,Durability,Economy,Moderate,Added,Home or gym,Solo OK
+burpee,Development,25,EX0198,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+burpee,Development,26,EX0222,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+burpee,Development,27,EX0332,Double,Economy,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+burpee,Development,28,EX0284,,Balanced Athleticism,Economy,Moderate,Added,Home or gym,Solo OK
+bear,Foundation,1,EX0415,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,2,EX0202,Knees hovering,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,3,EX0026,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,4,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,5,EX0206,"Short, 5 m",Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+bear,Foundation,6,EX0416,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,7,EX0175,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,8,EX0205,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,9,EX0359,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,10,EX0063,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+bear,Foundation,11,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,12,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,13,EX0379,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,14,EX0390,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,15,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,16,EX0392,Slow,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,17,EX0417,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+bear,Foundation,18,EX0418,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+bear,Foundation,19,EX0419,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,20,EX0420,Opposite hand–foot,Economy,,Low,Core list,Home or gym,Solo OK
+bear,Foundation,21,EX0226,,Balanced Athleticism,,Low,Added,Gym,Solo OK
+bear,Foundation,22,EX0008,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bear,Foundation,23,EX0027,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bear,Foundation,24,EX0081,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bear,Foundation,25,EX0267,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bear,Foundation,26,EX0232,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+bear,Development,1,EX0206,5 × 20 m,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bear,Development,2,EX0421,Plate on back,Balanced Athleticism,Durability,Moderate,Core list,Home or gym,Solo OK
+bear,Development,3,EX0422,,Balanced Athleticism,Durability,High,Core list,Gym,Solo OK
+bear,Development,4,EX0418,4 × 10 m,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+bear,Development,5,EX0423,,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+bear,Development,6,EX0206,30 s on / 30 s off,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+bear,Development,7,EX0400,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,8,EX0286,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,9,EX0222,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,10,EX0202,Loaded,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,11,EX0206,Ladder,Durability,Threshold,Moderate,Core list,Home or gym,Group-friendly
+bear,Development,12,EX0269,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,13,EX0052,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+bear,Development,14,EX0086,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,15,EX0197,,Durability,Threshold,Moderate,Core list,Home or gym,Solo OK
+bear,Development,16,EX0143,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+bear,Development,17,EX0424,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,18,EX0425,,Durability,Threshold,Moderate,Core list,Home or gym,Solo OK
+bear,Development,19,EX0426,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+bear,Development,20,EX0219,"Heavy, forearm endurance",Balanced Athleticism,Durability,High,Core list,Home or gym,Solo OK
+bear,Development,21,EX0195,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+bear,Development,22,EX0175,Volume sets,Durability,Balanced Athleticism,Moderate,Added,Home or gym,Solo OK
+bear,Development,23,EX0102,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+bear,Development,24,EX0114,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+bear,Development,25,EX0282,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+bear,Development,26,EX0221,Heavy,Balanced Athleticism,Durability,High,Added,Gym,Solo OK
+msu,Foundation,1,EX0427,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,2,EX0428,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,3,EX0010,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,4,EX0080,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,5,EX0095,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,6,EX0429,Light,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,7,EX0430,,Economy,Balanced Athleticism,Low,Core list,Home or gym,Solo OK
+msu,Foundation,8,EX0343,,Balanced Athleticism,Economy,Low,Core list,Home or gym,Solo OK
+msu,Foundation,9,EX0152,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+msu,Foundation,10,EX0087,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+msu,Foundation,11,EX0008,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,12,EX0431,Tuck,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,13,EX0017,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,14,EX0026,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,15,EX0432,Light,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,16,EX0433,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,17,EX0434,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,18,EX0435,,Balanced Athleticism,Fatigue Management,Low,Core list,Home or gym,Solo OK
+msu,Foundation,19,EX0436,,Economy,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,20,EX0019,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Foundation,21,EX0199,Light,Economy,Balanced Athleticism,Low,Added,Gym,Solo OK
+msu,Foundation,22,EX0101,Light,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+msu,Foundation,23,EX0437,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+msu,Foundation,24,EX0205,,Balanced Athleticism,,Low,Added,Home or gym,Solo OK
+msu,Development,1,EX0438,5 × 15,Durability,Economy,Moderate,Core list,Home or gym,Solo OK
+msu,Development,2,EX0110,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,3,EX0439,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+msu,Development,4,EX0114,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+msu,Development,5,EX0109,,Balanced Athleticism,,Moderate,Core list,Gym,Solo OK
+msu,Development,6,EX0079,,Balanced Athleticism,,Low,Core list,Gym,Solo OK
+msu,Development,7,EX0086,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,8,EX0431,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,9,EX0101,,Balanced Athleticism,Threshold,Moderate,Core list,Home or gym,Solo OK
+msu,Development,10,EX0427,EMOM × 15,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Group-friendly
+msu,Development,11,EX0432,Heavy,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,12,EX0116,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,13,EX0440,,Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,14,EX0027,,Balanced Athleticism,,Low,Core list,Home or gym,Solo OK
+msu,Development,15,EX0199,,Durability,Balanced Athleticism,Moderate,Core list,Gym,Solo OK
+msu,Development,16,EX0343,Chest throw,Balanced Athleticism,Economy,Moderate,Core list,Home or gym,Solo OK
+msu,Development,17,EX0441,,Balanced Athleticism,,High,Core list,Gym,Solo OK
+msu,Development,18,EX0442,Regressed,Balanced Athleticism,,High,Core list,Home or gym,Solo OK
+msu,Development,19,EX0427,3 × 30,Durability,Balanced Athleticism,Moderate,Core list,Home or gym,Solo OK
+msu,Development,20,EX0095,"Variations, 60 s",Balanced Athleticism,,Moderate,Core list,Home or gym,Solo OK
+msu,Development,21,EX0443,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+msu,Development,22,EX0282,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK
+msu,Development,23,EX0444,,Balanced Athleticism,Economy,Moderate,Added,Home or gym,Solo OK
+msu,Development,24,EX0445,,Balanced Athleticism,,Moderate,Added,Gym,Solo OK
+msu,Development,25,EX0286,,Balanced Athleticism,,Moderate,Added,Home or gym,Solo OK

@@ -1,0 +1,446 @@
+id,name,movement_pattern,equipment,equipment_options,primary_pillar,secondary_pillar,where_setting,best_with
+EX0001,Easy run,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Fatigue Management,Outdoor or track,Solo OK
+EX0002,Run/walk intervals,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Fatigue Management,Outdoor or track,Solo OK
+EX0003,Strides,Running,None (running),"[[""None (running)""]]",Economy,Threshold,Outdoor or track,Solo OK
+EX0004,A-skips and B-skips,Running,None (running),"[[""None (running)""]]",Economy,Balanced Athleticism,Outdoor or track,Solo OK
+EX0005,Single-leg calf raise,Lower leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0006,Split squat,Lunge / single-leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0007,Single-leg Romanian deadlift,Hinge,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0008,Glute bridge,Hinge,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0009,Pogo hops,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0010,Dead bug,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0011,Easy treadmill run,Running,Treadmill,"[[""Treadmill""]]",Aerobic Engine,,Gym,Solo OK
+EX0012,Easy bike or cross-trainer,Erg,BikeErg or Cross-trainer,"[[""BikeErg""], [""Cross-trainer""]]",Aerobic Engine,Fatigue Management,Gym,Solo OK
+EX0013,Skipping rope,Plyometric,Skipping rope,"[[""Skipping rope""]]",Economy,Aerobic Engine,Home or gym,Solo OK
+EX0014,High-knee and butt-kick drills,Running,None (running),"[[""None (running)""]]",Economy,,Outdoor or track,Solo OK
+EX0015,Tibialis raise,Lower leg,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0016,Walking lunge,Lunge / single-leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0017,Side plank,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0018,Copenhagen plank,Core,Bodyweight + Bench,"[[""Bodyweight"", ""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0019,Banded hip flexor march,Core,Band,"[[""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0020,Nasal-breathing easy run,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Fatigue Management,Outdoor or track,Solo OK
+EX0021,Reverse lunge,Lunge / single-leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0022,Step-up,Lunge / single-leg,Box,"[[""Box""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0023,Lateral lunge,Lunge / single-leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0024,Single-leg glute bridge,Hinge,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0025,Eccentric step-down,Lunge / single-leg,Box or Box + Dumbbell,"[[""Box""], [""Box"", ""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0026,Bird dog,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0027,Pallof press,Core,Band or Cable machine,"[[""Band""], [""Cable machine""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0028,Ankle mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0029,Bent-knee (soleus) calf raise,Lower leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0030,Deep-water running,Running,Pool,"[[""Pool""]]",Fatigue Management,Aerobic Engine,Gym,Solo OK
+EX0031,Tempo run,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0032,Cruise intervals,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0033,Hill repeats,Running,None (running),"[[""None (running)""]]",Threshold,Balanced Athleticism,Outdoor or track,Solo OK
+EX0034,Long run,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Durability,Outdoor or track,Solo OK
+EX0035,Progression run,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Threshold,Outdoor or track,Solo OK
+EX0036,VO2 intervals,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0037,Fartlek,Running,None (running),"[[""None (running)""]]",Threshold,Aerobic Engine,Outdoor or track,Solo OK
+EX0038,Bulgarian split squat,Lunge / single-leg,Dumbbell or Barbell + Bench,"[[""Dumbbell""], [""Barbell"", ""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0039,Bounding,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0040,Nordic hamstring curl,Hinge,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0041,Threshold run intervals,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0042,400 m repeats,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0043,800 m repeats,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0044,Double threshold day,Running,None (running),"[[""None (running)""]]",Threshold,Aerobic Engine,Outdoor or track,Solo OK
+EX0045,Back-to-back weekend runs,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Durability,Outdoor or track,Solo OK
+EX0046,Treadmill incline intervals,Running,Treadmill,"[[""Treadmill""]]",Threshold,Balanced Athleticism,Gym,Solo OK
+EX0047,Trap-bar deadlift,Hinge,Trap bar,"[[""Trap bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0048,Single-leg box jump,Plyometric,Box,"[[""Box""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0049,Sled sprint,Sled,Sled,"[[""Sled""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0050,Straight-leg calf raise,Lower leg,Machine or Dumbbell,"[[""Machine""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0051,Barbell reverse lunge,Lunge / single-leg,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0052,Hip thrust,Hinge,Barbell + Bench,"[[""Barbell"", ""Bench""]]",Balanced Athleticism,,Gym,Solo OK
+EX0053,Box jump,Plyometric,Box,"[[""Box""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0054,Lateral bounds,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0055,Depth jump,Plyometric,Box,"[[""Box""]]",Economy,Balanced Athleticism,Home or gym,Coach helpful
+EX0056,Seated soleus raise,Lower leg,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0057,Easy run with strides,Running,None (running),"[[""None (running)""]]",Aerobic Engine,Economy,Outdoor or track,Solo OK
+EX0058,Wall drive drill,Running,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0059,Arm-swing drill,Running,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0060,High-knee march,Running,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0061,Calf raise,Lower leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0062,200 m relaxed repeats,Running,None (running),"[[""None (running)""]]",Economy,Aerobic Engine,Outdoor or track,Solo OK
+EX0063,Hip flexor mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0064,Quick-feet cadence drill,Running,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0065,Hamstring bridge walkout,Hinge,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0066,200 m repeats,Running,None (running),"[[""None (running)""]]",Threshold,Economy,Outdoor or track,Solo OK
+EX0067,Hill sprints,Running,None (running),"[[""None (running)""]]",Economy,Balanced Athleticism,Outdoor or track,Solo OK
+EX0068,30/30 run intervals,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0069,Ladder run intervals,Running,None (running),"[[""None (running)""]]",Threshold,,Outdoor or track,Solo OK
+EX0070,Flying sprints,Running,None (running),"[[""None (running)""]]",Economy,Balanced Athleticism,Outdoor or track,Solo OK
+EX0071,Power clean,Olympic / power,Barbell,"[[""Barbell""]]",Balanced Athleticism,Economy,Gym,Coach helpful
+EX0072,Easy SkiErg,Erg,SkiErg,"[[""SkiErg""]]",Aerobic Engine,Fatigue Management,Gym,Solo OK
+EX0073,SkiErg arms-only drill,Erg,SkiErg,"[[""SkiErg""]]",Economy,,Gym,Solo OK
+EX0074,SkiErg hinge-and-arms drill,Erg,SkiErg,"[[""SkiErg""]]",Economy,,Gym,Solo OK
+EX0075,Straight-arm cable pulldown,Upper pull,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,Economy,Gym,Solo OK
+EX0076,Kettlebell deadlift,Hinge,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0077,Kettlebell swing,Olympic / power,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0078,Rope triceps pushdown,Upper push,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0079,Cable crunch,Core,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0080,Hollow hold,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0081,Band pull-apart,Upper pull,Band,"[[""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0082,Hip hinge drill,Hinge,Dowel,"[[""Dowel""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0083,Scapular pull-up,Upper pull,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0084,Dumbbell pullover,Upper pull,Dumbbell + Bench,"[[""Dumbbell"", ""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0085,Half-kneeling cable pulldown,Upper pull,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0086,Ab wheel rollout,Core,Ab wheel,"[[""Ab wheel""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0087,Thoracic spine mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0088,Band straight-arm pulldown,Upper pull,Band,"[[""Band""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0089,SkiErg technique intervals,Erg,SkiErg,"[[""SkiErg""]]",Economy,Aerobic Engine,Gym,Solo OK
+EX0090,Lat and pec stretch,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0091,Romanian deadlift,Hinge,Barbell or Dumbbell,"[[""Barbell""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0092,Banded good morning,Hinge,Band,"[[""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0093,Seated cable row,Upper pull,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0094,Face pull,Upper pull,Cable machine or Band,"[[""Cable machine""], [""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0095,Plank,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0096,SkiErg threshold intervals,Erg,SkiErg,"[[""SkiErg""]]",Threshold,,Gym,Solo OK
+EX0097,SkiErg on/off intervals,Erg,SkiErg,"[[""SkiErg""]]",Threshold,,Gym,Solo OK
+EX0098,SkiErg tempo,Erg,SkiErg,"[[""SkiErg""]]",Threshold,Aerobic Engine,Gym,Solo OK
+EX0099,SkiErg pyramid,Erg,SkiErg,"[[""SkiErg""]]",Threshold,,Gym,Solo OK
+EX0100,Weighted pull-up,Upper pull,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0101,Med ball slam,Med ball / throw,Med ball,"[[""Med ball""]]",Balanced Athleticism,Threshold,Home or gym,Solo OK
+EX0102,Dips,Upper push,Dip bars,"[[""Dip bars""]]",Balanced Athleticism,,Gym,Solo OK
+EX0103,SkiErg stroke-rate ladder,Erg,SkiErg,"[[""SkiErg""]]",Economy,Threshold,Gym,Solo OK
+EX0104,SkiErg 30/30 intervals,Erg,SkiErg,"[[""SkiErg""]]",Threshold,,Gym,Solo OK
+EX0105,SkiErg steady,Erg,SkiErg,"[[""SkiErg""]]",Aerobic Engine,,Gym,Solo OK
+EX0106,Ski–run brick,Erg,SkiErg + None (running),"[[""SkiErg"", ""None (running)""]]",Fatigue Management,Threshold,Gym,Solo OK
+EX0107,SkiErg single-arm intervals,Erg,SkiErg,"[[""SkiErg""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0108,Barbell pullover,Upper pull,Barbell + Bench,"[[""Barbell"", ""Bench""]]",Balanced Athleticism,,Gym,Solo OK
+EX0109,Hanging knee raise,Core,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0110,Weighted sit-up,Core,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0111,Good morning,Hinge,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0112,Pendlay row,Upper pull,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0113,Chest-supported row,Upper pull,Dumbbell + Bench,"[[""Dumbbell"", ""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0114,Toes-to-bar,Core,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0115,Kettlebell high pull,Olympic / power,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0116,Hollow rocks,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0117,Rope climb,Upper pull,Rope,"[[""Rope""]]",Balanced Athleticism,,Gym,Solo OK
+EX0118,Easy row,Erg,Rower,"[[""Rower""]]",Aerobic Engine,Fatigue Management,Gym,Solo OK
+EX0119,Rowing pick drill,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0120,Rowing legs-only drill,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0121,Rowing pause-at-catch drill,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0122,Goblet squat,Squat,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0123,Hamstring mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0124,Rower drag factor familiarisation,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0125,Rowing arms-and-body drill,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0126,Feet-out rowing,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0127,Rowing technique intervals,Erg,Rower,"[[""Rower""]]",Economy,Aerobic Engine,Gym,Solo OK
+EX0128,Rowing posture drill,Erg,Rower,"[[""Rower""]]",Economy,,Gym,Solo OK
+EX0129,Band row,Upper pull,Band,"[[""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0130,Bodyweight squat,Squat,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0131,Dumbbell row,Upper pull,Dumbbell + Bench,"[[""Dumbbell"", ""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0132,Row threshold intervals,Erg,Rower,"[[""Rower""]]",Threshold,,Gym,Solo OK
+EX0133,Row steady,Erg,Rower,"[[""Rower""]]",Aerobic Engine,,Gym,Solo OK
+EX0134,Row hard intervals,Erg,Rower,"[[""Rower""]]",Threshold,,Gym,Solo OK
+EX0135,Row rate ladder,Erg,Rower,"[[""Rower""]]",Economy,Threshold,Gym,Solo OK
+EX0136,Row 30/30 intervals,Erg,Rower,"[[""Rower""]]",Threshold,,Gym,Solo OK
+EX0137,Leg press,Squat,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0138,Seal row,Upper pull,Barbell + Bench,"[[""Barbell"", ""Bench""]]",Balanced Athleticism,,Gym,Solo OK
+EX0139,Deadlift,Hinge,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0140,Row max-power sprints,Erg,Rower,"[[""Rower""]]",Threshold,Balanced Athleticism,Gym,Solo OK
+EX0141,Row pyramid,Erg,Rower,"[[""Rower""]]",Threshold,,Gym,Solo OK
+EX0142,Row rate-capped power pieces,Erg,Rower,"[[""Rower""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0143,Front squat,Squat,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0144,Back squat,Squat,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0145,Back extension,Hinge,GHD,"[[""GHD""]]",Balanced Athleticism,,Gym,Solo OK
+EX0146,Easy BikeErg,Erg,BikeErg,"[[""BikeErg""]]",Aerobic Engine,Fatigue Management,Gym,Solo OK
+EX0147,Bike setup,Erg,BikeErg,"[[""BikeErg""]]",Economy,,Gym,Solo OK
+EX0148,BikeErg cadence drill,Erg,BikeErg,"[[""BikeErg""]]",Economy,,Gym,Solo OK
+EX0149,Single-leg pedalling,Erg,BikeErg,"[[""BikeErg""]]",Economy,,Gym,Solo OK
+EX0150,High-cadence spin-ups,Erg,BikeErg,"[[""BikeErg""]]",Economy,,Gym,Solo OK
+EX0151,BikeErg damper familiarisation,Erg,BikeErg,"[[""BikeErg""]]",Economy,,Gym,Solo OK
+EX0152,Hip flexor stretch,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0153,Stay-seated awareness drill,Erg,BikeErg,"[[""BikeErg""]]",Economy,,Gym,Solo OK
+EX0154,BikeErg aerobic intervals,Erg,BikeErg,"[[""BikeErg""]]",Aerobic Engine,,Gym,Solo OK
+EX0155,Recovery spin + mobility,Erg,BikeErg,"[[""BikeErg""]]",Fatigue Management,Aerobic Engine,Gym,Solo OK
+EX0156,Wall sit,Squat,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0157,Band lateral walk,Hinge,Band,"[[""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0158,BikeErg threshold intervals,Erg,BikeErg,"[[""BikeErg""]]",Threshold,,Gym,Solo OK
+EX0159,BikeErg tempo,Erg,BikeErg,"[[""BikeErg""]]",Threshold,Aerobic Engine,Gym,Solo OK
+EX0160,BikeErg pyramid,Erg,BikeErg,"[[""BikeErg""]]",Threshold,,Gym,Solo OK
+EX0161,BikeErg steady,Erg,BikeErg,"[[""BikeErg""]]",Aerobic Engine,,Gym,Solo OK
+EX0162,BikeErg over-unders,Erg,BikeErg,"[[""BikeErg""]]",Threshold,,Gym,Solo OK
+EX0163,BikeErg hard intervals,Erg,BikeErg,"[[""BikeErg""]]",Threshold,,Gym,Solo OK
+EX0164,BikeErg big-gear strength intervals,Erg,BikeErg,"[[""BikeErg""]]",Balanced Athleticism,Threshold,Gym,Solo OK
+EX0165,BikeErg seated sprints,Erg,BikeErg,"[[""BikeErg""]]",Threshold,Balanced Athleticism,Gym,Solo OK
+EX0166,Leg extension,Squat,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0167,Bike–run brick,Erg,BikeErg + None (running),"[[""BikeErg"", ""None (running)""]]",Fatigue Management,Aerobic Engine,Gym,Solo OK
+EX0168,BikeErg target-watts intervals,Erg,BikeErg,"[[""BikeErg""]]",Threshold,Economy,Gym,Solo OK
+EX0169,Single-leg leg press,Squat,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0170,Easy air bike,Erg,Air bike,"[[""Air bike""]]",Aerobic Engine,Fatigue Management,Gym,Solo OK
+EX0171,Air bike arms-only drill,Erg,Air bike,"[[""Air bike""]]",Economy,,Gym,Solo OK
+EX0172,Air bike arm–leg coordination drill,Erg,Air bike,"[[""Air bike""]]",Economy,,Gym,Solo OK
+EX0173,Air bike seat setup,Erg,Air bike,"[[""Air bike""]]",Economy,,Gym,Solo OK
+EX0174,Air bike push–pull arm rhythm,Erg,Air bike,"[[""Air bike""]]",Economy,,Gym,Solo OK
+EX0175,Push-up,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0176,Air bike easy intervals,Erg,Air bike,"[[""Air bike""]]",Aerobic Engine,Economy,Gym,Solo OK
+EX0177,Air bike breathing control,Erg,Air bike,"[[""Air bike""]]",Economy,Fatigue Management,Gym,Solo OK
+EX0178,Air bike cool-down spin,Erg,Air bike,"[[""Air bike""]]",Fatigue Management,,Gym,Solo OK
+EX0179,Incline push-up,Upper push,Box or Bench,"[[""Box""], [""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0180,Air bike hard intervals,Erg,Air bike,"[[""Air bike""]]",Threshold,,Gym,Solo OK
+EX0181,Air bike 30/90 intervals,Erg,Air bike,"[[""Air bike""]]",Threshold,,Gym,Solo OK
+EX0182,Air bike Tabata,Erg,Air bike,"[[""Air bike""]]",Threshold,,Gym,Solo OK
+EX0183,Air bike threshold intervals,Erg,Air bike,"[[""Air bike""]]",Threshold,,Gym,Solo OK
+EX0184,Air bike steady,Erg,Air bike,"[[""Air bike""]]",Aerobic Engine,,Gym,Solo OK
+EX0185,Air bike calorie ladder,Erg,Air bike,"[[""Air bike""]]",Threshold,,Gym,Solo OK
+EX0186,Air bike sprints,Erg,Air bike,"[[""Air bike""]]",Threshold,Balanced Athleticism,Gym,Solo OK
+EX0187,Air bike EMOM,Erg,Air bike,"[[""Air bike""]]",Threshold,Durability,Gym,Solo OK
+EX0188,Air bike death-by calories,Erg,Air bike,"[[""Air bike""]]",Threshold,Durability,Gym,Solo OK
+EX0189,Air bike + burpee couplet,Mixed couplet,Air bike,"[[""Air bike""]]",Durability,Threshold,Gym,Solo OK
+EX0190,Thruster,Squat-to-press,Barbell or Dumbbell,"[[""Barbell""], [""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0191,Push press,Upper push,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0192,Air bike tempo,Erg,Air bike,"[[""Air bike""]]",Threshold,Aerobic Engine,Gym,Solo OK
+EX0193,Air bike 40/20 intervals,Erg,Air bike,"[[""Air bike""]]",Threshold,,Gym,Solo OK
+EX0194,Air bike–run intervals,Mixed couplet,Air bike + None (running),"[[""Air bike"", ""None (running)""]]",Fatigue Management,Threshold,Gym,Solo OK
+EX0195,Sled push,Sled,Sled,"[[""Sled""]]",Balanced Athleticism,Durability,Gym,Solo OK
+EX0196,Dumbbell thruster,Squat-to-press,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0197,Burpee,Burpee,Bodyweight,"[[""Bodyweight""]]",Durability,Threshold,Home or gym,Solo OK
+EX0198,Pull-up,Upper pull,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0199,Wall ball,Med ball / throw,Wall ball,"[[""Wall ball""]]",Durability,Balanced Athleticism,Gym,Solo OK
+EX0200,Wall-lean march,Sled,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0201,Sled push technique,Sled,Sled,"[[""Sled""]]",Economy,,Gym,Solo OK
+EX0202,Bear hold,Crawl,Bodyweight or Plate,"[[""Bodyweight""], [""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0203,Glute bridge march,Hinge,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0204,Box squat,Squat,Barbell or Kettlebell + Box,"[[""Barbell""], [""Kettlebell"", ""Box""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0205,Plank shoulder taps,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0206,Bear crawl,Crawl,Bodyweight,"[[""Bodyweight""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0207,Pause squat,Squat,Bodyweight or Kettlebell,"[[""Bodyweight""], [""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0208,Front-foot-elevated split squat,Lunge / single-leg,Bodyweight or Dumbbell + Plate,"[[""Bodyweight""], [""Dumbbell"", ""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0209,Low-handle sled push,Sled,Sled,"[[""Sled""]]",Balanced Athleticism,Economy,Gym,Solo OK
+EX0210,Isometric wall push,Sled,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0211,Hack squat or belt squat,Squat,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0212,Sled contrast,Sled,Sled,"[[""Sled""]]",Balanced Athleticism,Economy,Gym,Solo OK
+EX0213,Acceleration sprints,Running,None (running),"[[""None (running)""]]",Economy,Balanced Athleticism,Outdoor or track,Solo OK
+EX0214,Leg-press calf raise,Lower leg,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0215,Sled march,Sled,Sled,"[[""Sled""]]",Balanced Athleticism,Durability,Gym,Solo OK
+EX0216,Pause back squat,Squat,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0217,Tempo back squat,Squat,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0218,Hand-over-hand rope pull,Upper pull,Rope + Sled,"[[""Rope"", ""Sled""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0219,Farmers hold,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0220,Goblet squat hold,Squat,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0221,Backward sled drag,Sled,Sled,"[[""Sled""]]",Balanced Athleticism,Durability,Gym,Solo OK
+EX0222,Renegade row,Upper pull,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0223,Inverted row,Upper pull,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0224,Lat pulldown,Upper pull,Machine,"[[""Machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0225,Rear-delt fly,Upper pull,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0226,Dead hang,Carry & grip,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0227,Biceps curl,Upper pull,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0228,Seated rope pull,Upper pull,Rope + Sled,"[[""Rope"", ""Sled""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0229,Single-arm cable row,Upper pull,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0230,Band pull-through,Hinge,Band,"[[""Band""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0231,Suitcase carry,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0232,Reverse wrist curl,Carry & grip,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0233,Towel pull-up,Upper pull,Pull-up bar + Towel,"[[""Pull-up bar"", ""Towel""]]",Balanced Athleticism,,Gym,Solo OK
+EX0234,Towel dead hang,Carry & grip,Pull-up bar + Towel,"[[""Pull-up bar"", ""Towel""]]",Balanced Athleticism,,Gym,Solo OK
+EX0235,Hammer curl,Upper pull,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0236,Rack pull,Hinge,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0237,Cable pull-through,Hinge,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0238,Sled pull,Sled,Sled + Rope,"[[""Sled"", ""Rope""]]",Durability,Balanced Athleticism,Gym,Solo OK
+EX0239,Fat-grip row,Upper pull,Dumbbell + Fat grips,"[[""Dumbbell"", ""Fat grips""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0240,Weighted chin-up,Upper pull,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0241,Sled drag + rope pull superset,Sled,Sled + Rope,"[[""Sled"", ""Rope""]]",Durability,Balanced Athleticism,Gym,Solo OK
+EX0242,Isometric row hold,Upper pull,Dumbbell or Cable machine,"[[""Dumbbell""], [""Cable machine""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0243,Farmers walk,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0244,Shrug,Carry & grip,Dumbbell or Barbell,"[[""Dumbbell""], [""Barbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0245,Wrist roller,Carry & grip,Wrist roller,"[[""Wrist roller""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0246,Wrist curl,Carry & grip,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0247,Plate pinch hold,Carry & grip,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0248,Farmers posture drill,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Economy,,Home or gym,Solo OK
+EX0249,Hand gripper,Carry & grip,Hand gripper,"[[""Hand gripper""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0250,Goblet carry,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0251,Overhead carry,Carry & grip,Plate or Kettlebell,"[[""Plate""], [""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0252,Loaded march in place,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0253,Scapular shrug hold,Upper pull,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0254,Front-rack kettlebell carry,Carry & grip,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0255,Offset carry,Carry & grip,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0256,Fat-grip hold,Carry & grip,Dumbbell + Fat grips,"[[""Dumbbell"", ""Fat grips""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0257,Bottoms-up kettlebell hold,Carry & grip,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0258,Trap-bar hold,Carry & grip,Trap bar,"[[""Trap bar""]]",Balanced Athleticism,Durability,Gym,Solo OK
+EX0259,Carry medley,Carry & grip,Kettlebell or dumbbell or Plate,"[[""Kettlebell or dumbbell""], [""Plate""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0260,Hex dumbbell hold,Carry & grip,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0261,Plate pinch walk,Carry & grip,Plate,"[[""Plate""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0262,Zercher carry,Carry & grip,Barbell or Sandbag,"[[""Barbell""], [""Sandbag""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0263,Plate front hold,Carry & grip,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0264,Plate front carry,Carry & grip,Plate,"[[""Plate""]]",Economy,Durability,Home or gym,Solo OK
+EX0265,Plate overhead hold,Upper push,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0266,Overhead dumbbell carry,Carry & grip,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0267,Wall slide,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0268,Lat stretch,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0269,Strict press,Upper push,Barbell or Dumbbell,"[[""Barbell""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0270,Plate front raise,Upper push,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0271,Sandbag bear-hug hold,Carry & grip,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0272,Carry posture drill,Carry & grip,Plate,"[[""Plate""]]",Economy,,Home or gym,Solo OK
+EX0273,Plate halo,Mobility,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0274,Band overhead hold,Upper push,Band,"[[""Band""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0275,Plate overhead carry,Carry & grip,Plate,"[[""Plate""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0276,Sandbag bear-hug carry,Carry & grip,Sandbag,"[[""Sandbag""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0277,Waiter carry,Carry & grip,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0278,Overhead hold,Upper push,Plate or Dumbbell,"[[""Plate""], [""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0279,Landmine press,Upper push,Landmine,"[[""Landmine""]]",Balanced Athleticism,,Gym,Solo OK
+EX0280,Z press,Upper push,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0281,Plate overhead lunge,Lunge / single-leg,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0282,Weighted plank,Core,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0283,Plate carry intervals,Carry & grip,Plate,"[[""Plate""]]",Durability,Threshold,Home or gym,Solo OK
+EX0284,Sandbag clean,Olympic / power,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0285,Plate ground-to-overhead,Olympic / power,Plate,"[[""Plate""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0286,Plank drag,Core,Plate or Kettlebell,"[[""Plate""], [""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0287,Sandbag back-rack hold,Carry & grip,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0288,Couch stretch,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0289,Knee-touch lunge,Lunge / single-leg,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0290,Split-squat isometric hold,Lunge / single-leg,Bodyweight or Dumbbell,"[[""Bodyweight""], [""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0291,Reverse lunge to knee drive,Lunge / single-leg,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0292,Hip airplane,Hinge,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0293,Lateral step-up,Lunge / single-leg,Box,"[[""Box""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0294,Sandbag bear-hug squat,Squat,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0295,Deficit reverse lunge,Lunge / single-leg,Dumbbell + Plate,"[[""Dumbbell"", ""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0296,Jumping lunge,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0297,Sandbag front-rack lunge,Lunge / single-leg,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0298,Sandbag to shoulder,Olympic / power,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0299,Pulsing lunge,Lunge / single-leg,Bodyweight or Sandbag,"[[""Bodyweight""], [""Sandbag""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0300,Tempo split squat,Lunge / single-leg,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0301,Sandbag box step-over,Lunge / single-leg,Sandbag + Box,"[[""Sandbag"", ""Box""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0302,Front-rack kettlebell walking lunge,Lunge / single-leg,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0303,Tempo squat,Squat,Bodyweight or Kettlebell,"[[""Bodyweight""], [""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0304,Squat to parallel target,Squat,Bodyweight + Box,"[[""Bodyweight"", ""Box""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0305,Hip mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0306,Dead-ball bear-hug squat,Squat,Dead ball,"[[""Dead ball""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0307,Heel-elevated squat,Squat,Bodyweight + Plate,"[[""Bodyweight"", ""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0308,Sit-to-stand control,Squat,Box,"[[""Box""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0309,Dead-ball deadlift,Hinge,Dead ball,"[[""Dead ball""]]",Balanced Athleticism,Economy,Gym,Solo OK
+EX0310,Zercher squat,Squat,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0311,Squat conditioning,Squat,Kettlebell or dumbbell or Bodyweight,"[[""Kettlebell or dumbbell""], [""Bodyweight""]]",Durability,Threshold,Home or gym,Solo OK
+EX0312,Jump squat,Plyometric,Bodyweight or Dumbbell or Weighted vest,"[[""Bodyweight""], [""Dumbbell""], [""Weighted vest""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0313,Tempo front squat,Squat,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0314,Heel-elevated goblet squat,Squat,Kettlebell or dumbbell + Plate,"[[""Kettlebell or dumbbell"", ""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0315,Squat + carry complex,Mixed couplet,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0316,Hip hinge to wall,Hinge,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0317,Suitcase deadlift,Hinge,Kettlebell or dumbbell,"[[""Kettlebell or dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0318,Bracing drill,Core,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0319,Sumo deadlift,Hinge,Barbell or Kettlebell,"[[""Barbell""], [""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0320,Deficit kettlebell deadlift,Hinge,Kettlebell + Plate,"[[""Kettlebell"", ""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0321,Double kettlebell deadlift,Hinge,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0322,Snatch-grip deadlift,Hinge,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0323,Box step-over,Lunge / single-leg,Box,"[[""Box""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0324,Snap-down,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0325,Single-leg balance,Lunge / single-leg,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0326,Hop and stick,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0327,Box over lead-leg drill,Lunge / single-leg,Box,"[[""Box""]]",Economy,,Home or gym,Solo OK
+EX0328,Lateral box jump,Plyometric,Box,"[[""Box""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0329,Box jump-over,Plyometric,Box,"[[""Box""]]",Durability,Economy,Home or gym,Solo OK
+EX0330,Box over + burpee couplet,Mixed couplet,Box,"[[""Box""]]",Durability,Threshold,Home or gym,Solo OK
+EX0331,Tuck jump,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0332,Broad jump,Plyometric,Bodyweight or Weighted vest,"[[""Bodyweight""], [""Weighted vest""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0333,Ball over shoulder,Hinge,Dead ball,"[[""Dead ball""]]",Economy,Balanced Athleticism,Gym,Solo OK
+EX0334,Ball-to-lap drill,Hinge,Dead ball,"[[""Dead ball""]]",Economy,,Gym,Solo OK
+EX0335,Thoracic rotation mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0336,Stand-tall finish drill,Hinge,Dead ball,"[[""Dead ball""]]",Economy,,Gym,Solo OK
+EX0337,Sandbag over shoulder,Hinge,Sandbag,"[[""Sandbag""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0338,Atlas stone lap and load,Hinge,Atlas stone,"[[""Atlas stone""]]",Balanced Athleticism,,Gym,Coach helpful
+EX0339,Ball over yoke,Hinge,Dead ball + Yoke,"[[""Dead ball"", ""Yoke""]]",Balanced Athleticism,Economy,Gym,Solo OK
+EX0340,Kettlebell clean,Olympic / power,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0341,Ball over shoulder + burpee couplet,Mixed couplet,Dead ball,"[[""Dead ball""]]",Durability,Threshold,Gym,Solo OK
+EX0342,Rotational med ball throw,Med ball / throw,Med ball,"[[""Med ball""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0343,Med ball chest pass,Med ball / throw,Med ball,"[[""Med ball""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0344,Dumbbell overhead press,Upper push,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0345,Front-rack hold,Carry & grip,Kettlebell or Barbell,"[[""Kettlebell""], [""Barbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0346,Face-the-wall squat,Squat,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0347,Overhead squat,Squat,Dowel or Barbell,"[[""Dowel""], [""Barbell""]]",Balanced Athleticism,Economy,Home or gym,Coach helpful
+EX0348,Squat-to-throw,Med ball / throw,Wall ball,"[[""Wall ball""]]",Economy,,Gym,Solo OK
+EX0349,Tall-kneeling ball throw,Med ball / throw,Med ball,"[[""Med ball""]]",Economy,,Home or gym,Solo OK
+EX0350,Wall ball stance-width drill,Med ball / throw,Wall ball,"[[""Wall ball""]]",Economy,,Gym,Solo OK
+EX0351,Wrist and lat mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0352,Bottom-position front squat hold,Squat,Kettlebell or Barbell,"[[""Kettlebell""], [""Barbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0353,Wall ball + burpee couplet,Mixed couplet,Wall ball,"[[""Wall ball""]]",Durability,Threshold,Gym,Solo OK
+EX0354,Dumbbell lateral raise,Upper push,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0355,Front squat + push press complex,Squat-to-press,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Solo OK
+EX0356,Overhead wall sit,Squat,Wall ball,"[[""Wall ball""]]",Balanced Athleticism,Durability,Gym,Solo OK
+EX0357,Plate thruster,Squat-to-press,Plate,"[[""Plate""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0358,Plate front squat,Squat,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0359,Wrist mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0360,Dumbbell front-rack hold,Carry & grip,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0361,Dumbbell push press,Upper push,Dumbbell,"[[""Dumbbell""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0362,Dumbbell clean,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0363,Push jerk,Olympic / power,Barbell,"[[""Barbell""]]",Balanced Athleticism,Economy,Gym,Coach helpful
+EX0364,Thruster + burpee couplet,Mixed couplet,Dumbbell or Plate,"[[""Dumbbell""], [""Plate""]]",Durability,Threshold,Home or gym,Solo OK
+EX0365,Dumbbell clean & press,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0366,Plate deadlift,Hinge,Plate,"[[""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0367,Shoulder mobility,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0368,Squat to overhead reach,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0369,Plate clean & press,Olympic / power,Plate,"[[""Plate""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0370,Clean and jerk,Olympic / power,Barbell,"[[""Barbell""]]",Balanced Athleticism,Economy,Gym,Coach helpful
+EX0371,Snatch-grip high pull,Olympic / power,Barbell,"[[""Barbell""]]",Balanced Athleticism,,Gym,Coach helpful
+EX0372,Dumbbell snatch,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0373,Dumbbell deadlift,Hinge,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0374,Dumbbell hang high pull,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0375,Dumbbell muscle snatch,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Economy,,Home or gym,Solo OK
+EX0376,Overhead dumbbell hold,Upper push,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0377,Single-arm overhead press,Upper push,Dumbbell or Kettlebell,"[[""Dumbbell""], [""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0378,Dumbbell hang snatch,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Economy,,Home or gym,Solo OK
+EX0379,Scapular push-up,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0380,Snatch hand-switch drill,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Economy,,Home or gym,Solo OK
+EX0381,Kettlebell snatch,Olympic / power,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0382,Barbell hang power snatch,Olympic / power,Barbell,"[[""Barbell""]]",Balanced Athleticism,Economy,Gym,Coach helpful
+EX0383,Single-arm kettlebell swing,Olympic / power,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0384,Snatch + burpee couplet,Mixed couplet,Dumbbell,"[[""Dumbbell""]]",Durability,Threshold,Home or gym,Solo OK
+EX0385,Turkish get-up,Core,Kettlebell,"[[""Kettlebell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0386,Devil press,Burpee,Dumbbell,"[[""Dumbbell""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0387,Step-back burpee,Burpee,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0388,Double dumbbell hang clean,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0389,Squat thrust,Burpee,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0390,Inchworm,Crawl,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0391,Two-handed dumbbell swing,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0392,Mountain climbers,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Threshold,Home or gym,Solo OK
+EX0393,Plank to push-up,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0394,Double dumbbell snatch,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0395,Dumbbell burpee,Burpee,Dumbbell,"[[""Dumbbell""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0396,Dumbbell clean and jerk,Olympic / power,Dumbbell,"[[""Dumbbell""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0397,Man maker,Burpee,Dumbbell,"[[""Dumbbell""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0398,Plyometric push-up,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0399,Weighted burpee,Burpee,Sandbag or Plate,"[[""Sandbag""], [""Plate""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0400,Tempo push-up,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0401,World's greatest stretch,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0402,Two-foot forward hops,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0403,Sprawl drill,Burpee,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0404,Burpee broad jump,Burpee,Bodyweight,"[[""Bodyweight""]]",Durability,Threshold,Home or gym,Solo OK
+EX0405,Broad jump + sprint,Plyometric,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0406,Weighted-vest burpee,Burpee,Weighted vest,"[[""Weighted vest""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0407,Hang power clean,Olympic / power,Barbell,"[[""Barbell""]]",Balanced Athleticism,Economy,Gym,Coach helpful
+EX0408,Incline burpee,Burpee,Box,"[[""Box""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0409,Burpee without push-up,Burpee,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0410,Jumping jacks,Plyometric,Bodyweight,"[[""Bodyweight""]]",Aerobic Engine,Economy,Home or gym,Solo OK
+EX0411,Burpee pull-up,Burpee,Pull-up bar,"[[""Pull-up bar""]]",Durability,Balanced Athleticism,Gym,Solo OK
+EX0412,Burpee over bar,Burpee,Barbell,"[[""Barbell""]]",Durability,Threshold,Gym,Solo OK
+EX0413,Burpee + air bike couplet,Mixed couplet,Air bike,"[[""Air bike""]]",Durability,Threshold,Gym,Solo OK
+EX0414,Weighted push-up,Upper push,Weighted vest or Plate,"[[""Weighted vest""], [""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0415,Quadruped hold,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0416,Crab walk,Crawl,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0417,Backward bear crawl,Crawl,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0418,Lateral bear crawl,Crawl,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0419,Hand-release push-up,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0420,Crawl pattern drill,Crawl,Bodyweight,"[[""Bodyweight""]]",Economy,,Home or gym,Solo OK
+EX0421,Weighted bear crawl,Crawl,Plate,"[[""Plate""]]",Balanced Athleticism,Durability,Home or gym,Solo OK
+EX0422,Bear crawl sled drag,Crawl,Sled,"[[""Sled""]]",Balanced Athleticism,Durability,Gym,Solo OK
+EX0423,Bear crawl + push-up,Crawl,Bodyweight,"[[""Bodyweight""]]",Durability,Balanced Athleticism,Home or gym,Solo OK
+EX0424,Wall walk,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0425,Bear crawl + sprint,Crawl,Bodyweight,"[[""Bodyweight""]]",Durability,Threshold,Home or gym,Solo OK
+EX0426,Pike push-up,Upper push,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0427,Sit-up,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0428,Crunch,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0429,Med ball sit-up,Core,Med ball,"[[""Med ball""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0430,Butterfly sit-up,Core,Bodyweight,"[[""Bodyweight""]]",Economy,Balanced Athleticism,Home or gym,Solo OK
+EX0431,V-up,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0432,Russian twist,Core,Med ball or Plate,"[[""Med ball""], [""Plate""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0433,Reverse crunch,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0434,Lying leg raise,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0435,Cat-cow,Mobility,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,Fatigue Management,Home or gym,Solo OK
+EX0436,Seated ball catch drill,Med ball / throw,Med ball,"[[""Med ball""]]",Economy,,Home or gym,Solo OK
+EX0437,Seated leg lift,Core,Bodyweight,"[[""Bodyweight""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0438,Med ball sit-up throw,Core,Med ball,"[[""Med ball""]]",Durability,Economy,Home or gym,Solo OK
+EX0439,GHD sit-up,Core,GHD,"[[""GHD""]]",Balanced Athleticism,,Gym,Solo OK
+EX0440,Decline sit-up,Core,Bench,"[[""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0441,L-sit hold,Core,Pull-up bar or Parallettes,"[[""Pull-up bar""], [""Parallettes""]]",Balanced Athleticism,,Gym,Solo OK
+EX0442,Dragon flag,Core,Bench,"[[""Bench""]]",Balanced Athleticism,,Home or gym,Solo OK
+EX0443,Hanging leg raise,Core,Pull-up bar,"[[""Pull-up bar""]]",Balanced Athleticism,,Gym,Solo OK
+EX0444,Med ball overhead throw,Med ball / throw,Med ball,"[[""Med ball""]]",Balanced Athleticism,Economy,Home or gym,Solo OK
+EX0445,Cable woodchop,Core,Cable machine,"[[""Cable machine""]]",Balanced Athleticism,,Gym,Solo OK

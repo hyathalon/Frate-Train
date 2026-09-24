@@ -1,0 +1,183 @@
+exercise_id,alias
+EX0004,A-skips and B-skips drills
+EX0005,Single-leg calf raises
+EX0008,Glute bridge / hip thrust
+EX0016,Bodyweight walking lunge
+EX0018,Short-lever Copenhagen plank
+EX0028,Knee-to-wall ankle mobility
+EX0022,Weighted step-up
+EX0055,Low depth jump
+EX0016,Weighted walking lunge
+EX0073,Arms-only pull drill
+EX0074,Hinge-and-arms drill
+EX0082,Dowel hip-hinge drill
+EX0086,Kneeling ab-wheel rollout
+EX0100,Weighted pull-up / lat pulldown
+EX0102,Dips / close-grip push-up
+EX0107,Single-arm ski intervals
+EX0119,Pick drill
+EX0120,Legs-only drill
+EX0121,Pause at the catch drill
+EX0124,Drag factor familiarisation
+EX0125,Arms-and-body drill
+EX0128,Seated posture drill
+EX0131,Single-arm dumbbell row
+EX0141,Rowing pyramid
+EX0145,Weighted back extension
+EX0147,Bike setup: saddle height and position
+EX0155,Recovery spin + mobility session
+EX0164,Low-cadence big-gear strength intervals
+EX0137,High-rep leg press
+EX0168,Target-watts hold intervals
+EX0172,Arm–leg coordination drill
+EX0174,Push–pull arm rhythm
+EX0087,Thoracic mobility
+EX0197,Burpees
+EX0199,Wall balls
+EX0202,Bear crawl hold
+EX0206,Forward bear crawl
+EX0230,Banded hip pull-through
+EX0112,Pendlay / barbell row
+EX0233,Towel pull-up or rope climb
+EX0139,Conventional deadlift
+EX0234,Towel-grip dead hang
+EX0241,Superset: reverse sled drag + rope pull
+EX0248,"Posture drill: tall, short fast steps"
+EX0256,Fat-grip holds
+EX0258,Trap-bar hold for time
+EX0259,Carry medley: farmers + rack + suitcase
+EX0260,Hex dumbbell holds
+EX0269,Overhead press
+EX0272,"Posture drill: ribs down, walk tall"
+EX0254,Double kettlebell front-rack carry
+EX0270,Plate front raise hold
+EX0259,Carry medley: front + overhead + farmers
+EX0282,Plank with plate on back
+EX0006,Bodyweight split squat
+EX0289,Controlled knee-touch lunge
+EX0298,Sandbag shouldering
+EX0296,Split squat jump
+EX0294,Sandbag squat
+EX0320,Deficit KB deadlift
+EX0091,Tempo Romanian deadlift
+EX0321,Double KB deadlift
+EX0323,Step-over on a low box
+EX0053,Low box jump
+EX0312,Squat jump
+EX0025,Eccentric box step-down
+EX0327,Lead-leg choice drill
+EX0330,Box overs + burpees couplet
+EX0076,KB deadlift
+EX0342,Rotational med ball throws
+EX0304,Air squat to target depth
+EX0344,Overhead dumbbell press
+EX0204,Squat to box
+EX0347,Dowel overhead squat
+EX0348,Squat-to-throw at low target
+EX0122,Goblet squat pulses
+EX0349,Tall-kneeling ball throws
+EX0350,Stance-width drill
+EX0269,Strict overhead press
+EX0356,Wall sit with ball held overhead
+EX0358,Plate front-hold squat
+EX0344,DB overhead press
+EX0190,Barbell thruster
+EX0191,Barbell push press
+EX0254,Front-rack carry
+EX0373,DB deadlift
+EX0383,Single-arm swing
+EX0388,Double DB hang clean
+EX0131,DB row
+EX0394,Double DB snatch
+EX0396,DB clean and jerk
+EX0196,DB thruster
+EX0399,Weighted burpees
+EX0332,"Standing broad jump, stick the landing"
+EX0390,Inchworm walk-out
+EX0324,Snap-down landing drill
+EX0312,Weighted squat jump
+EX0053,High box jump
+EX0406,Weighted-vest burpees
+EX0332,Double broad jump
+EX0332,Weighted-vest broad jumps
+EX0395,Dumbbell burpee deadlift
+EX0392,Slow mountain climbers
+EX0420,Opposite hand–foot pattern drill
+EX0202,Loaded bear hold
+EX0425,Bear crawl + sprint combo
+EX0431,Tuck V-up
+EX0427,Anchored sit-up
+EX0434,Leg raise
+EX0343,Med ball chest throw
+EX0442,Regressed dragon flag
+EX0076,KB DL
+EX0076,KBDL
+EX0091,RDL
+EX0007,SL RDL
+EX0007,Single leg RDL
+EX0038,BSS
+EX0038,RFESS
+EX0038,Rear-foot-elevated split squat
+EX0006,Split squats
+EX0404,BBJ
+EX0404,Burpee broad jumps
+EX0285,G2OH
+EX0285,Ground to overhead
+EX0285,GTOH
+EX0114,T2B
+EX0114,TTB
+EX0243,Farmers carry
+EX0243,Farmer's carry
+EX0243,Farmer carry
+EX0243,Farmers walks
+EX0199,Wallballs
+EX0199,Wall ball shots
+EX0122,Goblet squats
+EX0269,OHP
+EX0269,Military press
+EX0052,Hip thrusts
+EX0195,Sled pushes
+EX0238,Sled pulls
+EX0077,KB swing
+EX0077,KB swings
+EX0077,Russian swing
+EX0372,DB snatch
+EX0131,One-arm row
+EX0053,Box jumps
+EX0323,Box step overs
+EX0323,Step overs
+EX0198,Pull ups
+EX0198,Pullups
+EX0240,Chin ups
+EX0175,Pushups
+EX0175,Push ups
+EX0175,Press ups
+EX0016,Lunges
+EX0016,Walking lunges
+EX0139,Deadlifts
+EX0047,Trap bar deadlift
+EX0047,Hex bar deadlift
+EX0144,Back squats
+EX0143,Front squats
+EX0190,Thrusters
+EX0357,Plate thrusters
+EX0386,Devil presses
+EX0206,Bear crawls
+EX0427,Sit ups
+EX0427,Situps
+EX0095,Planks
+EX0010,Dead bugs
+EX0040,Nordics
+EX0040,Nordic curl
+EX0018,Copenhagen
+EX0061,Calf raises
+EX0392,Mountain climber
+EX0385,TGU
+EX0385,Get up
+EX0101,Ball slams
+EX0101,Slam ball
+EX0016,Sandbag lunges
+EX0072,Ski erg
+EX0001,Zone 2 run
+EX0001,Z2 run
+EX0001,Easy jog

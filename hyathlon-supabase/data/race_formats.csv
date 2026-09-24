@@ -1,0 +1,65 @@
+race_code,format,sort_order,segment
+H,Open,1,1 km run between each station
+H,Open,2,SkiErg 1000 m
+H,Open,3,Sled push 50 m
+H,Open,4,Sled pull 50 m
+H,Open,5,Burpee broad jumps 80 m
+H,Open,6,Row 1000 m
+H,Open,7,Farmers carry 200 m
+H,Open,8,Sandbag lunges 100 m
+H,Open,9,Wall balls 100
+P,Warrior,1,800 m runs between zones
+P,Warrior,2,Zone 1: SkiErg 1000 m
+P,Warrior,3,Zone 1: 50 plate ground-to-overhead
+P,Warrior,4,Zone 1: 75 dead-ball bear-hug squats
+P,Warrior,5,Zone 2: BikeErg 2000 m
+P,Warrior,6,Zone 2: 50 box overs
+P,Warrior,7,Zone 2: 100 m dead-ball walking lunges
+P,Warrior,8,Zone 3: Row 1000 m
+P,Warrior,9,Zone 3: 50 plate thrusters
+P,Warrior,10,Zone 3: 200 m KB farmers carry
+P,Warrior,11,Zone 4: 25 burpees
+P,Warrior,12,Zone 4: 50 ball over shoulder
+P,Endurance,1,Zone 1: SkiErg 2000 m
+P,Endurance,2,Zone 1: 50 plate ground-to-overhead
+P,Endurance,3,Zone 1: 50 plate thrusters
+P,Endurance,4,Zone 2: BikeErg 4000 m
+P,Endurance,5,Zone 2: 100 m dead-ball walking lunges
+P,Endurance,6,Zone 3: Row 2000 m
+P,Endurance,7,Zone 3: 300 m KB farmers carry
+P,Endurance,8,Zone 3: 100 m burpee broad jumps
+P,Endurance,9,Zone 4: 2000 m run to finish
+DD,Track,1,400 m run before each labour
+DD,Track,2,KB farmers carry 240 m
+DD,Track,3,KB deadlift 60
+DD,Track,4,DB lunge 60 m
+DD,Track,5,DB snatch 60
+DD,Track,6,Burpee broad jump 60 m
+DD,Track,7,KB goblet squat 60
+DD,Track,8,Plate front carry 240 m
+DD,Track,9,DB push press 60
+DD,Track,10,Bear crawl 120 m
+DD,Track,11,Plate clean & press 60
+DD,Track,12,Plate overhead carry 180 m
+DD,Track,13,DB devil press 20
+DD,Gym (Strong / ERG / Air Bike),1,Same 12 labours
+DD,Gym (Strong / ERG / Air Bike),2,Strong: no running
+DD,Gym (Strong / ERG / Air Bike),3,"ERG: 1.6 km row, ski and bike between blocks"
+DD,Gym (Strong / ERG / Air Bike),4,ERG 2: 400 m row / 400 m ski / 800 m bike rotating
+DD,Gym (Strong / ERG / Air Bike),5,Row / Ski ERG: 400 m between labours
+DD,Gym (Strong / ERG / Air Bike),6,Bike ERG: 800 m between labours
+DD,Gym (Strong / ERG / Air Bike),7,Air Bike: 24 cal between labours
+DEKA,FIT,1,500 m run before each zone
+DEKA,FIT,2,RAM reverse lunges 30
+DEKA,FIT,3,Row 500 m
+DEKA,FIT,4,Box jump / step overs 20
+DEKA,FIT,5,Med ball sit-up throws 25
+DEKA,FIT,6,SkiErg 500 m
+DEKA,FIT,7,Farmers carry 100 m
+DEKA,FIT,8,Air bike 25 cal
+DEKA,FIT,9,Dead-ball yoke overs 20
+DEKA,FIT,10,Tank push/pull 100 m
+DEKA,FIT,11,RAM weighted burpees 20
+DEKA,MILE / STRONG,1,"MILE: about 1.6 km running total, shorter ergs (250 m, 12 cal)"
+DEKA,MILE / STRONG,2,"STRONG: same 10 zones, no running"
+DEKA,MILE / STRONG,3,Sit-ups tap ball between feet; shoulder overs replace yoke overs

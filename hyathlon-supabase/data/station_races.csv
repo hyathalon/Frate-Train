@@ -1,0 +1,53 @@
+station_id,race_code,standard
+run,H,8 × 1 km
+run,P,2 km run to finish (Endurance)
+shortrun,DD,12 × 400 m (Track)
+shortrun,DEKA,500 m before each zone (FIT)
+shortrun,P,800 m legs (400 m splits in doubles)
+ski,H,1000 m
+ski,P,1000 m Warrior / 2000 m Endurance
+ski,DD,400 m or 1.6 km (ERG formats)
+ski,DEKA,500 m
+row,H,1000 m
+row,P,1000 m Warrior / 2000 m Endurance
+row,DD,400 m or 1.6 km (ERG formats)
+row,DEKA,500 m
+bike,P,2000 m Warrior / 4000 m Endurance
+bike,DD,800 m or 1.6 km (ERG formats)
+airbike,DD,24 cal between labours (Deadly Air Bike)
+airbike,DEKA,25 cal
+push,H,50 m · 152 / 102 kg incl. sled
+push,DEKA,Tank push/pull 100 m (resistance level set)
+pull,H,50 m · 103 / 78 kg incl. sled
+pull,DEKA,Tank push/pull 100 m (resistance level set)
+farm,H,200 m · 2 × 24 / 2 × 16 kg
+farm,P,200 m Warrior · 20 / 16 kg; 300 m Endurance · 24 / 20 kg
+farm,DD,240 m · 2 × 24 / 2 × 16 kg
+farm,DEKA,100 m · 60 / 40 lb each
+frontcarry,DD,Plate front carry 240 m · 25 / 20 kg
+frontcarry,DD,Plate overhead carry 180 m · 15 / 10 kg
+lunge,H,Sandbag 100 m · 20 / 10 kg
+lunge,P,Dead-ball walking lunge 100 m · 20 / 15 kg
+lunge,DD,DB lunge 60 m · 2 × 12.5 / 2 × 7.5 kg
+lunge,DEKA,RAM reverse lunge 30 reps · 55 / 33 lb
+squat,P,75 dead-ball bear-hug squats (Warrior)
+squat,DD,60 KB goblet squats · 16 / 12 kg
+kbdl,DD,60 reps · 32 / 24 kg
+box,P,50 box overs (Warrior)
+box,DEKA,20 box jump or step overs · 24 in box
+bos,P,50 ball over shoulder (Warrior)
+bos,DEKA,20 dead-ball yoke overs · 60 / 40 lb
+wb,H,100 reps · 6 kg to 3 m / 4 kg to 2.7 m
+thr,P,50 plate thrusters · 20 / 15 kg
+thr,DD,60 DB push press · 2 × 12.5 / 2 × 6 kg
+g2oh,P,50 plate ground-to-overhead · 20 / 15 kg
+g2oh,DD,60 plate clean & press · 15 / 10 kg
+snatch,DD,60 reps · 15 / 9 kg
+devil,DD,20 reps · 2 × 10 / 2 × 5 kg
+bbj,H,80 m
+bbj,P,100 m (Endurance)
+bbj,DD,60 m
+burpee,P,25 burpees (Warrior)
+burpee,DEKA,20 RAM weighted burpees · 44 / 22 lb
+bear,DD,120 m (12 × 10 m)
+msu,DEKA,25 sit-up throws · 20 / 14 lb ball

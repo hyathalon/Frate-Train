@@ -1,0 +1,25 @@
+id,name,group_name,sort_order
+run,Running (1 km and 2 km legs),Running & Ergs,1
+shortrun,Short Run Legs (400–800 m),Running & Ergs,2
+ski,SkiErg,Running & Ergs,3
+row,Rowing,Running & Ergs,4
+bike,BikeErg,Running & Ergs,5
+airbike,Air Bike,Running & Ergs,6
+push,Sled Push,Sleds & Carries,7
+pull,Sled Pull,Sleds & Carries,8
+farm,Farmers Carry,Sleds & Carries,9
+frontcarry,Front & Overhead Carries,Sleds & Carries,10
+lunge,Weighted Lunges,Lower Body,11
+squat,Bear-Hug & Goblet Squats,Lower Body,12
+kbdl,Kettlebell Deadlift,Lower Body,13
+box,Box Overs,Lower Body,14
+bos,Ball Over Shoulder,Lower Body,15
+wb,Wall Balls,Upper Body & Olympic,16
+thr,Thrusters & Push Press,Upper Body & Olympic,17
+g2oh,Ground-to-Overhead & Clean and Press,Upper Body & Olympic,18
+snatch,Dumbbell Snatch,Upper Body & Olympic,19
+devil,Devil Press,Upper Body & Olympic,20
+bbj,Burpee Broad Jumps,Bodyweight & Core,21
+burpee,Burpees & Weighted Burpees,Bodyweight & Core,22
+bear,Bear Crawl,Bodyweight & Core,23
+msu,Med Ball Sit-Up Throws,Bodyweight & Core,24
