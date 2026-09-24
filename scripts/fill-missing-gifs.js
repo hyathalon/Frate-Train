@@ -114,7 +114,7 @@ async function main() {
   if (META_ONLY) console.log('Mode: Metadata only');
 
   // Load all exercises (or just those missing GIFs)
-  let query = supabase.from('exercises').select('id, name, gif_url, muscle_group').order('name');
+  let query = supabase.from('program_exercises').select('id, name, gif_url, muscle_group').order('name');
   if (META_ONLY) {
     // enriched metadata for all, regardless of gif
   } else {
@@ -147,7 +147,7 @@ async function main() {
       console.log(`  ✓ [${scoreStr}] "${ex.name}" → ${match.gifUrl}`);
       gifsFound++;
       if (!DRY_RUN) {
-        await supabase.from('exercises').update({ gif_url: match.gifUrl }).eq('id', ex.id);
+        await supabase.from('program_exercises').update({ gif_url: match.gifUrl }).eq('id', ex.id);
       }
     }
   }
@@ -168,7 +168,7 @@ async function main() {
       console.log(`  ✓ [${scoreStr}] "${ex.name}" → ${meta.muscle_group || '?'} / ${meta.equipment_type || '?'} / ${meta.difficulty || '?'}`);
       metaFound++;
       if (!DRY_RUN) {
-        await supabase.from('exercises').update({
+        await supabase.from('program_exercises').update({
           muscle_group:   meta.muscle_group,
           equipment_type: meta.equipment_type,
           difficulty:     meta.difficulty,

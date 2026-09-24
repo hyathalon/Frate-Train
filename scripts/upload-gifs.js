@@ -125,7 +125,7 @@ async function main() {
 
   // 2. Load all exercises from Supabase
   const { data: exercises, error } = await supabase
-    .from('exercises')
+    .from('program_exercises')
     .select('id, name, gif_url');
   if (error) throw new Error(`Failed to load exercises: ${error.message}`);
   console.log(`Loaded ${exercises.length} exercises from Supabase\n`);
@@ -172,7 +172,7 @@ async function main() {
 
     if (!DRY_RUN && ex.gif_url !== url) {
       const { error: updateError } = await supabase
-        .from('exercises')
+        .from('program_exercises')
         .update({ gif_url: url })
         .eq('id', ex.id);
       if (updateError) console.error(`    ❌ Update failed: ${updateError.message}`);

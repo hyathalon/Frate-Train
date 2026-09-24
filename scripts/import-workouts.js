@@ -237,7 +237,7 @@ async function upsertBlock(programId, block, order) {
 
 async function insertExercises(blockId, exercises) {
   // Delete existing exercises for this block (clean re-import)
-  await supabase.from('exercises').delete().eq('block_id', blockId);
+  await supabase.from('program_exercises').delete().eq('block_id', blockId);
 
   const rows = exercises.map((ex, idx) => ({
     block_id: blockId,
@@ -250,7 +250,7 @@ async function insertExercises(blockId, exercises) {
     gif_url: null, // filled later by gif-matcher script
   }));
 
-  const { error } = await supabase.from('exercises').insert(rows);
+  const { error } = await supabase.from('program_exercises').insert(rows);
   if (error) throw new Error(`exercises insert failed: ${error.message}`);
 }
 
