@@ -13,12 +13,12 @@ This is a checklist, not legal advice. Get it confirmed by a privacy lawyer befo
 - [x] Rehab frameworks stay hidden until a coach marks them Approved (after physio review).
 
 ## To do before running Part 4
-- [ ] **Data location.** The Supabase project is in Seoul (ap-northeast-2). Consider a project in Sydney (ap-southeast-2) for health data, so it stays in Australia (APP 8, cross-border disclosure).
+- [x] **Data location.** The Supabase project is in Sydney (ap-southeast-2), so health data stays in Australia (APP 8, cross-border disclosure).
 - [ ] **Privacy policy** covering health information: what is collected, why, who can see it, how long it's kept, how to access or delete it.
 - [ ] **Explicit consent** screen before an athlete logs injury or pain data, separate from general terms.
 - [ ] **Data minimisation.** Only collect what is needed. Pain scores and notes are optional fields.
 - [ ] **Retention and deletion.** Let athletes delete their rehab data and account; set how long inactive data is kept.
-- [ ] **Security.** MFA for coach and practitioner accounts; keep the service key out of the app and repo; enable Supabase backups and point-in-time recovery.
+- [ ] **Security.** MFA for coach and practitioner accounts; keep the secret key (`sb_secret_…`) out of the app and repo; enable Supabase backups and point-in-time recovery.
 - [ ] **Data breach plan** for the Notifiable Data Breaches scheme (who assesses, who notifies the OAIC and athletes).
 - [ ] **Legal review** of the above, and of the "considerations, not medical advice" wording.
 
