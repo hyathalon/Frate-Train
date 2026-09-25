@@ -15,6 +15,7 @@ export interface Deps {
   callClaude: CallClaude | null; // null when ANTHROPIC_API_KEY isn't configured
   now: () => Date;
   runInBackground: (work: Promise<unknown>) => void;
+  blockEffort: 'low' | 'medium' | 'high';
 }
 
 const MAX_WEEKS = 16;
@@ -417,7 +418,7 @@ async function generateFirstBlock(
         candidates,
       }),
     maxTokens: 32000,
-    effort: 'medium',
+    effort: deps.blockEffort,
     timeoutMs: BLOCK_TIMEOUT_MS,
     countsAs: 'confirmation',
     paidWith,

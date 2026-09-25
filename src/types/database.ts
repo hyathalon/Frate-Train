@@ -675,6 +675,7 @@ export type Database = {
           program_id: string
           sessions: Json | null
           start_week: number
+          started_at: string | null
           status: string
           targets: Json | null
         }
@@ -690,6 +691,7 @@ export type Database = {
           program_id: string
           sessions?: Json | null
           start_week: number
+          started_at?: string | null
           status?: string
           targets?: Json | null
         }
@@ -705,6 +707,7 @@ export type Database = {
           program_id?: string
           sessions?: Json | null
           start_week?: number
+          started_at?: string | null
           status?: string
           targets?: Json | null
         }

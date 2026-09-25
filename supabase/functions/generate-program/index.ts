@@ -24,6 +24,8 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 // JSON object of the project's secret keys, keyed by name.
 const SUPABASE_SECRET_KEY = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!)['default'];
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+// Optional: effort for block generation (low | medium | high). Defaults to medium.
+const BLOCK_EFFORT = Deno.env.get('BLOCK_EFFORT');
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined;
 
@@ -33,6 +35,7 @@ const deps: Deps = {
   admin,
   callClaude: ANTHROPIC_API_KEY ? makeCallClaude(ANTHROPIC_API_KEY) : null,
   now: () => new Date(),
+  blockEffort: BLOCK_EFFORT === 'low' || BLOCK_EFFORT === 'high' ? BLOCK_EFFORT : 'medium',
   // Keeps the function alive after responding, within its wall-clock limit.
   runInBackground: (work) => {
     if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(work);
