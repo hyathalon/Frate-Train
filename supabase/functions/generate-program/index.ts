@@ -1,187 +1,66 @@
-// FrateTrain — generate-program Edge Function
+// generate-program: builds adaptive training programs for signed-in coaches
+// and athletes.
 //
-// Reference material is loaded from the hyathlon_reference table.
-// To update: add/replace files in assets/hyrox/ then run: node scripts/seed-hyathlon-reference.js
+// POST { action, ... } with the user's access token (supabase-js
+// functions.invoke sends it when signed in):
+//   builds_status { athlete_id? }                       → allowance left
+//   preview { athlete_id?, inputs, start_date? }        → season outline (Haiku), uses a preview
+//   confirm { program_id }                              → starts block 1 (Sonnet) in the background;
+//                                                         poll program_blocks for status
 //
-// Builds a week-by-week Hyrox training program with Claude, grounded in The
-// Hyathlon System reference library. Edge Functions deployed to Supabase's
-// hosted platform can't read this repo's assets/hyrox/ folder (only this
-// function's own folder is uploaded), so instead of touching the filesystem
-// this queries the hyathlon_reference table, seeded ahead of time by
-// scripts/seed-hyathlon-reference.js from the files in assets/hyrox/.
-//
-// Deploy:
-//   supabase functions deploy generate-program
-// Secrets required:
-//   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-// SUPABASE_URL / SUPABASE_SECRET_KEYS are provided automatically by the
-// Edge Function runtime — no need to set them manually.
+// Secrets: ANTHROPIC_API_KEY (set by the coach). SUPABASE_URL and
+// SUPABASE_SECRET_KEYS are provided by the Edge Function runtime.
+// Reference material comes from the hyathlon_reference table (seeded by
+// scripts/seed-hyathlon-reference.js); the exercise library, templates and race
+// sessions come from the database.
 
-import Anthropic from 'npm:@anthropic-ai/sdk';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authenticate } from './lib/auth.ts';
+import { makeCallClaude } from './lib/claude.ts';
+import { createClient } from './lib/deps.ts';
+import { corsHeaders, errorResponse, HttpError, jsonResponse } from './lib/http.ts';
+import { buildsStatus, confirm, type Deps, preview } from './lib/program.ts';
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 // JSON object of the project's secret keys, keyed by name.
 const SUPABASE_SECRET_KEY = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!)['default'];
+const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined;
+
+const admin = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, { auth: { persistSession: false } });
+
+const deps: Deps = {
+  admin,
+  callClaude: ANTHROPIC_API_KEY ? makeCallClaude(ANTHROPIC_API_KEY) : null,
+  now: () => new Date(),
+  // Keeps the function alive after responding, within its wall-clock limit.
+  runInBackground: (work) => {
+    if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(work);
+  },
 };
 
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
-/** Reads and concatenates every row in hyathlon_reference. Never throws — logs a warning and returns '' if the table is empty or unreachable. */
-async function readReferenceText(): Promise<string> {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY);
-  const { data, error } = await supabase
-    .from('hyathlon_reference')
-    .select('filename, content')
-    .or('filename.ilike.%Hyathlon_System_Booklet%,filename.ilike.%Coaching_Handbook%')
-    .order('filename');
-
-  if (error) {
-    console.warn(`[generate-program] Could not query hyathlon_reference (${error.message}). Continuing without reference material.`);
-    return '';
-  }
-
-  if (!data || data.length === 0) {
-    console.warn('[generate-program] hyathlon_reference is empty — run scripts/seed-hyathlon-reference.js. Continuing without reference material.');
-    return '';
-  }
-
-  return data.map((row) => `--- ${row.filename} ---\n${row.content}`).join('\n\n');
-}
-
-function buildSystemPrompt(referenceText: string, athlete: AthleteBrief) {
-  return `You are an expert Hyrox and running coach following The Hyathlon System — an 8-pillar methodology developed by Hyathlon Performance.
-
-PRIORITY: The following is your coaching methodology reference. Use it as the PRIMARY basis for all program decisions. Supplement with general coaching knowledge only where the reference does not cover the specific detail.
-
-=== HYATHLON REFERENCE ===
-${referenceText || '(No reference material could be read for this request — proceed on general coaching knowledge.)'}
-=== END REFERENCE ===
-
-Design a ${athlete.weeksUntilRace}-week Hyrox training program for the athlete below.
-
-Athlete: ${athlete.name || 'Athlete'}
-Weekly hours available: ${athlete.weeklyHours ?? 'Not specified'}
-Training days: ${athlete.trainingDays?.length ? athlete.trainingDays.join(', ') : 'Not specified'}
-Strengths: ${athlete.strengths?.length ? athlete.strengths.join(', ') : 'Not specified'}
-Weaknesses: ${athlete.weaknesses?.length ? athlete.weaknesses.join(', ') : 'Not specified'}
-Race goal: ${athlete.goal}
-
-RULES:
-- Apply Pillar 7 (Training Principles): structure weeks using Frequency, Volume, Intensity, Specificity
-- Progress from general → specific as race approaches
-- Include a deload every 3–4 weeks (Pillar 6)
-- Address weaknesses early, sharpen strengths closer to race
-- Tag every session with its primary pillar using one of: aerobic_engine, threshold, durability, economy, balanced_athleticism, fatigue_management, training_principles, connection_courage
-- Never schedule more sessions than available training days per week
-- Return ONLY valid JSON, no markdown, no explanation
-
-Return this exact JSON structure:
-{
-  "weeks": [
-    {
-      "week": 1,
-      "focus": "Aerobic Base",
-      "sessions": [
-        {
-          "day": "Monday",
-          "title": "Easy Run",
-          "pillar": "aerobic_engine",
-          "duration": 45,
-          "notes": "Zone 2, conversational pace. Focus on time on feet."
-        }
-      ]
-    }
-  ]
-}
-
-IMPORTANT: Return ONLY raw JSON with no markdown code fences, no \`\`\`json, no \`\`\` - just the pure JSON object starting with {"weeks":[`;
-}
-
-function extractJson(text: string) {
-  let candidate = text.trim();
-  candidate = candidate.replace(/^```json\s*/i, '').replace(/^```\s*/, '');
-  candidate = candidate.replace(/```\s*$/, '');
-  return JSON.parse(candidate.trim());
-}
-
-interface AthleteBrief {
-  name?: string;
-  weeksUntilRace?: number;
-  weeklyHours?: number;
-  trainingDays?: string[];
-  strengths?: string[];
-  weaknesses?: string[];
-  goal?: string;
-}
+const ACTIONS = { builds_status: buildsStatus, preview, confirm } as const;
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  if (req.method !== 'POST') return errorResponse(new HttpError(405, 'method_not_allowed', 'Use POST.'));
 
-  if (!ANTHROPIC_API_KEY) {
-    return jsonResponse({ error: 'ANTHROPIC_API_KEY secret is not configured for this function.' }, 500);
-  }
-
-  let athlete: AthleteBrief;
   try {
-    athlete = await req.json();
-  } catch {
-    return jsonResponse({ error: 'Request body must be JSON.' }, 400);
-  }
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      throw new HttpError(400, 'invalid_input', 'Request body must be JSON.');
+    }
+    const action = ACTIONS[body?.action as keyof typeof ACTIONS];
+    if (!action) throw new HttpError(400, 'unknown_action', `Unknown action. Use one of: ${Object.keys(ACTIONS).join(', ')}.`);
 
-  if (!athlete?.goal || !athlete?.weeksUntilRace) {
-    return jsonResponse({ error: 'goal and weeksUntilRace are required.' }, 400);
-  }
-
-  const referenceText = await readReferenceText();
-  const systemPrompt = buildSystemPrompt(referenceText, athlete);
-
-  const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
-
-  let message;
-  try {
-    message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 4000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: 'Generate the program now, following the system prompt exactly.' }],
-    });
+    const caller = await authenticate(req, admin);
+    const result = await action(deps, caller, body);
+    return jsonResponse(result, body.action === 'confirm' ? 202 : 200);
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) {
-      return jsonResponse({ error: 'Claude API rate limited — try again shortly.' }, 429);
-    }
-    if (err instanceof Anthropic.AuthenticationError) {
-      return jsonResponse({ error: 'Invalid ANTHROPIC_API_KEY.' }, 500);
-    }
-    if (err instanceof Anthropic.APIError) {
-      return jsonResponse({ error: `Claude API error (${err.status}): ${err.message}` }, 502);
-    }
-    return jsonResponse({ error: `Unexpected error calling Claude: ${err}` }, 502);
+    if (err instanceof HttpError) return errorResponse(err);
+    console.error('[generate-program] Unexpected error', err);
+    return errorResponse(new HttpError(500, 'internal', 'Something went wrong. Please try again.'));
   }
-
-  const text = message.content
-    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-    .map((block) => block.text)
-    .join('');
-
-  let program: unknown;
-  try {
-    program = extractJson(text);
-  } catch {
-    return jsonResponse({ error: 'Claude did not return valid JSON.', raw: text }, 502);
-  }
-
-  return jsonResponse({ program });
 });
