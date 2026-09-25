@@ -260,13 +260,17 @@ export type Database = {
       }
       exercises: {
         Row: {
+          acute_risk: string
           best_with: string
+          body_region: string
           created_at: string
+          difficulty: string
           equipment: string
           equipment_options: Json
           id: string
           is_active: boolean
           media_url: string | null
+          methods: string[]
           movement_pattern: string
           name: string
           name_normalized: string | null
@@ -278,13 +282,17 @@ export type Database = {
           where_setting: string
         }
         Insert: {
+          acute_risk?: string
           best_with: string
+          body_region: string
           created_at?: string
+          difficulty: string
           equipment: string
           equipment_options?: Json
           id: string
           is_active?: boolean
           media_url?: string | null
+          methods?: string[]
           movement_pattern: string
           name: string
           name_normalized?: string | null
@@ -296,13 +304,17 @@ export type Database = {
           where_setting: string
         }
         Update: {
+          acute_risk?: string
           best_with?: string
+          body_region?: string
           created_at?: string
+          difficulty?: string
           equipment?: string
           equipment_options?: Json
           id?: string
           is_active?: boolean
           media_url?: string | null
+          methods?: string[]
           movement_pattern?: string
           name?: string
           name_normalized?: string | null
@@ -576,6 +588,333 @@ export type Database = {
         }
         Relationships: []
       }
+      rehab_global_guidance: {
+        Row: {
+          items: string[]
+          key: string
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          items: string[]
+          key: string
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          items?: string[]
+          key?: string
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      rehab_phase_exercises: {
+        Row: {
+          dose: string
+          exercise_id: string
+          notes: string | null
+          phase_no: number
+          program_id: string
+          sort_order: number
+          tempo: string | null
+        }
+        Insert: {
+          dose: string
+          exercise_id: string
+          notes?: string | null
+          phase_no: number
+          program_id: string
+          sort_order: number
+          tempo?: string | null
+        }
+        Update: {
+          dose?: string
+          exercise_id?: string
+          notes?: string | null
+          phase_no?: number
+          program_id?: string
+          sort_order?: number
+          tempo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rehab_phase_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rehab_phase_exercises_program_id_phase_no_fkey"
+            columns: ["program_id", "phase_no"]
+            isOneToOne: false
+            referencedRelation: "rehab_phases"
+            referencedColumns: ["program_id", "phase_no"]
+          },
+        ]
+      }
+      rehab_phases: {
+        Row: {
+          entry_criteria: string
+          exit_criteria: string
+          frequency: string | null
+          goal: string
+          healing_stage: string | null
+          name: string
+          phase_no: number
+          program_id: string
+          running_guidance: string | null
+          training_focus: string | null
+          typical_duration: string | null
+        }
+        Insert: {
+          entry_criteria: string
+          exit_criteria: string
+          frequency?: string | null
+          goal: string
+          healing_stage?: string | null
+          name: string
+          phase_no: number
+          program_id: string
+          running_guidance?: string | null
+          training_focus?: string | null
+          typical_duration?: string | null
+        }
+        Update: {
+          entry_criteria?: string
+          exit_criteria?: string
+          frequency?: string | null
+          goal?: string
+          healing_stage?: string | null
+          name?: string
+          phase_no?: number
+          program_id?: string
+          running_guidance?: string | null
+          training_focus?: string | null
+          typical_duration?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rehab_phases_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "rehab_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rehab_programs: {
+        Row: {
+          also_known_as: string | null
+          body_area: string | null
+          clinician_notes: string[]
+          clinician_required: boolean
+          discharge_criteria: string[]
+          disclaimer: string
+          id: string
+          injury_type: string | null
+          name: string
+          overview: string
+          pain_rule: string
+          physio_review_points: string[]
+          red_flags: string[]
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          seek_assessment: string | null
+          typical_duration: string | null
+        }
+        Insert: {
+          also_known_as?: string | null
+          body_area?: string | null
+          clinician_notes?: string[]
+          clinician_required?: boolean
+          discharge_criteria?: string[]
+          disclaimer?: string
+          id: string
+          injury_type?: string | null
+          name: string
+          overview: string
+          pain_rule: string
+          physio_review_points?: string[]
+          red_flags: string[]
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          seek_assessment?: string | null
+          typical_duration?: string | null
+        }
+        Update: {
+          also_known_as?: string | null
+          body_area?: string | null
+          clinician_notes?: string[]
+          clinician_required?: boolean
+          discharge_criteria?: string[]
+          disclaimer?: string
+          id?: string
+          injury_type?: string | null
+          name?: string
+          overview?: string
+          pain_rule?: string
+          physio_review_points?: string[]
+          red_flags?: string[]
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          seek_assessment?: string | null
+          typical_duration?: string | null
+        }
+        Relationships: []
+      }
+      return_to_run_plans: {
+        Row: {
+          id: string
+          name: string
+          prerequisites: string
+          progression_rule: string
+        }
+        Insert: {
+          id: string
+          name: string
+          prerequisites: string
+          progression_rule: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          prerequisites?: string
+          progression_rule?: string
+        }
+        Relationships: []
+      }
+      return_to_run_steps: {
+        Row: {
+          plan_id: string
+          repeats: string | null
+          run_walk: string
+          step: number
+          total_min: number
+        }
+        Insert: {
+          plan_id: string
+          repeats?: string | null
+          run_walk: string
+          step: number
+          total_min: number
+        }
+        Update: {
+          plan_id?: string
+          repeats?: string | null
+          run_walk?: string
+          step?: number
+          total_min?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_to_run_steps_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "return_to_run_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_template_slots: {
+        Row: {
+          body_region: string | null
+          hint: string | null
+          label: string
+          movement_patterns: string[]
+          slot_order: number
+          template_id: string
+        }
+        Insert: {
+          body_region?: string | null
+          hint?: string | null
+          label: string
+          movement_patterns: string[]
+          slot_order: number
+          template_id: string
+        }
+        Update: {
+          body_region?: string | null
+          hint?: string | null
+          label?: string
+          movement_patterns?: string[]
+          slot_order?: number
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_template_slots_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "session_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_templates: {
+        Row: {
+          change_seconds: number | null
+          cooldown_min: number
+          dose: string | null
+          duration_min: number
+          estimated_min: number
+          exercise_count: number
+          focus: string
+          id: string
+          level: string
+          method: string
+          name: string
+          rest_seconds: number | null
+          rounds: number | null
+          sets: number | null
+          structure: string
+          warmup_min: number
+          work_seconds: number | null
+        }
+        Insert: {
+          change_seconds?: number | null
+          cooldown_min: number
+          dose?: string | null
+          duration_min: number
+          estimated_min: number
+          exercise_count: number
+          focus: string
+          id: string
+          level: string
+          method: string
+          name: string
+          rest_seconds?: number | null
+          rounds?: number | null
+          sets?: number | null
+          structure: string
+          warmup_min: number
+          work_seconds?: number | null
+        }
+        Update: {
+          change_seconds?: number | null
+          cooldown_min?: number
+          dose?: string | null
+          duration_min?: number
+          estimated_min?: number
+          exercise_count?: number
+          focus?: string
+          id?: string
+          level?: string
+          method?: string
+          name?: string
+          rest_seconds?: number | null
+          rounds?: number | null
+          sets?: number | null
+          structure?: string
+          warmup_min?: number
+          work_seconds?: number | null
+        }
+        Relationships: []
+      }
       station_prescriptions: {
         Row: {
           best_with: string
@@ -736,6 +1075,21 @@ export type Database = {
       merge_custom_exercise: {
         Args: { p_custom_id: string; p_exercise_id: string; p_note?: string }
         Returns: number
+      }
+      plan_session: {
+        Args: { p_level?: string; p_method: string; p_minutes: number }
+        Returns: {
+          change_seconds: number
+          cooldown_min: number
+          estimated_min: number
+          exercise_count: number
+          rest_seconds: number
+          rounds: number
+          sets: number
+          structure: string
+          warmup_min: number
+          work_seconds: number
+        }[]
       }
       promote_custom_exercise: {
         Args: {
