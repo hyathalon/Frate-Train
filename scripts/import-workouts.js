@@ -15,7 +15,7 @@
  *
  * Set env vars (or create .env):
  *   SUPABASE_URL=https://cmjszdfu0endqaevxrvb.supabase.co
- *   SUPABASE_SERVICE_KEY=<service_role_key>   ← use service key, NOT anon key
+ *   SUPABASE_SECRET_KEY=<sb_secret_… key>   ← use a secret key, NOT the publishable key
  */
 
 require('dotenv').config();
@@ -26,7 +26,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://cmjszdfu0endqaevxrvb.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY; // service_role key bypasses RLS
+const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY; // secret key bypasses RLS
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const args = process.argv.filter(a => !a.startsWith('--') && !a.includes('node') && !a.includes('import-workouts'));
@@ -38,7 +38,7 @@ if (!target) {
 }
 
 if (!SUPABASE_KEY && !DRY_RUN) {
-  console.error('Missing SUPABASE_SERVICE_KEY env var. Add it to .env or export it.');
+  console.error('Missing SUPABASE_SECRET_KEY env var. Add it to .env or export it.');
   process.exit(1);
 }
 

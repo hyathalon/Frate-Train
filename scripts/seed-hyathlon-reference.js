@@ -20,7 +20,7 @@
  *
  * Env vars (or .env):
  *   SUPABASE_URL=...
- *   SUPABASE_SERVICE_KEY=...   ← service_role key, bypasses RLS
+ *   SUPABASE_SECRET_KEY=...   ← secret key (sb_secret_…), bypasses RLS
  */
 
 require('dotenv').config();
@@ -31,12 +31,12 @@ const { PDFParse } = require('pdf-parse');
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const DRY_RUN = process.argv.includes('--dry-run');
 const HYROX_DIR = path.resolve(__dirname, '../assets/hyrox');
 
 if (!SUPABASE_URL || (!SUPABASE_KEY && !DRY_RUN)) {
-  console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_KEY env vars. Add them to .env or export them.');
+  console.error('Missing SUPABASE_URL / SUPABASE_SECRET_KEY env vars. Add them to .env or export them.');
   process.exit(1);
 }
 

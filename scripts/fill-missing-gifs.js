@@ -16,7 +16,7 @@
  *   node scripts/fill-missing-gifs.js --meta-only  # skip GIF search
  *
  * .env keys needed:
- *   SUPABASE_URL, SUPABASE_SERVICE_KEY
+ *   SUPABASE_URL, SUPABASE_SECRET_KEY
  *   WORKOUTX_API_KEY   (for GIF fallback)
  *   API_NINJAS_KEY     (for metadata enrichment)
  */
@@ -30,7 +30,7 @@ const META_ONLY = process.argv.includes('--meta-only');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SECRET_KEY
 );
 
 const WORKOUTX_KEY  = process.env.WORKOUTX_API_KEY;

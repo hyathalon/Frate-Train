@@ -14,7 +14,7 @@
 //   supabase functions deploy generate-program
 // Secrets required:
 //   supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
-// SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are provided automatically by the
+// SUPABASE_URL / SUPABASE_SECRET_KEYS are provided automatically by the
 // Edge Function runtime — no need to set them manually.
 
 import Anthropic from 'npm:@anthropic-ai/sdk';
@@ -22,7 +22,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+// JSON object of the project's secret keys, keyed by name.
+const SUPABASE_SECRET_KEY = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!)['default'];
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,7 +39,7 @@ function jsonResponse(body: unknown, status = 200) {
 
 /** Reads and concatenates every row in hyathlon_reference. Never throws — logs a warning and returns '' if the table is empty or unreachable. */
 async function readReferenceText(): Promise<string> {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY);
   const { data, error } = await supabase
     .from('hyathlon_reference')
     .select('filename, content')
