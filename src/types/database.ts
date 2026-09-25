@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_call_models: {
+        Row: {
+          call_type: string
+          model: string
+          updated_at: string
+        }
+        Insert: {
+          call_type: string
+          model: string
+          updated_at?: string
+        }
+        Update: {
+          call_type?: string
+          model?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_call_models_model_fkey"
+            columns: ["model"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["model"]
+          },
+        ]
+      }
+      ai_models: {
+        Row: {
+          cache_read_per_mtok_usd: number
+          cache_write_per_mtok_usd: number
+          input_per_mtok_usd: number
+          model: string
+          output_per_mtok_usd: number
+          updated_at: string
+        }
+        Insert: {
+          cache_read_per_mtok_usd: number
+          cache_write_per_mtok_usd: number
+          input_per_mtok_usd: number
+          model: string
+          output_per_mtok_usd: number
+          updated_at?: string
+        }
+        Update: {
+          cache_read_per_mtok_usd?: number
+          cache_write_per_mtok_usd?: number
+          input_per_mtok_usd?: number
+          model?: string
+          output_per_mtok_usd?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           description: string | null
@@ -222,6 +275,60 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_alerts: {
+        Row: {
+          alert_date: string
+          athlete_id: string | null
+          created_at: string
+          details: Json | null
+          id: number
+          kind: string
+          message: string
+          program_id: string | null
+          read_at: string | null
+          read_by: string | null
+        }
+        Insert: {
+          alert_date: string
+          athlete_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: never
+          kind: string
+          message: string
+          program_id?: string | null
+          read_at?: string | null
+          read_by?: string | null
+        }
+        Update: {
+          alert_date?: string
+          athlete_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: never
+          kind?: string
+          message?: string
+          program_id?: string | null
+          read_at?: string | null
+          read_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_alerts_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_alerts_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
             referencedColumns: ["id"]
           },
         ]
@@ -453,6 +560,87 @@ export type Database = {
         }
         Relationships: []
       }
+      generation_events: {
+        Row: {
+          athlete_id: string | null
+          block_no: number | null
+          cache_creation_input_tokens: number
+          cache_read_input_tokens: number
+          call_type: string
+          cost_usd: number
+          counts_as: string | null
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          id: number
+          input_tokens: number
+          is_repair: boolean
+          model: string
+          output_tokens: number
+          paid_with: string | null
+          program_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          athlete_id?: string | null
+          block_no?: number | null
+          cache_creation_input_tokens?: number
+          cache_read_input_tokens?: number
+          call_type: string
+          cost_usd?: number
+          counts_as?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: never
+          input_tokens?: number
+          is_repair?: boolean
+          model: string
+          output_tokens?: number
+          paid_with?: string | null
+          program_id?: string | null
+          status: string
+          user_id?: string | null
+        }
+        Update: {
+          athlete_id?: string | null
+          block_no?: number | null
+          cache_creation_input_tokens?: number
+          cache_read_input_tokens?: number
+          call_type?: string
+          cost_usd?: number
+          counts_as?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: never
+          input_tokens?: number
+          is_repair?: boolean
+          model?: string
+          output_tokens?: number
+          paid_with?: string | null
+          program_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generation_events_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_events_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hyathlon_reference: {
         Row: {
           content: string
@@ -473,6 +661,112 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      program_blocks: {
+        Row: {
+          attempts: number
+          block_no: number
+          created_at: string
+          end_week: number
+          generated_at: string | null
+          id: string
+          kind: string
+          last_error: string | null
+          program_id: string
+          sessions: Json | null
+          start_week: number
+          status: string
+          targets: Json | null
+        }
+        Insert: {
+          attempts?: number
+          block_no: number
+          created_at?: string
+          end_week: number
+          generated_at?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          program_id: string
+          sessions?: Json | null
+          start_week: number
+          status?: string
+          targets?: Json | null
+        }
+        Update: {
+          attempts?: number
+          block_no?: number
+          created_at?: string
+          end_week?: number
+          generated_at?: string | null
+          id?: string
+          kind?: string
+          last_error?: string | null
+          program_id?: string
+          sessions?: Json | null
+          start_week?: number
+          status?: string
+          targets?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_blocks_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_checkins: {
+        Row: {
+          block_no: number
+          core_done_per_week: number[]
+          created_at: string
+          days_available: number
+          difficulty: number
+          health: Json | null
+          health_consent_at: string | null
+          id: string
+          optional_completions: Json
+          program_id: string
+          submitted_by: string
+        }
+        Insert: {
+          block_no: number
+          core_done_per_week: number[]
+          created_at?: string
+          days_available: number
+          difficulty: number
+          health?: Json | null
+          health_consent_at?: string | null
+          id?: string
+          optional_completions?: Json
+          program_id: string
+          submitted_by: string
+        }
+        Update: {
+          block_no?: number
+          core_done_per_week?: number[]
+          created_at?: string
+          days_available?: number
+          difficulty?: number
+          health?: Json | null
+          health_consent_at?: string | null
+          id?: string
+          optional_completions?: Json
+          program_id?: string
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_checkins_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_exercises: {
         Row: {
@@ -523,6 +817,38 @@ export type Database = {
             columns: ["block_id"]
             isOneToOne: false
             referencedRelation: "blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_outline_versions: {
+        Row: {
+          created_at: string
+          outline: Json
+          program_id: string
+          reason: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          outline: Json
+          program_id: string
+          reason: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          outline?: Json
+          program_id?: string
+          reason?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_outline_versions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
             referencedColumns: ["id"]
           },
         ]
@@ -946,6 +1272,79 @@ export type Database = {
           },
         ]
       }
+      session_exercise_edits: {
+        Row: {
+          action: string
+          block_no: number
+          created_at: string
+          created_by: string
+          dose: string | null
+          id: number
+          original: Json | null
+          position: number | null
+          program_id: string
+          replacement_custom_exercise_id: string | null
+          replacement_exercise_id: string | null
+          reverted_at: string | null
+          session_key: string
+          week: number
+        }
+        Insert: {
+          action: string
+          block_no: number
+          created_at?: string
+          created_by?: string
+          dose?: string | null
+          id?: never
+          original?: Json | null
+          position?: number | null
+          program_id: string
+          replacement_custom_exercise_id?: string | null
+          replacement_exercise_id?: string | null
+          reverted_at?: string | null
+          session_key: string
+          week: number
+        }
+        Update: {
+          action?: string
+          block_no?: number
+          created_at?: string
+          created_by?: string
+          dose?: string | null
+          id?: never
+          original?: Json | null
+          position?: number | null
+          program_id?: string
+          replacement_custom_exercise_id?: string | null
+          replacement_exercise_id?: string | null
+          reverted_at?: string | null
+          session_key?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_exercise_edits_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_exercise_edits_replacement_custom_exercise_id_fkey"
+            columns: ["replacement_custom_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "custom_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_exercise_edits_replacement_exercise_id_fkey"
+            columns: ["replacement_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_template_slots: {
         Row: {
           body_region: string | null
@@ -1155,6 +1554,68 @@ export type Database = {
         }
         Relationships: []
       }
+      training_programs: {
+        Row: {
+          archived_at: string | null
+          athlete_id: string
+          confirmed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          inputs: Json
+          outline: Json | null
+          outline_version: number
+          race_date: string
+          race_name: string | null
+          start_date: string
+          status: string
+          total_weeks: number
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          athlete_id: string
+          confirmed_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          inputs?: Json
+          outline?: Json | null
+          outline_version?: number
+          race_date: string
+          race_name?: string | null
+          start_date: string
+          status?: string
+          total_weeks: number
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          athlete_id?: string
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          inputs?: Json
+          outline?: Json | null
+          outline_version?: number
+          race_date?: string
+          race_name?: string | null
+          start_date?: string
+          status?: string
+          total_weeks?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_programs_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       v_promotion_candidates: {
@@ -1203,6 +1664,7 @@ export type Database = {
         Returns: number
       }
       my_shared_coach_notes: { Args: never; Returns: string }
+      owns_program: { Args: { p_program_id: string }; Returns: boolean }
       plan_session: {
         Args: { p_level?: string; p_method: string; p_minutes: number }
         Returns: {
