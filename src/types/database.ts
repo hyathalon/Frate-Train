@@ -32,9 +32,107 @@ export type Database = {
         }
         Relationships: []
       }
+      athlete_coach_profiles: {
+        Row: {
+          athlete_id: string
+          coach_notes: string | null
+          limiters: string | null
+          priority_pillars: string[]
+          share_notes: boolean
+          strengths: string[]
+          updated_at: string
+          updated_by: string | null
+          weaknesses: string[]
+        }
+        Insert: {
+          athlete_id: string
+          coach_notes?: string | null
+          limiters?: string | null
+          priority_pillars?: string[]
+          share_notes?: boolean
+          strengths?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          weaknesses?: string[]
+        }
+        Update: {
+          athlete_id?: string
+          coach_notes?: string | null
+          limiters?: string | null
+          priority_pillars?: string[]
+          share_notes?: boolean
+          strengths?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          weaknesses?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_coach_profiles_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: true
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athlete_credit_ledger: {
+        Row: {
+          amount: number | null
+          athlete_id: string
+          created_at: string
+          currency: string | null
+          delta: number
+          id: number
+          kind: string
+          program_id: string | null
+          provider: string | null
+          provider_ref: string | null
+          reason: string
+        }
+        Insert: {
+          amount?: number | null
+          athlete_id: string
+          created_at?: string
+          currency?: string | null
+          delta: number
+          id?: never
+          kind: string
+          program_id?: string | null
+          provider?: string | null
+          provider_ref?: string | null
+          reason: string
+        }
+        Update: {
+          amount?: number | null
+          athlete_id?: string
+          created_at?: string
+          currency?: string | null
+          delta?: number
+          id?: never
+          kind?: string
+          program_id?: string | null
+          provider?: string | null
+          provider_ref?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_credit_ledger_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athletes: {
         Row: {
           athlete_type: string | null
+          billing_customer_ref: string | null
+          billing_provider: string | null
+          billing_status: string
+          coach_user_id: string | null
           created_at: string | null
           equipment: string[] | null
           goal_date: string | null
@@ -42,10 +140,18 @@ export type Database = {
           id: string
           level: string | null
           name: string | null
+          tier: string
+          timezone: string
           training_days_per_week: number | null
+          training_locations: string[]
+          user_id: string | null
         }
         Insert: {
           athlete_type?: string | null
+          billing_customer_ref?: string | null
+          billing_provider?: string | null
+          billing_status?: string
+          coach_user_id?: string | null
           created_at?: string | null
           equipment?: string[] | null
           goal_date?: string | null
@@ -53,10 +159,18 @@ export type Database = {
           id?: string
           level?: string | null
           name?: string | null
+          tier?: string
+          timezone?: string
           training_days_per_week?: number | null
+          training_locations?: string[]
+          user_id?: string | null
         }
         Update: {
           athlete_type?: string | null
+          billing_customer_ref?: string | null
+          billing_provider?: string | null
+          billing_status?: string
+          coach_user_id?: string | null
           created_at?: string | null
           equipment?: string[] | null
           goal_date?: string | null
@@ -64,9 +178,21 @@ export type Database = {
           id?: string
           level?: string | null
           name?: string | null
+          tier?: string
+          timezone?: string
           training_days_per_week?: number | null
+          training_locations?: string[]
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "athletes_coach_user_id_fkey"
+            columns: ["coach_user_id"]
+            isOneToOne: false
+            referencedRelation: "coaches"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       blocks: {
         Row: {
@@ -1076,6 +1202,7 @@ export type Database = {
         Args: { p_custom_id: string; p_exercise_id: string; p_note?: string }
         Returns: number
       }
+      my_shared_coach_notes: { Args: never; Returns: string }
       plan_session: {
         Args: { p_level?: string; p_method: string; p_minutes: number }
         Returns: {
