@@ -1,10 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RaceEditModal from '../components/RaceEditModal';
 import { radii, spacing } from '../constants/theme';
 import { useAthlete } from '../context/AthleteContext';
+import { useAuth } from '../context/AuthContext';
 import { daysUntil, formatRaceDate, useRace } from '../context/RaceContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -35,6 +45,15 @@ const personalBests = [
   { label: 'Half Marathon', value: '1:26:55' },
 ];
 
+const MIN_PASSWORD_LENGTH = 8;
+
+function roleLabel(account) {
+  if (account?.role === 'coach') return 'Coach';
+  if (account?.athlete?.tier === 'member') return 'Athlete · Coached';
+  if (account?.athlete) return 'Athlete · App';
+  return null;
+}
+
 const settingsItems = [
   { id: 'edit', label: 'Edit Profile' },
   { id: 'notifications', label: 'Notifications' },
@@ -50,6 +69,34 @@ export default function ProfileScreen() {
   const { race, setRace } = useRace();
   const [raceModalVisible, setRaceModalVisible] = useState(false);
   const [connectedApps, setConnectedApps] = useState(initialConnectedApps);
+  const { session, account, signOut, changePassword } = useAuth();
+  const [passwordFormOpen, setPasswordFormOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState(null);
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setPasswordMessage({ error: true, text: `Use at least ${MIN_PASSWORD_LENGTH} characters.` });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ error: true, text: "The passwords don't match." });
+      return;
+    }
+    setSavingPassword(true);
+    const error = await changePassword(newPassword);
+    setSavingPassword(false);
+    if (error) {
+      setPasswordMessage({ error: true, text: error });
+      return;
+    }
+    setNewPassword('');
+    setConfirmPassword('');
+    setPasswordFormOpen(false);
+    setPasswordMessage({ error: false, text: 'Password changed.' });
+  };
 
   const toggleConnectedApp = (id) => {
     setConnectedApps((prev) =>
@@ -57,7 +104,8 @@ export default function ProfileScreen() {
     );
   };
 
-  const initials = athlete.name
+  const displayName = account?.name || athlete.name;
+  const initials = displayName
     .split(' ')
     .map((part) => part[0])
     .join('');
@@ -69,7 +117,7 @@ export default function ProfileScreen() {
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <Text style={styles.name}>{athlete.name}</Text>
+          <Text style={styles.name}>{displayName}</Text>
           <Text style={styles.coach}>Coached by {athlete.coach}</Text>
           <View style={styles.divisionTag}>
             <Text style={styles.divisionTagText}>{athlete.division}</Text>
@@ -162,6 +210,68 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        <Text style={styles.sectionTitle}>Account</Text>
+        <View style={styles.settingsList}>
+          <View style={styles.settingsRow}>
+            <View style={styles.accountInfo}>
+              <Text style={styles.settingsLabel}>{session?.user.email}</Text>
+              {roleLabel(account) && <Text style={styles.accountRole}>{roleLabel(account)}</Text>}
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.settingsRow}
+            onPress={() => {
+              setPasswordFormOpen((open) => !open);
+              setPasswordMessage(null);
+            }}
+          >
+            <Text style={styles.settingsLabel}>Change Password</Text>
+            <Text style={styles.chevron}>{passwordFormOpen ? 'v' : '>'}</Text>
+          </TouchableOpacity>
+          {passwordFormOpen && (
+            <View style={styles.passwordForm}>
+              <TextInput
+                style={styles.input}
+                placeholder="New password"
+                placeholderTextColor={colors.textOnSurfaceFaint}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm new password"
+                placeholderTextColor={colors.textOnSurfaceFaint}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
+                onSubmitEditing={handleChangePassword}
+              />
+              <TouchableOpacity
+                style={[styles.saveButton, savingPassword && styles.saveButtonDisabled]}
+                onPress={handleChangePassword}
+                disabled={savingPassword}
+                activeOpacity={0.8}
+              >
+                {savingPassword ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Save Password</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+          {passwordMessage && (
+            <Text style={[styles.passwordMessage, passwordMessage.error && styles.passwordMessageError]}>
+              {passwordMessage.text}
+            </Text>
+          )}
+        </View>
+
         <Text style={styles.sectionTitle}>Settings</Text>
         <View style={styles.settingsList}>
           <View style={styles.settingsRow}>
@@ -181,7 +291,11 @@ export default function ProfileScreen() {
             />
           </View>
           {settingsItems.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.settingsRow}>
+            <TouchableOpacity
+              key={item.id}
+              style={styles.settingsRow}
+              onPress={item.id === 'logout' ? signOut : undefined}
+            >
               <Text
                 style={[
                   styles.settingsLabel,
@@ -437,6 +551,55 @@ function createStyles(colors) {
   chevron: {
     color: colors.textOnSurfaceFaint,
     fontSize: 14,
+  },
+  accountInfo: {
+    gap: 2,
+  },
+  accountRole: {
+    color: colors.textOnSurfaceMuted,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  passwordForm: {
+    padding: spacing.md,
+    gap: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  input: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    color: colors.textOnSurface,
+    fontSize: 14,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.md,
+    paddingVertical: spacing.sm + 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  passwordMessage: {
+    color: colors.success,
+    fontSize: 13,
+    fontWeight: '600',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  passwordMessageError: {
+    color: '#EF4444',
   },
   });
 }
