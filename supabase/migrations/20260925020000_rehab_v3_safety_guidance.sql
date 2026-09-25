@@ -892,8 +892,6 @@ insert into public.return_to_run_steps (plan_id,step,run_walk,repeats,total_min)
 ('bone',9,'25 min continuous',null,25),
 ('bone',10,'30 min continuous',null,30);
 
-insert into supabase_migrations.schema_migrations (version, name) values ('20260925020000','rehab_v3_safety_guidance')
-on conflict (version) do nothing;
 
 -- Check: should show 528 | 10 | 235 | 13
 select (select count(*) from public.exercises) as exercises,

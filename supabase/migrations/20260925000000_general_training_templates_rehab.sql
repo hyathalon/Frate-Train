@@ -1460,8 +1460,6 @@ create policy "rehab exercises coach write" on public.rehab_phase_exercises for 
 grant execute on function public.plan_session(text, int, text) to authenticated;
 
 -- 6) Record as applied
-insert into supabase_migrations.schema_migrations (version, name) values ('20260925000000','general_training_templates_rehab')
-on conflict (version) do nothing;
 
 -- Check: should show 522 | 67 | 9 | 29 | 2
 select (select count(*) from public.exercises) as exercises,

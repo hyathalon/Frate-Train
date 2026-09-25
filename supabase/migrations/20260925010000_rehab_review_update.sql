@@ -288,8 +288,6 @@ insert into public.return_to_run_steps (plan_id,step,run_walk,repeats,total_min)
 ('bone',9,'25 min continuous',null,25),
 ('bone',10,'30 min continuous',null,30);
 
-insert into supabase_migrations.schema_migrations (version, name) values ('20260925010000','rehab_review_update')
-on conflict (version) do nothing;
 
 -- Check: should show 10 | 32 | 7
 select (select count(*) from public.rehab_programs) as programs,
