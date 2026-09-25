@@ -28,3 +28,4 @@ Agreed features and changes that are deliberately not built yet.
   - After each rest it resets to the last rest used and waits for the next press. +/−15 s adjustments are remembered.
 - **Interval timer** for timed formats (Tabata, circuit, EMOM, HIIT): work and rest beeps and a round count.
 - **Race analysis:** splits vs expected, spotting going out too hard and fading.
+- **Runs outside the program:** ask "How many runs do you do per week outside this program?" and use it to balance leg load (Fatigue Management). The program itself has no standalone running sessions.
