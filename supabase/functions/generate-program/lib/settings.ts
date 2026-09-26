@@ -2,7 +2,7 @@ import type { SupabaseClient } from './deps.ts';
 
 export type Settings = Record<string, number>;
 
-export type CallType = 'outline_preview' | 'confirmation_block' | 'next_block' | 'hold_block' | 'replan';
+export type CallType = 'outline_preview' | 'confirmation_block' | 'next_block' | 'hold_block' | 'replan' | 'week_adjust';
 
 export interface ModelChoice {
   model: string;
@@ -10,6 +10,8 @@ export interface ModelChoice {
   outputPerMtok: number;
   cacheWritePerMtok: number;
   cacheReadPerMtok: number;
+  effortMember: 'low' | 'medium' | 'high' | null;
+  effortOther: 'low' | 'medium' | 'high' | null;
 }
 
 export interface Usage {
@@ -31,11 +33,11 @@ export function setting(settings: Settings, key: string): number {
   return value;
 }
 
-/** The model configured for a call type (ai_call_models) and its prices (ai_models). */
+/** The model and effort configured for a call type (ai_call_models) and its prices (ai_models). */
 export async function modelFor(admin: SupabaseClient, callType: CallType): Promise<ModelChoice> {
   const { data, error } = await admin
     .from('ai_call_models')
-    .select('model, ai_models(input_per_mtok_usd, output_per_mtok_usd, cache_write_per_mtok_usd, cache_read_per_mtok_usd)')
+    .select('model, effort_member, effort_other, ai_models(input_per_mtok_usd, output_per_mtok_usd, cache_write_per_mtok_usd, cache_read_per_mtok_usd)')
     .eq('call_type', callType)
     .single();
   if (error || !data) throw new Error(`No model configured for ${callType}`);
@@ -46,6 +48,8 @@ export async function modelFor(admin: SupabaseClient, callType: CallType): Promi
     outputPerMtok: Number(prices.output_per_mtok_usd),
     cacheWritePerMtok: Number(prices.cache_write_per_mtok_usd),
     cacheReadPerMtok: Number(prices.cache_read_per_mtok_usd),
+    effortMember: data.effort_member,
+    effortOther: data.effort_other,
   };
 }
 

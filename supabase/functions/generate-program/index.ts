@@ -7,6 +7,9 @@
 //   preview { athlete_id?, inputs, start_date? }        → season outline (Haiku), uses a preview
 //   confirm { program_id }                              → starts block 1 (Sonnet) in the background;
 //                                                         poll program_blocks for status
+//   weekly_checkin { program_id, week, energy, sleep, availability? }
+//                                                       → adjusts the coming week in the background
+//                                                         when needed; poll weekly_checkins
 //
 // Secrets: ANTHROPIC_API_KEY (set by the coach). SUPABASE_URL and
 // SUPABASE_SECRET_KEYS are provided by the Edge Function runtime.
@@ -18,14 +21,12 @@ import { authenticate } from './lib/auth.ts';
 import { makeCallClaude } from './lib/claude.ts';
 import { createClient } from './lib/deps.ts';
 import { corsHeaders, errorResponse, HttpError, jsonResponse } from './lib/http.ts';
-import { buildsStatus, confirm, type Deps, preview } from './lib/program.ts';
+import { buildsStatus, confirm, type Deps, preview, weeklyCheckin } from './lib/program.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 // JSON object of the project's secret keys, keyed by name.
 const SUPABASE_SECRET_KEY = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')!)['default'];
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
-// Optional: effort for block generation (low | medium | high). Defaults to medium.
-const BLOCK_EFFORT = Deno.env.get('BLOCK_EFFORT');
 
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined;
 
@@ -35,14 +36,13 @@ const deps: Deps = {
   admin,
   callClaude: ANTHROPIC_API_KEY ? makeCallClaude(ANTHROPIC_API_KEY) : null,
   now: () => new Date(),
-  blockEffort: BLOCK_EFFORT === 'low' || BLOCK_EFFORT === 'high' ? BLOCK_EFFORT : 'medium',
   // Keeps the function alive after responding, within its wall-clock limit.
   runInBackground: (work) => {
     if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(work);
   },
 };
 
-const ACTIONS = { builds_status: buildsStatus, preview, confirm } as const;
+const ACTIONS = { builds_status: buildsStatus, preview, confirm, weekly_checkin: weeklyCheckin } as const;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -60,7 +60,8 @@ Deno.serve(async (req) => {
 
     const caller = await authenticate(req, admin);
     const result = await action(deps, caller, body);
-    return jsonResponse(result, body.action === 'confirm' ? 202 : 200);
+    const accepted = body.action === 'confirm' || (body.action === 'weekly_checkin' && (result as { status?: string }).status === 'adjusting');
+    return jsonResponse(result, accepted ? 202 : 200);
   } catch (err) {
     if (err instanceof HttpError) return errorResponse(err);
     console.error('[generate-program] Unexpected error', err);

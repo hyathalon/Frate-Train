@@ -6,7 +6,7 @@
 //     deno test --allow-net --allow-env tests/integration.test.ts
 import assert from 'node:assert/strict';
 import type { AthleteRow } from '../lib/auth.ts';
-import { ALLOWED_RISK, formatExercises, formatRaceSessions, formatTemplates, loadCandidates } from '../lib/candidates.ts';
+import { ALLOWED_RISK, formatExercises, formatRaceSessions, formatTemplates, loadCandidates, loadRaceOption } from '../lib/candidates.ts';
 import { createClient } from '../lib/deps.ts';
 import { systemPrompt } from '../lib/prompts.ts';
 
@@ -57,7 +57,7 @@ async function cleanup() {
   for (const id of created.users) await admin.auth.admin.deleteUser(id);
 }
 
-const inputs = { race_date: '2027-01-23', days_available: 4, weekly_hours: 6, goal: 'Finish Hyrox Open under 90 minutes', strengths: ['Running'], weaknesses: ['Wall balls'] };
+const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish Hyrox Open under 90 minutes', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 Deno.test({
   name: 'generate-program without an Anthropic key: auth, roles, inputs and limits',
@@ -111,9 +111,9 @@ Deno.test({
         assert.equal(r.body.code, 'not_your_athlete');
       });
       await t.step('bad inputs → 400 with a readable message', async () => {
-        const r = await call({ action: 'preview', inputs: { ...inputs, days_available: 9 } }, app.token);
+        const r = await call({ action: 'preview', inputs: { ...inputs, key_session_day: 'Tue' } }, app.token);
         assert.equal(r.status, 400);
-        assert.match(r.body.error, /days a week/);
+        assert.match(r.body.error, /key session/);
       });
       await t.step('race under 4 weeks away → 400 race_too_soon', async () => {
         const soon = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
@@ -202,7 +202,7 @@ Deno.test({
 
     for (const [label, over] of profiles) {
       const athlete = { id: 'x', user_id: null, name: 'x', tier: 'app', timezone: 'Australia/Sydney', coach_user_id: null, athlete_type: 'hyrox', equipment: [], training_locations: [], ...over } as AthleteRow;
-      const c = await loadCandidates(admin, athlete, { includeRaceSessions: true });
+      const c = await loadCandidates(admin, athlete, (await loadRaceOption(admin, 'hyrox-open'))!, { includeRaceSessions: true });
       for (const id of c.exercises.keys()) {
         assert.ok(ALLOWED_RISK[athlete.level].includes(risk.get(id)!.acute_risk), `${label}: ${id} breaks the risk rule`);
       }

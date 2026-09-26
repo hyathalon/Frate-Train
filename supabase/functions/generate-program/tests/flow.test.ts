@@ -6,16 +6,16 @@
 //   SUPABASE_URL=… SUPABASE_SECRET_KEY=… deno test --allow-net --allow-env tests/flow.test.ts
 import assert from 'node:assert/strict';
 import type { AthleteRow, Caller } from '../lib/auth.ts';
-import { loadCandidates, slotMatches } from '../lib/candidates.ts';
+import { loadCandidates, loadRaceOption, partMinutes, slotMatches } from '../lib/candidates.ts';
 import type { CallClaude, ClaudeCallInput, ClaudeCallResult } from '../lib/claude.ts';
 import { createClient } from '../lib/deps.ts';
-import { confirm, type Deps, preview } from '../lib/program.ts';
+import { confirm, type Deps, preview, weeklyCheckin } from '../lib/program.ts';
 import type { Block, Outline } from '../lib/schemas.ts';
 import { localDate } from '../lib/time.ts';
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SECRET_KEY')!, { auth: { persistSession: false } });
 const RUN = Date.now();
-const inputs = { race_date: '2027-01-23', days_available: 4, weekly_hours: 6, goal: 'Finish Hyrox Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
+const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish Hyrox Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 // --- fake Claude -----------------------------------------------------------
 
@@ -39,10 +39,11 @@ function fakeClaude(answers: Answer[]) {
 }
 
 function makeDeps(callClaude: CallClaude, background: Promise<unknown>[]): Deps {
-  return { admin, callClaude, now: () => new Date(), runInBackground: (w) => background.push(w), blockEffort: 'medium' };
+  return { admin, callClaude, now: () => new Date(), runInBackground: (w) => background.push(w) };
 }
 
 function outline(totalWeeks: number): Outline {
+  const deload = (w: number) => w % 4 === 0 && w < totalWeeks;
   return {
     summary: 'Test season',
     phases: [
@@ -50,31 +51,47 @@ function outline(totalWeeks: number): Outline {
       { name: 'Taper', kind: 'taper', start_week: totalWeeks, end_week: totalWeeks, purpose: 'p' },
     ],
     weeks: Array.from({ length: totalWeeks }, (_, i) => ({
-      week: i + 1, phase: i + 1 === totalWeeks ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: false,
-      core_sessions: 2, optional_sessions: 1, key_sessions: ['k'], pillars: ['Aerobic Engine'],
+      week: i + 1, phase: i + 1 === totalWeeks ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: deload(i + 1),
+      lever: i === 0 ? 'start' : deload(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, optional_sessions: 1,
+      key_session: 'Circuit + intervals', key_sessions: ['k'], pillars: ['Aerobic Engine'],
     })),
   } as Outline;
 }
 
-/** A valid block 1 built from the athlete's real candidate lists. */
+const item = (id: string, dose: string, over: Record<string, unknown> = {}) => ({
+  exercise_id: id, race_session_id: null, dose, cue: null, block: null, foot_contacts: null, run_minutes: null, run_distance_m: null, ...over,
+});
+
+/** A valid block 1 (45-min sessions, Mon/Wed/Fri + optional Sat) from the athlete's real candidate lists. */
 async function validBlock(athlete: AthleteRow): Promise<Block> {
-  const c = await loadCandidates(admin, athlete, { includeRaceSessions: false });
-  const run = [...c.exercises.values()].find((e) => e.movement_pattern === 'Running')!;
-  const template = [...c.templates.values()].find((t) => t.method === 'Strength' && t.duration_min <= 45)!;
-  const items = template.slots.map((slot) => {
-    const e = [...c.exercises.values()].find((x) => slotMatches(slot, x))!;
-    return { exercise_id: e.id, race_session_id: null, dose: '3 x 10', notes: null };
-  });
-  const week = (n: number) => ({
-    week: n, focus: 'f', sessions: [
-      { day: 'Mon', title: 'Easy run', method: 'Run', template_id: null, duration_min: 40, pillar: 'Aerobic Engine', optional: false, slot: null,
-        items: [{ exercise_id: run.id, race_session_id: null, dose: '40 min easy', notes: null }] },
-      { day: 'Wed', title: 'Strength', method: 'Strength', template_id: template.id, duration_min: template.duration_min, pillar: 'Durability', optional: false, slot: null, items },
-      { day: 'Sat', title: 'Extra run', method: 'Run', template_id: null, duration_min: 30, pillar: 'Aerobic Engine', optional: true, slot: 'extra-run',
-        items: [{ exercise_id: run.id, race_session_id: null, dose: '30 min easy', notes: null }] },
-    ],
-  });
-  return { summary: 'Weeks 1-4', weeks: [1, 2, 3, 4].map(week) } as Block;
+  const race = (await loadRaceOption(admin, 'hyrox-open'))!;
+  const c = await loadCandidates(admin, athlete, race, { includeRaceSessions: false });
+  const all = [...c.exercises.values()];
+  const erg = all.find((e) => e.movement_pattern === 'Erg')!;
+  const run = all.find((e) => e.movement_pattern === 'Running')!;
+  const station = all.find((e) => e.id === 'EX0199') ?? all.find((e) => e.movement_pattern === 'Med ball / throw')!;
+  const strength = [...c.templates.values()].find((t) => t.method === 'Strength' && partMinutes(t) === 30)!;
+  const circuit = [...c.templates.values()].find((t) => t.method === 'Circuit' && partMinutes(t) === 20)!;
+  const fill = (t: typeof strength, dose: (i: number) => string) =>
+    t.slots.map((slot, i) => item(all.find((x) => slotMatches(slot, x))!.id, dose(i)));
+  const week = (n: number, deload = false) => {
+    const sessions = [
+      { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null,
+        parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `3 × ${6 + n}, moderate load, RPE 7`) }] },
+      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null,
+        parts: [
+          { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },
+          { format: 'HIIT', template_id: null, minutes: 10, items: [item(erg.id, `hard, RPE 8, week ${n}`)] },
+        ] },
+      { day: 'Fri', title: 'Steady erg', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null,
+        parts: [{ format: 'Aerobic', template_id: null, minutes: 30, items: [item(erg.id, `steady, RPE 6-7, build ${n}`)] }] },
+      { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised',
+        parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item(run.id, '400 m run, RPE 8', { run_minutes: 6 }), item(station.id, `${10 + n} wall balls`)] }] },
+    ];
+    if (deload) sessions.splice(0, 1);
+    return { week: n, focus: 'f', progression: { lever: n === 1 ? 'start' : deload ? 'deload' : 'volume', change: 'c' }, sessions };
+  };
+  return { summary: 'Weeks 1-4', weeks: [week(1), week(2), week(3), week(4, true)] } as unknown as Block;
 }
 
 // --- accounts ---------------------------------------------------------------
@@ -149,11 +166,38 @@ Deno.test({
         assert.equal(block!.status, 'ready');
         assert.ok(block!.started_at);
         const strength = (block!.sessions as Block).weeks[0].sessions[1];
-        assert.ok(strength.timing && 'exercise_count' in strength.timing, 'template sessions get plan_session timing');
+        assert.ok(strength.parts[0].timing && 'exercise_count' in strength.parts[0].timing, 'parts get plan_format timing');
+        assert.deepEqual(strength.frame, { warmup_min: 10, cooldown_min: 5, total_min: 45 });
         const { data: p } = await admin.from('training_programs').select('status, confirmed_at').eq('id', programId).single();
         assert.equal(p!.status, 'active');
         const last = (await events(a.athlete.id)).at(-1)!;
         assert.deepEqual([last.counts_as, last.paid_with], ['confirmation', 'monthly']);
+      });
+
+      await t.step('weekly check-in: tired athlete gets a lighter week 1; the original is kept; nothing counted', async () => {
+        const before = (await events(a.athlete.id)).length;
+        const lighter = (await validBlock(a.athlete)).weeks[0];
+        lighter.progression = { lever: 'deload', change: 'lighter week' };
+        lighter.sessions.forEach((s) => s.parts.forEach((p) => p.items.forEach((it) => { it.cue = 'keep it easy'; })));
+        const fake = fakeClaude([{ data: { summary: 'Lighter week', weeks: [lighter] } }]);
+        const r = await weeklyCheckin(makeDeps(fake.fn, background), a.caller, { program_id: programId, week: 1, energy: 'poor', sleep: 'ok' });
+        assert.equal(r.status, 'adjusting');
+        await Promise.all(background.splice(0));
+        assert.match(String(fake.calls[0].messages[0].content), /Rewrite week 1 only, because: low energy/);
+        const { data: c } = await admin.from('weekly_checkins').select('status, reasons, previous_week').eq('program_id', programId).eq('week', 1).single();
+        assert.equal(c!.status, 'adjusted');
+        assert.deepEqual(c!.reasons, ['low energy']);
+        assert.ok(c!.previous_week, 'original week kept');
+        const { data: block } = await admin.from('program_blocks').select('sessions').eq('program_id', programId).eq('block_no', 1).single();
+        assert.equal((block!.sessions as Block).weeks[0].progression.lever, 'deload');
+        const ev = (await events(a.athlete.id)).slice(before);
+        assert.deepEqual(ev.map((e) => [e.call_type, e.counts_as]), [['week_adjust', null]]);
+      });
+
+      await t.step('weekly check-in: once per week, only for the coming week', async () => {
+        const deps = makeDeps(fakeClaude([]).fn, background);
+        await assert.rejects(weeklyCheckin(deps, a.caller, { program_id: programId, week: 1, energy: 'good', sleep: 'good' }), (e: { code: string }) => e.code === 'already_checked_in');
+        await assert.rejects(weeklyCheckin(deps, a.caller, { program_id: programId, week: 3, energy: 'good', sleep: 'good' }), (e: { code: string }) => e.code === 'wrong_week');
       });
 
       await t.step('confirming again is idempotent and costs nothing', async () => {
@@ -168,7 +212,7 @@ Deno.test({
         const fake = fakeClaude([{ data: outline(16) }]);
         secondId = (await preview(makeDeps(fake.fn, background), a.caller, { inputs })).program.id;
         const bad = await validBlock(a.athlete);
-        bad.weeks[0].sessions[0].items[0].exercise_id = 'EX9999';
+        bad.weeks[0].sessions[0].parts[0].items[0].exercise_id = 'EX9999';
         const failing = fakeClaude([{ data: bad }, { data: bad }]);
         await confirm(makeDeps(failing.fn, background), a.caller, { program_id: secondId });
         await Promise.all(background.splice(0));
@@ -221,6 +265,36 @@ Deno.test({
         assert.equal(block!.status, 'ready');
       });
 
+      await t.step('weekly check-in: ongoing availability change updates the program; key day must stay a training day', async () => {
+        const d = await makeAthlete('d');
+        const fake = fakeClaude([{ data: outline(16) }, { data: await validBlock(d.athlete) }]);
+        const deps = makeDeps(fake.fn, background);
+        const id = (await preview(deps, d.caller, { inputs })).program.id;
+        await confirm(deps, d.caller, { program_id: id });
+        await Promise.all(background.splice(0));
+        await assert.rejects(
+          weeklyCheckin(deps, d.caller, { program_id: id, week: 1, energy: 'good', sleep: 'good', availability: { training_days: ['Mon', 'Fri', 'Sat'], applies: 'ongoing' } }),
+          (e: { message: string }) => /key session/.test(e.message),
+        );
+        const adjusted = (await validBlock(d.athlete)).weeks[0];
+        // Three days now: Wed, Fri and Sat, all core (Saturday's session is no longer optional).
+        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Mon');
+        const sat = adjusted.sessions.find((s) => s.day === 'Sat')!;
+        sat.optional = false;
+        sat.slot = null;
+        const deps2 = makeDeps(fakeClaude([{ data: { summary: 's', weeks: [adjusted] } }]).fn, background);
+        const r = await weeklyCheckin(deps2, d.caller, {
+          program_id: id, week: 1, energy: 'good', sleep: 'good',
+          availability: { training_days: ['Wed', 'Fri', 'Sat'], applies: 'ongoing' },
+        });
+        assert.deepEqual(r.reasons, ['availability changed']);
+        await Promise.all(background.splice(0));
+        const { data: p } = await admin.from('training_programs').select('inputs').eq('id', id).single();
+        assert.deepEqual(p!.inputs.training_days, ['Wed', 'Fri', 'Sat']);
+        const { data: c } = await admin.from('weekly_checkins').select('status, last_error').eq('program_id', id).eq('week', 1).single();
+        assert.equal(c!.status, 'adjusted', c!.last_error ?? '');
+      });
+
       await t.step('spend alert: raised once when today passes the threshold', async () => {
         const c = await makeAthlete('c');
         // 2 million output tokens on Haiku = $10 of fake spend.
@@ -234,6 +308,7 @@ Deno.test({
     } finally {
       await admin.from('coach_alerts').delete().eq('kind', 'spend').eq('alert_date', today);
       await admin.from('coach_alerts').delete().in('athlete_id', created.athletes);
+      await admin.from('weekly_checkins').delete().in('submitted_by', created.users);
       await admin.from('generation_events').delete().in('athlete_id', created.athletes);
       await admin.from('athlete_credit_ledger').delete().in('athlete_id', created.athletes);
       await admin.from('training_programs').delete().in('athlete_id', created.athletes);

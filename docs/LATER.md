@@ -17,11 +17,13 @@ Agreed features and changes that are deliberately not built yet.
 ## Coaching
 
 - **Coach–member messaging.** Members are linked to a coach through `athletes.coach_user_id`.
-- **Pain/injury question in check-ins,** with a consent step. Waits for the privacy checklist. `program_checkins` will have unused `health` fields ready for it.
+- **Soreness/niggle question in check-ins** (block and weekly), with a consent step. Waits for the privacy checklist. `program_checkins` and `weekly_checkins` have `health` fields, locked empty until then. The niggle rules (fully off-feet, then a 2-week build-back) are already in the system prompt.
 
 ## Training data
 
 - **Workout logging**, then: check-ins pre-filled from logs, exact adherence, streaks (core sessions only; optional sessions are a bonus and never break a streak), and the Pillars screen (`workout_logs`).
+- **Adaptive blocks from logged training:** later blocks progress from what was actually done (sets completed, session minutes, sessions per week), not only from check-in answers.
+- **Coach's workout-design documents** in `hyathlon_reference` (optional), only if prompts stay fast. The condensed rules are already in the system prompt.
 - **Rest timer** (part of workout logging):
   - Pops up after a set is logged, preset to the programmed rest. There is also a Rest button on the workout screen.
   - Beeps and vibrates at the end (switchable), with an optional 10-second warning, and sends a notification if the phone is locked.
