@@ -17,16 +17,22 @@ export type Database = {
       ai_call_models: {
         Row: {
           call_type: string
+          effort_member: string | null
+          effort_other: string | null
           model: string
           updated_at: string
         }
         Insert: {
           call_type: string
+          effort_member?: string | null
+          effort_other?: string | null
           model: string
           updated_at?: string
         }
         Update: {
           call_type?: string
+          effort_member?: string | null
+          effort_other?: string | null
           model?: string
           updated_at?: string
         }
@@ -511,6 +517,7 @@ export type Database = {
           promoted_from: string | null
           secondary_pillar: string | null
           source: string
+          tabata_suitable: boolean
           updated_at: string
           where_setting: string
         }
@@ -533,6 +540,7 @@ export type Database = {
           promoted_from?: string | null
           secondary_pillar?: string | null
           source?: string
+          tabata_suitable?: boolean
           updated_at?: string
           where_setting: string
         }
@@ -555,6 +563,7 @@ export type Database = {
           promoted_from?: string | null
           secondary_pillar?: string | null
           source?: string
+          tabata_suitable?: boolean
           updated_at?: string
           where_setting?: string
         }
@@ -915,6 +924,44 @@ export type Database = {
           source?: string
         }
         Relationships: []
+      }
+      race_format_options: {
+        Row: {
+          format: string
+          id: string
+          is_default: boolean
+          label: string
+          race_code: string
+          run_distance_m: number | null
+          sort_order: number
+        }
+        Insert: {
+          format: string
+          id: string
+          is_default?: boolean
+          label: string
+          race_code: string
+          run_distance_m?: number | null
+          sort_order: number
+        }
+        Update: {
+          format?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          race_code?: string
+          run_distance_m?: number | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "race_format_options_race_code_fkey"
+            columns: ["race_code"]
+            isOneToOne: false
+            referencedRelation: "races"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       race_formats: {
         Row: {
@@ -1348,6 +1395,42 @@ export type Database = {
           },
         ]
       }
+      session_formats: {
+        Row: {
+          description: string
+          dose_kind: string
+          format: string
+          label: string
+          needs_template: boolean
+          rules: Json
+          running: string
+          score: string
+          updated_at: string
+        }
+        Insert: {
+          description: string
+          dose_kind: string
+          format: string
+          label: string
+          needs_template?: boolean
+          rules: Json
+          running?: string
+          score?: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string
+          dose_kind?: string
+          format?: string
+          label?: string
+          needs_template?: boolean
+          rules?: Json
+          running?: string
+          score?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       session_template_slots: {
         Row: {
           body_region: string | null
@@ -1619,6 +1702,68 @@ export type Database = {
           },
         ]
       }
+      weekly_checkins: {
+        Row: {
+          availability: Json | null
+          created_at: string
+          energy: string
+          health: Json | null
+          health_consent_at: string | null
+          id: string
+          last_error: string | null
+          previous_week: Json | null
+          program_id: string
+          reasons: string[]
+          sleep: string
+          status: string
+          submitted_by: string
+          updated_at: string
+          week: number
+        }
+        Insert: {
+          availability?: Json | null
+          created_at?: string
+          energy: string
+          health?: Json | null
+          health_consent_at?: string | null
+          id?: string
+          last_error?: string | null
+          previous_week?: Json | null
+          program_id: string
+          reasons?: string[]
+          sleep: string
+          status?: string
+          submitted_by: string
+          updated_at?: string
+          week: number
+        }
+        Update: {
+          availability?: Json | null
+          created_at?: string
+          energy?: string
+          health?: Json | null
+          health_consent_at?: string | null
+          id?: string
+          last_error?: string | null
+          previous_week?: Json | null
+          program_id?: string
+          reasons?: string[]
+          sleep?: string
+          status?: string
+          submitted_by?: string
+          updated_at?: string
+          week?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_checkins_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       v_promotion_candidates: {
@@ -1668,6 +1813,10 @@ export type Database = {
       }
       my_shared_coach_notes: { Args: never; Returns: string }
       owns_program: { Args: { p_program_id: string }; Returns: boolean }
+      plan_format: {
+        Args: { p_format: string; p_level?: string; p_minutes: number }
+        Returns: Json
+      }
       plan_session: {
         Args: { p_level?: string; p_method: string; p_minutes: number }
         Returns: {
@@ -1681,6 +1830,13 @@ export type Database = {
           structure: string
           warmup_min: number
           work_seconds: number
+        }[]
+      }
+      plan_session_frame: {
+        Args: { p_minutes: number }
+        Returns: {
+          cooldown_min: number
+          warmup_min: number
         }[]
       }
       promote_custom_exercise: {
