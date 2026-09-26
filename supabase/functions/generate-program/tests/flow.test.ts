@@ -103,7 +103,7 @@ async function makeAthlete(label: string): Promise<{ caller: Caller; athlete: At
   created.users.push(data.user.id);
   const { data: row, error: e2 } = await admin.from('athletes').insert({
     user_id: data.user.id, name: `Flow ${label}`, tier: 'app', level: 'intermediate',
-    equipment: ['Dumbbell', 'Kettlebell', 'Barbell', 'Plate', 'Bench', 'Rower'], training_locations: ['Home', 'Gym', 'Outdoor'],
+    equipment: ['Dumbbell', 'Kettlebell', 'Barbell', 'Plate', 'Bench', 'Rower', 'Wall ball'], training_locations: ['Home', 'Gym', 'Outdoor'],
   }).select('*').single();
   if (e2) throw e2;
   created.athletes.push(row.id);
