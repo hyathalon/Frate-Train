@@ -160,6 +160,26 @@ async function cleanup() {
   log('cleaned up', created.athletes.length, 'athletes,', created.users.length, 'users (generation_events kept)');
 }
 
+// Hard stop: the cap is otherwise only checked before a profile starts, and a
+// running block keeps repairing on the server. When spend reaches the cap, turn
+// on app_settings.generation_paused (checked before every Claude call).
+async function setPaused(value: 0 | 1) {
+  const { error } = await admin.from('app_settings').update({ value }).eq('key', 'generation_paused');
+  if (error) throw error;
+}
+let watching = true;
+let paused = false;
+const watcher = (async () => {
+  while (watching) {
+    if (!paused && (await spent()) >= CAP) {
+      await setPaused(1);
+      paused = true;
+      log('CAP REACHED: generation paused');
+    }
+    await new Promise((res) => setTimeout(res, 3_000));
+  }
+})();
+
 try {
   // Profiles run in parallel, each started only while the cap covers a worst case for everything in flight.
   const running: Promise<void>[] = [];
@@ -179,6 +199,11 @@ try {
   await Promise.all(running);
   log('TOTAL spent', `$${(await spent()).toFixed(3)}`);
 } finally {
+  watching = false;
+  await watcher;
+  await setPaused(0);
+  const { data } = await admin.from('app_settings').select('value').eq('key', 'generation_paused').single();
+  log('generation_paused is', data?.value);
   await Deno.writeTextFile(`${OUT}summary.json`, JSON.stringify(results, null, 2));
   await cleanup();
 }

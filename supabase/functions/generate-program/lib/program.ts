@@ -292,7 +292,13 @@ async function checkSpendAlert(deps: Deps, settings: Settings) {
   if (insertError && insertError.code !== '23505') console.error(`[generate-program] Spend alert failed: ${insertError.message}`);
 }
 
-/** One call, plus one automatic repair when validation fails. Records every call. */
+/** The emergency stop (app_settings.generation_paused), read before every Claude call. */
+async function generationPaused(admin: SupabaseClient): Promise<boolean> {
+  const { data } = await admin.from('app_settings').select('value').eq('key', 'generation_paused').maybeSingle();
+  return Number(data?.value ?? 0) === 1;
+}
+
+/** One call plus automatic repairs when validation fails. Records every call. */
 async function generateWithRepair<T>(args: {
   deps: Deps;
   settings: Settings;
@@ -318,6 +324,10 @@ async function generateWithRepair<T>(args: {
   const attempts = args.attempts ?? 2;
 
   for (let attempt = 0; attempt < attempts; attempt++) {
+    if (await generationPaused(deps.admin)) {
+      lastError = 'Generation is paused (app_settings.generation_paused).';
+      break;
+    }
     const result = await deps.callClaude!<T>({
       model,
       system: args.system,

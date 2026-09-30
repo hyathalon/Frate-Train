@@ -82,6 +82,11 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
     if (i > 0 && !cutsVolume && (w.lever === 'start' || w.lever === 'deload')) {
       errors.push(`Week ${w.week} must progress one lever: frequency, intensity or volume.`);
     }
+    // A frequency week adds a session (as optional first), so it plans more sessions than the week before.
+    const prev = weeks[i - 1];
+    if (i > 0 && w.lever === 'frequency' && w.core_sessions + w.optional_sessions <= prev.core_sessions + prev.optional_sessions) {
+      errors.push(`Week ${w.week} uses the frequency lever, so it adds a session: plan more core + optional sessions than week ${prev.week} (${prev.core_sessions} + ${prev.optional_sessions}).`);
+    }
   });
 
   const last = weeks[weeks.length - 1];
@@ -349,7 +354,8 @@ const isRecoverySession = (s: Session) =>
   s.session_type === 'recovery' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && p.run_type === 'recovery'));
 const isEasySession = (s: Session) =>
   s.session_type === 'easy_steady' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && EASY_RUN_TYPES.includes(p.run_type ?? '')));
-const isStrengthOnly = (s: Session) => s.parts.every((p) => p.format === 'Strength' || p.format === 'Mobility');
+const isStrengthOnly = (s: Session) =>
+  s.parts.some((p) => p.format === 'Strength') && s.parts.every((p) => p.format === 'Strength' || p.format === 'Mobility');
 
 /**
  * Strength and circuits go on hard days. Recovery days never get them. Easy days

@@ -215,6 +215,12 @@ Deno.test('validateOutline: good outline passes; levers, taper and counts are ch
   t.weeks[3].lever = 'intensity';
   assert.match(validateOutline(t, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /Week 4 is a taper week, so its lever must be "deload"/);
   assert.match(validateOutline(outline(), { totalWeeks: 4, daysAvailable: 1, ...OUTLINE_CTX }).join(' '), /between 1 and 2 \(1 training days, up to 2 sessions a day\)/);
+  // A frequency week must plan an extra session.
+  const f = outline();
+  f.weeks[1].lever = 'frequency';
+  assert.match(validateOutline(f, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /Week 2 uses the frequency lever, so it adds a session/);
+  f.weeks[1].optional_sessions = 2;
+  assert.doesNotMatch(validateOutline(f, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /frequency lever/);
 });
 
 Deno.test('validateBlock: a good block passes', () => {
@@ -422,6 +428,11 @@ Deno.test('parseInputs: limiters and strength sessions a week (onboarding 3b, 10
 });
 
 Deno.test('strength placement: with_hard_sessions, own_days, short second sessions, race week', () => {
+  // A mobility-only second session is not a strength session.
+  const mob = block();
+  mob.weeks[1].sessions.push({ ...structuredClone(mob.weeks[1].sessions[2]), day: 'Fri', order_in_day: 2, title: 'Mobility', optional: true, slot: 'mob',
+    parts: [{ format: 'Mobility', template_id: null, run_type: null, minutes: 10, items: [item('CORE', '10 min easy')] }] });
+  assert.doesNotMatch(validateBlock(mob, ctx).join(' '), /"Mobility".*30- or 45-min Strength template/);
   const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
   // with_hard_sessions: Monday's strength sits alone while Wednesday and Friday (hard days) have room.
   const hardFirst: BlockContext = { ...ctx, strengthPlacement: 'with_hard_sessions' };
