@@ -144,9 +144,9 @@ function week(n: number, reps: number, deload = false) {
   const sessions: Session[] = [
     { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
       parts: [{ format: 'Strength', template_id: 'STR-45', run_type: null, minutes: 30, items: [item('SQ', `3 × ${reps}, hard with intent: 1–2 good reps left`), item('PU', `3 × ${reps}, bodyweight, hard with intent`)] }] },
-    { day: 'Wed', title: 'Circuit + Tabata', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
+    { day: 'Wed', title: 'Compromised + Tabata', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
       parts: [
-        { format: 'Circuit', template_id: 'CIR-30', run_type: null, minutes: 20, items: [item('SQ', `RPE ${reps - 1}`), item('CORE', 'steady, RPE 7')] },
+        { format: 'Compromised', template_id: null, run_type: null, minutes: 20, items: [item('RUN', '400 m run, RPE 8', { run_minutes: 5 }), item('WB', `${reps * 3} wall balls`)] },
         { format: 'Tabata', template_id: null, run_type: null, minutes: 10, items: [item('SQ', 'max effort', { block: 1 }), item('PU', 'max effort', { block: 2 }), item('CORE', `max effort, week ${n}`, { block: 2 })] },
       ] },
     { day: 'Fri', title: 'Bike', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null, ...ERG_META,
@@ -234,7 +234,7 @@ Deno.test('formats: templates, Tabata, HIIT, doses and units', () => {
   assert.match(errorsFor((b) => { b.weeks[0].sessions[0].parts[0].items.reverse(); }), /doesn't fit slot "Squat"/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[1].parts[1].items[0].exercise_id = 'DL'; }), /DL is not Tabata-suitable/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[1].parts[1].items.forEach((it) => { it.block = 1; }); }), /Tabata block 1 needs 1 exercise, or 2 alternating; it has 3.*Tabata block 2 needs 1 exercise, or 2 alternating; it has 0/);
-  assert.match(errorsFor((b) => { b.weeks[0].sessions[1].parts[0].items[0].dose = '12 reps'; }), /Circuit is timed, so the dose is time only/);
+  assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts[0].items[0].dose = '12 reps'; }), /HIIT is timed, so the dose is time only/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[0].parts[0].items[0].dose = '3 sets, RPE 7'; }), /strength is dosed as working sets × reps plus the intent/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[0].parts[0].items[0].dose = '3 × 8 @ 60 kg'; }), /never kg, watts, paces or zones/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts[1].items[0].dose = 'Zone 2 steady'; }), /never kg, watts, paces or zones/);
@@ -270,13 +270,26 @@ Deno.test('weekly mix: no running = at least one strength and one conditioning s
 Deno.test('programmed running: key run, easy/long run, run types and long-run caps', () => {
   const run = (type: string, minutes: number, dose = `${minutes} min @ RPE 6-7 Steady`) =>
     ({ format: 'Run' as const, template_id: null, run_type: type as 'key', minutes, items: [item('RUN', dose)] });
-  const programmed: BlockContext = { ...ctx, running: 'programmed' };
-  // 3 core sessions: needs a key run, strength, hybrid. Friday becomes the key run.
-  const withKeyRun = (b: Block) => { for (const w of b.weeks) { const fri = w.sessions.find((x) => x.day === 'Fri'); if (fri) fri.parts = [run('key', 30, `3 × 8 min @ RPE 8-8.5 / 2 min easy, week ${w.week}`)]; } };
+  const programmed: BlockContext = { ...ctx, running: 'programmed', keySessionDay: 'Fri' };
+  // 3 core sessions: needs a key run, strength, hybrid. Friday's interval run becomes the key session.
+  const withKeyRun = (b: Block) => {
+    for (const w of b.weeks) {
+      const fri = w.sessions.find((x) => x.day === 'Fri');
+      if (!fri) continue;
+      fri.parts = [run('key', 30, `3 × 8 min @ RPE 8-8.5 / 2 min easy, week ${w.week}`)];
+      fri.key_session = true;
+      for (const x of w.sessions) if (x !== fri) x.key_session = false;
+    }
+  };
   const good = block();
   withKeyRun(good);
   assert.deepEqual(validateBlock(good, programmed), []);
   assert.match(validateBlock(block(), programmed).join(' '), /key run/);
+  // The key session must be the interval run, at RPE 8+.
+  const easyKey = block();
+  withKeyRun(easyKey);
+  easyKey.weeks[1].sessions[2].parts[0].items[0].dose = '30 min @ RPE 6-7 Steady';
+  assert.match(validateBlock(easyKey, programmed).join(' '), /Week 2: the key session "Bike" is the main interval session at RPE 8 or more/);
   const noType = block();
   withKeyRun(noType);
   noType.weeks[0].sessions[2].parts[0].run_type = null;
@@ -387,7 +400,7 @@ Deno.test('strength placement: with_hard_sessions, own_days, short second sessio
   assert.equal(week2(validateBlock(moved, hardFirst)), '');
   // Strength first, hard session second: wrong order.
   str.order_in_day = 1; moved.weeks[1].sessions[1].order_in_day = 2;
-  assert.match(week2(validateBlock(moved, hardFirst)), /goes after "Circuit \+ Tabata" on Wed/);
+  assert.match(week2(validateBlock(moved, hardFirst)), /goes after "Compromised \+ Tabata" on Wed/);
   // A second-of-day strength session that isn't one short template.
   const long = block();
   const ls = long.weeks[1].sessions[0];
@@ -425,6 +438,27 @@ Deno.test('outline strength_sessions: the choice in normal weeks, 1 + 1 optional
   // Too few core sessions for the choice.
   o.weeks[1] = { ...o.weeks[1], strength_sessions: 1, core_sessions: 2 };
   assert.match(validateOutline(o, { ...oc, strengthPref: 2 }).join(' '), /Week 2: plan at least 3 core sessions/);
+});
+
+Deno.test('key session: a real quality session', () => {
+  const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
+  // Station skill, easy or recovery sessions are never the key session.
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[1].session_type = 'station_skill'; }), /the key session "Compromised \+ Tabata" is station skill; the key session is a quality session/);
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[1].session_type = 'easy_steady'; }), /is easy steady/);
+  // No running programmed: a hard strength session, race simulation or compromised session.
+  const erg = block();
+  erg.weeks[1].sessions[1].parts = structuredClone(erg.weeks[1].sessions[2].parts); // bike intervals as the key session
+  assert.match(week2(validateBlock(erg, ctx)), /without programmed running, the key session is a hard strength session, a race simulation or a compromised session/);
+  // A hard strength session can be the key session, alone on its day.
+  const strengthKey = block();
+  strengthKey.weeks[1].sessions[0].key_session = true;
+  strengthKey.weeks[1].sessions[1].key_session = false;
+  assert.doesNotMatch(week2(validateBlock(strengthKey, { ...ctx, keySessionDay: 'Mon' })), /key session/);
+  // Core/mobility as the main session: only in a taper or post-event week.
+  const core = block();
+  core.weeks[1].sessions[1].parts = [{ format: 'Tabata', template_id: null, run_type: null, minutes: 30, items: [item('CORE', 'max effort', { block: 1 })] }];
+  assert.match(week2(validateBlock(core, ctx)), /is core\/mobility work; that is only the week's main session in a taper or post-event week/);
+  assert.doesNotMatch(week2(validateBlock(core, { ...ctx, postEventWeeks: [2] })), /core\/mobility/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

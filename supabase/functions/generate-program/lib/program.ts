@@ -470,7 +470,7 @@ export async function confirm(deps: Deps, caller: Caller, body: Record<string, u
 
   const { data: program, error } = await admin
     .from('training_programs')
-    .select('id, athlete_id, status, total_weeks, outline, inputs')
+    .select('id, athlete_id, status, start_date, total_weeks, outline, inputs')
     .eq('id', body.program_id)
     .maybeSingle();
   if (error) throw new Error(`Could not load the program: ${error.message}`);
@@ -536,6 +536,7 @@ interface ProgramRow {
   id: string;
   athlete_id: string;
   status: string;
+  start_date: string;
   total_weeks: number;
   outline: Outline;
   inputs: ProgramInputs;
@@ -640,7 +641,7 @@ async function generateBlockWeeks(a: {
   const raceDay = weekdayOf(inputs.race_date);
   const event = { userId: a.caller.userId, athleteId: athlete.id, programId: program.id, blockNo: a.blockNo, callType: a.callType };
   const ctx = (from: number, to: number, extra: Partial<BlockContext>, b?: Block): Promise<BlockContext> =>
-    blockContext({ admin, settings, inputs, outline, totalWeeks: program.total_weeks, prep, level, from, to, raceDay, block: b, extra });
+    blockContext({ admin, settings, inputs, outline, totalWeeks: program.total_weeks, prep, level, from, to, raceDay, startDate: program.start_date, block: b, extra });
   const promptFor = (week: number, extra: { previousWeek?: BlockWeek; referenceWeek?: BlockWeek }) =>
     blockContent(blockPrompt({
       athlete, inputs, coach, outline, startWeek: week, endWeek: week, candidates, frame, tabataTimings,
@@ -716,6 +717,24 @@ async function generateBlockWeeks(a: {
   return { block: timed, error: null, countEventId: first.eventId, frame };
 }
 
+/**
+ * Program weeks straight after an event the athlete raced (last race, or a
+ * "race it" event): week 1 if the race was in the 7 days before the start.
+ */
+function postEventWeeks(inputs: ProgramInputs, startDate: string): number[] {
+  const raced = [
+    ...(inputs.last_race ? [inputs.last_race.date] : []),
+    ...(inputs.other_events ?? []).filter((e) => e.mode === 'race').map((e) => e.date),
+  ];
+  const weeks = new Set<number>();
+  for (const d of raced) {
+    const days = daysBetween(startDate, d); // negative: before the program starts
+    if (days < 0 && days >= -7) weeks.add(1);
+    else if (days >= 0) weeks.add(Math.floor(days / 7) + 2);
+  }
+  return [...weeks];
+}
+
 /** The validator's context for weeks `from`..`to` of a program. */
 async function blockContext(a: {
   admin: SupabaseClient;
@@ -728,6 +747,7 @@ async function blockContext(a: {
   from: number;
   to: number;
   raceDay: string | null;
+  startDate?: string;
   block?: Block;
   outlineWeeks?: OutlineWeek[];
   extra: Partial<BlockContext>;
@@ -750,6 +770,7 @@ async function blockContext(a: {
     strengthChoice: inputs.strength_choice ?? 'program',
     ownStrength: inputs.own_strength ?? [],
     raceDay: a.raceDay,
+    postEventWeeks: a.startDate ? postEventWeeks(inputs, a.startDate) : [],
     keySessionDay: inputs.key_session_day,
     minutesPerSession: inputs.minutes_per_session,
     frame: a.prep.frame,
@@ -973,6 +994,7 @@ async function adjustWeek(
       const n = normalizeBlock(b);
       const c = await blockContext({
         admin, settings, inputs, outline: program.outline, totalWeeks: program.total_weeks, prep, level, from: week, to: week, raceDay,
+        startDate: program.start_date,
         block: n, outlineWeeks: [target],
         extra: { previousWeek, previousLongRunMin: lastLongRun(block.sessions.weeks.filter((w) => w.week < week)) },
       });

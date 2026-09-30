@@ -86,10 +86,10 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
     const sessions = [
       { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
         parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `3 × ${6 + n}, hard with intent: 1–2 good reps left`) }] },
-      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...ERG_META,
+      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
         parts: [
           { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },
-          { format: 'HIIT', template_id: null, minutes: 10, items: [item(erg.id, `hard, RPE 8, week ${n}`)] },
+          { format: 'Compromised', template_id: null, minutes: 10, items: [item(run.id, '200 m run, RPE 8', { run_minutes: 2 }), item(station.id, `${8 + n} wall balls`)] },
         ] },
       { day: 'Fri', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
         parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item(run.id, '400 m run, RPE 8', { run_minutes: 6 }), item(station.id, `${10 + n} wall balls`)] }] },
@@ -174,7 +174,7 @@ Deno.test({
         assert.deepEqual(r, { program_id: programId, block_no: 1, weeks: [1, 4], status: 'generating' });
         await Promise.all(background.splice(0));
         assert.equal(fake.calls[0].model.model, 'claude-sonnet-5');
-        assert.equal(fake.calls[0].effort, 'medium');
+        assert.equal(fake.calls[0].effort, 'low'); // block calls run at low effort (migration 9)
         const { data: block } = await admin.from('program_blocks').select('status, sessions, started_at').eq('program_id', programId).eq('block_no', 1).single();
         assert.equal(block!.status, 'ready');
         assert.ok(block!.started_at);

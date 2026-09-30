@@ -98,6 +98,9 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 
 ## Week rules
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
+- Quality sessions: running programs → the interval sessions and the long run; the key session is the main interval session (RPE 8+). Strength-only / no-running programs → the hard strength sessions or Hyathlon race simulations; one is the key session.
+- Never quality or key: station_skill (technique work: warm-up, strength day or short add-on), easy, recovery, and core/mobility — except in a taper or post-event week, when core/mobility can be the week's main session.
+- Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
 - Add at most ONE new stimulus per block, except for experienced athletes (3+ years consistent training, no current injury), who can take more than one; mark new additions optional: true.
@@ -363,7 +366,7 @@ Rules for sessions:
 - Running exercises are marked R; they only go in ${inputs.running.mode === 'programmed' ? 'Run, ' : ''}RaceSim and Compromised parts.${inputs.running.mode === 'programmed' ? ' Run parts set run_type (key, easy, long or recovery).' : ''}
 - Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot, note) instead of sending them empty.
 - Optional sessions have optional true and a short slot key that stays the same across the block's weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
-- Mark exactly one core session a week as the key session, on ${inputs.key_session_day}.
+- Mark exactly one core session a week as the key session, on ${inputs.key_session_day}. ${inputs.running.mode === 'programmed' ? 'It is the main interval session: a Run part with run_type key at RPE 8 or more.' : 'It is a hard (build) strength session, a race simulation or a compromised session.'} Never station skill, easy, recovery or core/mobility (core/mobility only in a taper or post-event week); for beginners, a smaller dose of real quality work.
 - Give each week's progression: the lever from the outline and, in one sentence, what changes.
 
 <exercises>

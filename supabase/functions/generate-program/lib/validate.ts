@@ -131,6 +131,7 @@ export interface BlockContext {
   strengthChoice?: StrengthChoice; // default 'program'
   ownStrength?: OwnStrengthSession[]; // strength_choice 'own': the athlete's own strength/classes
   raceDay: string | null; // weekday of the race (final week)
+  postEventWeeks?: number[]; // weeks straight after a raced event
   crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
   minutesPerSession: number;
@@ -224,6 +225,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (keys.length !== 1) errors.push(`${label}: mark exactly one core session as the key session.`);
     else if (keys[0].day !== ctx.keySessionDay) errors.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
     if (optional.some((s) => s.key_session)) errors.push(`${label}: optional sessions can't be the key session.`);
+    if (keys.length === 1) checkKeySession(keys[0], label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
 
     // Progression: one lever, matching the outline.
     if (plan && week.progression.lever !== plan.lever) {
@@ -258,6 +260,55 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
   });
   if (ctx.running === 'programmed' && ctx.crossWeek !== false) checkLongRuns(block, ctx, errors);
   return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Key session: a real quality session
+// ---------------------------------------------------------------------------
+
+const NEVER_KEY_TYPES = ['station_skill', 'easy_steady', 'recovery'];
+const RPE_RE = /\bRPE\s*(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?/gi;
+
+/** The highest RPE a dose names, if any. */
+function maxRpe(dose: string): number | null {
+  let max: number | null = null;
+  for (const m of dose.matchAll(RPE_RE)) max = Math.max(max ?? 0, Number(m[2] ?? m[1]));
+  return max;
+}
+
+/**
+ * The key session is a quality session. Running programmed: the main interval
+ * session (a key Run part at RPE 8+). Otherwise: a hard (build) strength session,
+ * a race simulation or a compromised session. Never station skill, easy,
+ * recovery or core/mobility, except core/mobility in a taper or post-event week.
+ */
+function checkKeySession(s: Session, label: string, taperOrPostEvent: boolean, ctx: BlockContext, errors: string[]) {
+  const coreMobility = s.parts.every((p) => p.format === 'Mobility' || p.items.every((it) => {
+    const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
+    return e?.movement_pattern === 'Core' || e?.movement_pattern === 'Mobility';
+  }));
+  if (coreMobility) {
+    if (!taperOrPostEvent) errors.push(`${label}: the key session "${s.title}" is core/mobility work; that is only the week's main session in a taper or post-event week.`);
+    return;
+  }
+  if (NEVER_KEY_TYPES.includes(s.session_type)) {
+    errors.push(`${label}: the key session "${s.title}" is ${s.session_type.replace('_', ' ')}; the key session is a quality session (for beginners, a smaller dose, never an easy circuit).`);
+    return;
+  }
+  if (taperOrPostEvent || ctx.finalWeek === undefined) return;
+  if (ctx.running === 'programmed') {
+    const key = s.parts.filter((p) => p.format === 'Run' && p.run_type === 'key');
+    if (!key.length) {
+      errors.push(`${label}: with running programmed, the key session is the main interval session (a Run part with run_type key); "${s.title}" has none.`);
+    } else if (key.every((p) => p.items.every((it) => (maxRpe(it.dose) ?? 0) < 8))) {
+      errors.push(`${label}: the key session "${s.title}" is the main interval session at RPE 8 or more.`);
+    }
+    return;
+  }
+  const hardStrength = s.parts.some((p) => p.format === 'Strength') && s.build_or_maintain === 'build';
+  if (!hardStrength && !s.parts.some((p) => p.format === 'RaceSim' || p.format === 'Compromised')) {
+    errors.push(`${label}: without programmed running, the key session is a hard strength session, a race simulation or a compromised session; "${s.title}" is none of these.`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -466,7 +517,7 @@ function checkStrengthWeek(
     }
     // Hard days with room for a strength session, while strength sits elsewhere.
     const free = ctx.trainingDays.filter((d) => hardDay(d) && !on(d).some(isStrengthSession) && week.sessions.filter((s) => s.day === d).length < 2);
-    const elsewhere = strength.filter((s) => !hardDay(s.day));
+    const elsewhere = strength.filter((s) => !hardDay(s.day) && !s.key_session); // a key strength session stands on its own
     if (free.length && elsewhere.length) {
       errors.push(`${label}: strength goes on hard days first (as the day's second session); ${free.join(', ')} ${free.length === 1 ? 'has' : 'have'} room, but "${elsewhere[0].title}" is on ${elsewhere[0].day}.`);
     }
