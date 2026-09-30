@@ -79,6 +79,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Readiness amber: keep session types, lower end of RPE and set ranges. Readiness red: swap the next key session for recovery (RPE 1–4) or reduce the shift.
 - Less time: keep key session(s); optional sessions go first, then shorten others.
 - Respect athlete_edits: never move or remove locked sessions; count added sessions in weekly load and spacing.
+- Core principle: the app recommends, the athlete decides. Athlete choices and edits override these rules. Never undo or "correct" them; plan the rest of the week around them and, where they cost recovery, add a one-line note in the session's execution_note or considerations.
 - Record each change in modifications[] with a short athlete-facing reason (max ~20 words).
 
 ## Week rules
@@ -119,6 +120,7 @@ const COACHING_RULES_MAPPING = `How the coaching rules map to this request:
 - athlete.can_double and athlete.strength_placement are in <athlete>. A double day has two separate sessions on the same day: order_in_day 1 (first, e.g. AM quality run) and 2 (second, e.g. PM strength). Strength is always its own session, never a part inside a run session. can_double "no": the only double day is a strength session straight after the run (order_in_day 2). "sometimes": use double days sparingly. "yes": running doubles are allowed too.
 - Strength dose: working sets × reps and the intent, no RPE number, e.g. "3 sets (2–3) × 6–8, hard with intent: finish with 1–2 good reps left". Ramp-up sets are not written or counted. Maintain = 1–2 working sets. A strength template's slots pair into supersets (A1/A2); a strength session has at most 4 exercise groups.
 - Weekly modification: apply the body-report and history rules only when that information is provided. If body reports or logged history are missing, make no change for them.
+- execution_note and considerations both go in the session's note field: one short athlete-facing line, left out when there is nothing to say.
 - Athlete-facing text never names event brands; say "Hyathlon race" or "race".
 - The output shape is this request's JSON schema (weeks, sessions, parts, items), not the one the rules document mentions.`;
 

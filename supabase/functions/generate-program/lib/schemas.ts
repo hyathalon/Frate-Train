@@ -137,6 +137,7 @@ export interface Session {
   build_or_maintain: 'build' | 'maintain';
   progression: { type: (typeof PROGRESSION_TYPES)[number]; change: string };
   alternatives: { modality: string; note: string | null }[]; // cross-training alternatives, preferred first
+  note: string | null; // one athlete-facing line: execution note or consideration (e.g. a recovery cost)
   optional: boolean;
   slot: string | null;
   parts: SessionPart[];
@@ -230,6 +231,7 @@ export const BLOCK_SCHEMA = {
                     properties: { modality: { type: 'string' }, note: { type: 'string' } },
                   },
                 },
+                note: { type: 'string', description: 'One short athlete-facing line: execution note or consideration, e.g. the recovery cost of an athlete\'s choice.' },
                 optional: { type: 'boolean' },
                 slot: { type: 'string' },
                 parts: {
@@ -263,6 +265,7 @@ export function normalizeBlock(block: Block): Block {
       session.slot ??= null;
       session.order_in_day ??= 1;
       session.alternatives ??= [];
+      session.note ??= null;
       for (const alt of session.alternatives) alt.note ??= null;
       for (const part of session.parts ?? []) {
         part.template_id ??= null;

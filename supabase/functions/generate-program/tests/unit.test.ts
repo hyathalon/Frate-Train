@@ -134,8 +134,8 @@ const item = (id: string, dose: string, over: Record<string, unknown> = {}) => (
   exercise_id: id, race_session_id: null, dose, cue: null, block: null, foot_contacts: null, run_minutes: null, run_distance_m: null, ...over,
 });
 
-type Meta = Pick<Session, 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
-const META: Meta = { order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
+type Meta = Pick<Session, 'note' | 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
+const META: Meta = { note: null, order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
 const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
 
 // 45-minute sessions: 10 min warm-up + 30 min of parts + 5 min cool-down.
@@ -378,7 +378,7 @@ Deno.test('normalizeBlock fills fields Claude left out', () => {
   ] }] } as unknown as Block;
   const n = normalizeBlock(raw);
   const it = n.weeks[0].sessions[0].parts[0].items[0];
-  assert.deepEqual(n.weeks[0].sessions[0].alternatives, []);
+  assert.deepEqual([n.weeks[0].sessions[0].alternatives, n.weeks[0].sessions[0].note], [[], null]);
   assert.deepEqual([n.weeks[0].sessions[0].slot, n.weeks[0].sessions[0].parts[0].template_id, n.weeks[0].sessions[0].parts[0].run_type, it.race_session_id, it.cue, it.block], [null, null, null, null, null, null]);
 });
 

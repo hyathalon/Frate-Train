@@ -15,8 +15,8 @@ import { localDate } from '../lib/time.ts';
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SECRET_KEY')!, { auth: { persistSession: false } });
 const RUN = Date.now();
-type Meta = Pick<Session, 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
-const META: Meta = { order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
+type Meta = Pick<Session, 'note' | 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
+const META: Meta = { note: null, order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
 const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
 const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 

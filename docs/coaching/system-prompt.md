@@ -56,6 +56,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Readiness amber: keep session types, lower end of RPE and set ranges. Readiness red: swap the next key session for recovery (RPE 1–4) or reduce the shift.
 - Less time: keep key session(s); optional sessions go first, then shorten others.
 - Respect athlete_edits: never move or remove locked sessions; count added sessions in weekly load and spacing.
+- Core principle: the app recommends, the athlete decides. Athlete choices and edits override these rules. Never undo or "correct" them; plan the rest of the week around them and, where they cost recovery, add a one-line note in the session's execution_note or considerations.
 - Record each change in modifications[] with a short athlete-facing reason (max ~20 words).
 
 ## Week rules

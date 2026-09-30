@@ -225,6 +225,9 @@ At the end of each week (after the check-in, or on the athlete's chosen day if t
 
 ## 7. Athlete control
 
+**Core principle: the app recommends, the athlete decides.** Our training rules decide what the app *generates*. The athlete can always personalise it, even against those rules: add, move, modify or lock sessions, and change their preferences. When a change goes against a rule, the app shows a short, friendly note about the trade-off (e.g. recovery cost) and then lets them go ahead. Notes, never blocks. The only limits: coached members can't delete coach-set key sessions (they can move or modify them), and body-report messages still say "check with your medical professional".
+
+
 | Action | Self-serve athlete | Coached member |
 |---|---|---|
 | Accept, keep original or edit the adjusted week | ✅ | ✅ (coach sees it) |
