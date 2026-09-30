@@ -378,3 +378,10 @@ A one-page view for doing a strength, circuit or hybrid session without typing a
 **Why it matters**
 - The logged weights, sets and reps are the athlete's history for **progressing one lever** next time (e.g. more load once all sets were completed with good reps left), and they feed the load graph.
 - Works for the athlete's own classes too, if they've added exercises (Q10a).
+
+## 16. Modifications and credits
+- **Included for everyone:** the automatic end-of-week adjustment (§6) and the athlete's own edits (adding, moving, modifying or locking sessions, §7). These are not AI replans.
+- **A "modification" is an athlete-requested replan:** e.g. "Rebuild my plan from next week", or regenerating the current week mid-week.
+- **Members:** unlimited modifications.
+- **Self-serve athletes:** 2 modifications a month included *(placeholder, coach to confirm)*; buy **4 more for $10**, the same as extra program confirmations.
+- Before using a credit, the app says so: *"This will use 1 of your 2 plan changes this month."* When they run out: *"You've used your plan changes for this month. Get 4 more for $10, or keep editing sessions yourself for free."*
