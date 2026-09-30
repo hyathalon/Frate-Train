@@ -29,8 +29,35 @@ Compromised running here isn't about making sessions harder. It trains the abili
 
 If the athlete has a stored race average run pace, the app can show their own pace next to the RPE (never instead of it).
 
+### A2b. First-program compromised sessions (entry level)
+**Loose rule:** an athlete's **first program** uses these entry-level compromised sessions. The A3 sessions are for their **2nd or 3rd program** onwards. It's a loose rule: an athlete with plenty of Hyathlon racing and training behind them can start with A3 sessions sooner.
+
+Efforts in the app's scale: fast strides (controlled sprint, ~3 km effort) **RPE 9–9.5**; race effort **RPE 8–8.5**; slightly faster than race effort / "race effort −5 to 10 s" **RPE 8.5–9**; easy jog **RPE 5–6**. Warm-up and cool-down: 8–10 min easy jog (RPE 1–4 building).
+
+**Compromised threshold (strides → race effort):**
+
+| # | Main set |
+|---|---|
+| 1 | 2–3 × [6 × 30 s fast strides / 30 s easy jog → 5 min race effort → 2 min easy jog] |
+| 2 | 3 × [6 × 30 s fast strides / 30 s easy jog → 4 min slightly faster than race effort → 90 s easy jog] |
+| 3 | 2–3 × [8 × 20 s fast strides / 20 s easy jog → 6 min race effort ("controlled discomfort") → 2 min easy jog] |
+| 4 | 2–3 × [6 × 30 s fast strides / 20 s easy jog → 3 min race effort → 2 min slightly faster (push finish) → 2 min easy jog] |
+
+Focus: hold controlled race effort after surges; switch quickly between fast running and threshold running without losing rhythm or mechanics; settle fast after high neural and metabolic stress.
+Purpose: better lactate tolerance and clearance, holding threshold effort when pre-fatigued, aerobic power and running economy, pacing decisions under discomfort, and repeating race-style output changes (sprint → hold → recover → repeat).
+
+**Specific compromised threshold (bodyweight stations → race effort):**
+
+| # | Main set |
+|---|---|
+| 1 | 3 × [50 m burpee broad jumps · 30 s easy jog · 50 m walking lunges (no weight) → 5 min race effort to slightly faster → 2 min easy jog] |
+| 2 | 4 × [50 m walking lunges (no weight) · 30 s easy jog · 50 m burpee broad jumps → 5 min race effort → 2 min easy jog] |
+| 3 | 4 × [50 m walking lunges (no weight) · 30 s easy jog · 50 m burpee broad jumps → 5 min race effort → 2 min easy jog → 2 min slightly faster than race effort] |
+
+Progression through the entry sessions changes one thing at a time: more strides or rounds, shorter recovery, a faster finish, then bodyweight stations before the run.
+
 ### A3. The sessions
-All: warm-up RPE 1–4 building to strides, cool-down RPE 1–4. Pillar: **Durability** and **Fatigue Management**. These are **quality sessions**, usually in the specific phase.
+All: warm-up RPE 1–4 building to strides, cool-down RPE 1–4. Pillar: **Durability** and **Fatigue Management**. These are **quality sessions**, usually in the specific phase, for athletes in their **2nd or 3rd program onwards** (see A2b for first programs).
 
 | # | Session | Main set | Purpose / cue |
 |---|---|---|---|
@@ -56,7 +83,7 @@ All: warm-up RPE 1–4 building to strides, cool-down RPE 1–4. Pillar: **Durab
 ### A5. Long runs with efforts (Frates's long-run progression)
 **Build up to it:** once an athlete can run about 80 min. Before that, build the long run in bands: **50–60 → 60–70 → 70–80 min**.
 
-Effort translation: "easy, conversational" long run = **RPE 6–7 (low end of Steady)**. "Race goal pace to +10 s" = **Hyathlon race effort, RPE 8–8.5**. "Goal pace to –5 s" = **slightly faster than race effort, RPE 8.5–9**. "Float (+30–40 s)" = **RPE 6–7**. "Easy jog" = **RPE 5–6**. If the athlete has a stored race average pace, the app can show their own paces alongside (e.g. "4 × 5 min @ 4:40–4:50 /km").
+Effort translation: "easy, conversational" long run = **RPE 5–6 for beginner–intermediate runners, RPE 6–7 for advanced**. "Race goal pace to +10 s" = **Hyathlon race effort, RPE 8–8.5**. "Goal pace to –5 s" = **slightly faster than race effort, RPE 8.5–9**. "Float (+30–40 s)" = **RPE 6–7**. "Easy jog" = **RPE 5–6**. If the athlete has a stored race average pace, the app can show their own paces alongside (e.g. "4 × 5 min @ 4:40–4:50 /km").
 
 | Stage | Duration | Structure | Lever added |
 |---|---|---|---|
