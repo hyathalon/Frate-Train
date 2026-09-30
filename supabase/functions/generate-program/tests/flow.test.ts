@@ -54,7 +54,7 @@ function outline(totalWeeks: number): Outline {
     ],
     weeks: Array.from({ length: totalWeeks }, (_, i) => ({
       week: i + 1, phase: i + 1 === totalWeeks ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: deload(i + 1),
-      lever: i === 0 ? 'start' : deload(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, strength_sessions: deload(i + 1) || i + 1 === totalWeeks ? 1 : 2, optional_sessions: deload(i + 1) ? 2 : 1,
+      lever: i === 0 ? 'start' : deload(i + 1) || i + 1 === totalWeeks ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, strength_sessions: deload(i + 1) || i + 1 === totalWeeks ? 1 : 2, optional_sessions: deload(i + 1) ? 2 : 1,
       key_session: 'Circuit + intervals', key_sessions: ['k'], pillars: ['Aerobic Engine'],
     })),
   } as Outline;

@@ -74,8 +74,12 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
       errors.push(`Week ${w.week}: plan at least ${needed} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day${ctx.beginner ? '; beginners: a run or conditioning session on every training day, strength as second sessions' : ''}).`);
     }
     if (i === 0 && w.lever !== 'start') errors.push('Week 1 must use lever "start".');
-    if (i > 0 && w.deload && w.lever !== 'deload') errors.push(`Week ${w.week} is a deload, so its lever must be "deload".`);
-    if (i > 0 && !w.deload && (w.lever === 'start' || w.lever === 'deload')) {
+    // Taper weeks (including race week) cut volume: lever "deload", like deload weeks.
+    const cutsVolume = w.deload || w.phase === 'taper';
+    if (i > 0 && cutsVolume && w.lever !== 'deload') {
+      errors.push(`Week ${w.week} is a ${w.phase === 'taper' ? 'taper' : 'deload'} week, so its lever must be "deload".`);
+    }
+    if (i > 0 && !cutsVolume && (w.lever === 'start' || w.lever === 'deload')) {
       errors.push(`Week ${w.week} must progress one lever: frequency, intensity or volume.`);
     }
   });
@@ -236,7 +240,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (cross && previous && week.progression.lever === 'frequency' && week.sessions.length <= previous.sessions.length) {
       errors.push(`${label}: a frequency week must add a session (as optional first); it has ${week.sessions.length}, the week before had ${previous.sessions.length}.`);
     }
-    if (cross && previous && week.progression.lever === 'deload') {
+    if (cross && previous && week.progression.lever === 'deload' && week.week !== ctx.finalWeek) { // race week: no size rule
       const ratio = coreMinutes(week, ctx) / Math.max(1, coreMinutes(previous, ctx));
       const lo = ctx.settings.deloadMin - DEFAULT_LEEWAY, hi = ctx.settings.deloadMax + DEFAULT_LEEWAY;
       if (ratio < lo || ratio > hi) {

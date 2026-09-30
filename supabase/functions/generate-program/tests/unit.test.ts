@@ -207,7 +207,13 @@ Deno.test('validateOutline: good outline passes; levers, taper and counts are ch
   assert.match(validateOutline(o, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /must progress one lever/);
   const d = outline();
   d.weeks[3].lever = 'volume';
-  assert.match(validateOutline(d, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /deload, so its lever must be "deload"/);
+  assert.match(validateOutline(d, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /Week 4 is a taper week, so its lever must be "deload"/);
+  // A taper week that isn't flagged as a deload still cuts volume: lever "deload", and that is valid.
+  const t = outline();
+  t.weeks[3].deload = false;
+  assert.doesNotMatch(validateOutline(t, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /Week 4/);
+  t.weeks[3].lever = 'intensity';
+  assert.match(validateOutline(t, { totalWeeks: 4, daysAvailable: 4, ...OUTLINE_CTX }).join(' '), /Week 4 is a taper week, so its lever must be "deload"/);
   assert.match(validateOutline(outline(), { totalWeeks: 4, daysAvailable: 1, ...OUTLINE_CTX }).join(' '), /between 1 and 2 \(1 training days, up to 2 sessions a day\)/);
 });
 

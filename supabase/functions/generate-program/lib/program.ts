@@ -24,6 +24,8 @@ const BLOCK_WEEKS = 4;
 const SPEND_TIMEZONE = 'Australia/Sydney';
 // The preview answers synchronously and must respond within the 150 s request limit.
 const PREVIEW_TIMEOUT_MS = 90_000;
+const PREVIEW_REPAIR_TIMEOUT_MS = 45_000; // Haiku repairs take 10–20 s
+const PREVIEW_BUDGET_MS = 135_000; // under the 150 s request limit
 // A block call plus one repair must fit the 400 s Edge Function limit. High effort
 // gets more time; its repair runs at medium.
 const BLOCK_TIMEOUT_MS = { high: 210_000, other: 150_000 };
@@ -429,6 +431,10 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
     }),
     maxTokens: 16000,
     timeoutMs: PREVIEW_TIMEOUT_MS,
+    // Two repairs, but the athlete is waiting: only start a repair that can finish in time.
+    attempts: 3,
+    repairTimeoutMs: PREVIEW_REPAIR_TIMEOUT_MS,
+    deadline: Date.now() + PREVIEW_BUDGET_MS,
     countsAs: 'preview',
     paidWith: caller.role === 'coach' ? null : 'monthly',
   });
