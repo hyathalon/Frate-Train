@@ -30,6 +30,25 @@ Keep **Z1 and Z2 distinct**: Z1 (RPE 1–4 · Recovery) is **only** for recovery
 - Extend in small steps from there (~5–10 min per step, with a lighter week in each block), capped by the phase and the event.
 - The athlete may choose to run longer or shorter. The next 4-week block is built from what they **actually completed**, not what was planned.
 
+### Advanced / high-volume running week
+From a high-level marathon program (about 130–140 km/week). **Advanced Hyathlon athletes can reach about 70–100 km/week** using the same shape, scaled down:
+
+| Day | Session | Effort |
+|---|---|---|
+| Mon | Aerobic run (~45–60 min) | RPE 5–6 · Easy |
+| Tue | **Quality** (threshold / tempo) AM + second session PM | Quality RPE 8+; PM easy |
+| Wed | **Medium-long run** (~60–95 min; about 60–70% of the long run) | RPE 5–6 · Easy |
+| Thu | **Quality** (track / intervals / threshold) AM + second session PM | Quality RPE 8+; PM easy |
+| Fri | Aerobic or recovery run | RPE 1–4 or 5–6 |
+| Sat | Recovery (absorption) run | RPE 1–4 · Recovery |
+| Sun | **Long run** (up to ~120 min for Hyathlon; optional race-effort segments) | RPE 6–8 · Steady |
+
+- **Second sessions go on quality days** (hard days hard, easy days easy). Max 2 sessions a day. **Strength gets the PM slot first.** An easy double run (30–45 min, RPE 5–6) takes the PM slot on a quality day only if there's no strength there; otherwise doubles go on other days, and only if the athlete wants them.
+- Doubles only for athletes who can train twice a day and are at high volume.
+- **Build weeks stay steady** rather than big waves; progress one thing at a time.
+- **Medium-long run** is a session type: longer than an easy run, shorter than the long run, easy effort.
+- **Taper (about 3 weeks):** volume down roughly 25%, then 40%, then race week. Rest days and optional aerobic runs appear; quality stays but shortens. **Race week:** a short race-effort session about 5 days out, an easy run with a few efforts, a short shakeout the day before, then the race.
+
 ## 2. Manipulators applied to running
 
 ### 1) Speed / intensity
