@@ -358,3 +358,23 @@ Uploads don't always line up with the plan. The app needs to:
 - **match an upload to the planned session** (same day and type) instead of showing it as a separate unplanned workout;
 - **merge split uploads** (warm-up, each interval and cool-down uploaded separately) into one session;
 - **credit a session done a day late** (or early) against the planned one.
+
+## 15. Workout mode (in the gym)
+A one-page view for doing a strength, circuit or hybrid session without typing as you go.
+
+**During the workout**
+- Tap **Start workout** → every exercise on **one page**, in order (supersets grouped, e.g. A1/A2), so the athlete can scan the whole session quickly.
+- Each exercise shows: planned working sets × reps, the effort cue ("Hard, with intent: finish with 1–2 good reps left"), and **last time's weight** (and reps) for that exercise, pre-filled. If there's no history, the weight field is blank.
+- Optional: tap a set to tick it off. No typing needed during the session.
+- Warm-ups aren't listed as sets ("ramp-up sets as needed").
+- Should work with poor gym signal (save locally, sync later).
+
+**Finishing**
+- Tap **Finish workout** (or **Close** to leave without saving).
+- **Sets completed:** a **Select all** tick ("Completed as planned"), or change the sets done per exercise.
+- **"Did you increase any weights?"** — No (saves the pre-filled weights) · Yes → the weight fields open to edit, pre-filled with last time's weights.
+- Then the usual session log (§5): feel emoji, session RPE, optional comment.
+
+**Why it matters**
+- The logged weights, sets and reps are the athlete's history for **progressing one lever** next time (e.g. more load once all sets were completed with good reps left), and they feed the load graph.
+- Works for the athlete's own classes too, if they've added exercises (Q10a).
