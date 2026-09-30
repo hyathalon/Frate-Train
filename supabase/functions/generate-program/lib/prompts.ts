@@ -1,7 +1,7 @@
 import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
 import { type Timing, weeklyNeeds } from './validate.ts';
-import type { BlockWeek, Outline, OutlineWeek, RunningMode } from './schemas.ts';
+import type { BlockWeek, CanDouble, Outline, OutlineWeek, RunningMode, StrengthPlacement } from './schemas.ts';
 
 // The system prompt is identical for every call, so it is cached; everything
 // that varies (athlete, dates, candidate lists) goes in the user message.
@@ -18,6 +18,8 @@ export interface ProgramInputs {
   weaknesses: string[];
   longest_run_min?: number | null; // longest run in the last 3 weeks, minutes
   cross_training_preferences?: string[]; // ranked, most preferred first
+  can_double?: CanDouble; // onboarding 10b: can train twice in a day
+  strength_placement?: StrengthPlacement; // onboarding 10c
   running: {
     mode: RunningMode; // programmed | own_plan | none
     own_runs: { day: string; intensity: 'hard' | 'easy' }[]; // own_plan only
@@ -84,11 +86,27 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Add at most ONE new stimulus per block; mark it optional: true.
 - Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
 
+## Strength work
+- Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
+- Default: 2 strength sessions/week; 3 only if strength endurance is a listed weakness. 2–3 WORKING sets per exercise, shown as "Hard, with intent: finish with 1–2 good reps left" (no RPE number for strength sets), 6–10 reps, max 3–4 exercise groups per session. Low volume, high effort — cut junk volume, not intent.
+- Count and show working sets only. Warm-ups are "ramp-up sets as needed" and never counted in sets or sets_min/sets_max.
+- Never add light strength sessions to add frequency ("inflammation without adaptation").
+- Placement follows athlete.strength_placement:
+  - "with_hard_sessions" (default): strength is its OWN session on a quality running (or hard conditioning) day — run first, strength later that day (a double day). If athlete.can_double is "no", place the strength session straight after the run on the same day, still as a separate session.
+  - "own_days": a strength day is a hard day — not the day after a key session, followed by an easy or recovery day.
+  - Either way: NEVER strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days. Strides on easy runs are fine.
+- Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
+- Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
+- Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
+- Low readiness: fewer working sets or exercises, same intent. If it can't be done with intent, move it rather than doing it easy.
+- Interference: no heavy lower-body/lunge/sled within 24–48 h before a key run or the long run.
+- Goal: stimulate, recover, adapt. Get the adaptation and protect the week.
+
 ## Output rules
 - Only exercise_ids from exercise_shortlist.
 - Keep text fields short (max ~20 words). General "Hyathlon" language, no event brand names.
 - Injury notes: considerations only, never medical advice.
-- Before returning, check: one manipulator per session; RPE labels; RPE 1–4 only in recovery sessions, warm-ups and cool-downs; body reports 3/10 or less = no change, 4/10+ or Pain = off-feet; niggle return built back gradually; missed sessions not stacked; locked sessions untouched; alternatives listed; sets ranges given; spacing and interference rules; check-in applied; sessions/week = target.`;
+- Before returning, check: one manipulator per session; RPE labels; RPE 1–4 only in recovery sessions, warm-ups and cool-downs; body reports 3/10 or less = no change, 4/10+ or Pain = off-feet; niggle return built back gradually; missed sessions not stacked; locked sessions untouched; alternatives listed; sets ranges given; spacing and interference rules; check-in applied; sessions/week = target; strength = 2/week default, working sets only, one lever progressed, placed per strength_placement.`;
 
 const COACHING_RULES_MAPPING = `How the coaching rules map to this request:
 - exercise_shortlist = the <exercises> list (plus <templates> and <race_sessions>); use only those ids.
@@ -96,6 +114,8 @@ const COACHING_RULES_MAPPING = `How the coaching rules map to this request:
 - Give sets as a planned number with a range in the dose, e.g. "3 sets (2–4) × 8 min @ RPE 8–8.5 · Mod. Hard / 2 min easy"; give long runs as planned minutes with a range, e.g. "60 min (50–70) @ RPE 6–8 · Steady".
 - Sessions done on an erg list the athlete's other ergs or cross-training options in the session's alternatives field, preferred first. Leave it empty when they have no other option.
 - Give each session its session_type, build_or_maintain, and progression (extend, qualify or benchmark, and in a few words what changed versus the last similar session; benchmark when there is no history).
+- athlete.can_double and athlete.strength_placement are in <athlete>. A double day has two separate sessions on the same day: order_in_day 1 (first, e.g. AM quality run) and 2 (second, e.g. PM strength). Strength is always its own session, never a part inside a run session. can_double "no": the only double day is a strength session straight after the run (order_in_day 2). "sometimes": use double days sparingly. "yes": running doubles are allowed too.
+- Strength dose: working sets × reps and the intent, no RPE number, e.g. "3 sets (2–3) × 6–8, hard with intent: finish with 1–2 good reps left". Ramp-up sets are not written or counted. Maintain = 1–2 working sets. A strength template's slots pair into supersets (A1/A2); a strength session has at most 4 exercise groups.
 - Weekly modification: apply the body-report and history rules only when that information is provided. If body reports or logged history are missing, make no change for them.
 - Athlete-facing text never names event brands; say "Hyathlon race" or "race".
 - The output shape is this request's JSON schema (weeks, sessions, parts, items), not the one the rules document mentions.`;
@@ -119,7 +139,7 @@ const RUNNING_RULES = `Running (follow the athlete's running choice in the athle
 
 const FORMAT_RULES = `Session structure:
 - A session is a warm-up, then 1 to 3 parts, then a cool-down. The warm-up and cool-down are added for you; give only the parts. The parts' minutes plus warm-up and cool-down must equal the athlete's minutes per session (within 5 minutes).
-- Each part has one format. Timed formats (Circuit, Tabata, HIIT, Mobility, Aerobic) are dosed by time and RPE only, never reps. Rep formats (AMRAP, EMOM, ForTime, Station, RaceSim, Compromised) give reps or distance. Strength gives sets × reps plus a load by feel (e.g. "3 × 8 (6-10), moderate load, RPE 7"). Plyometrics give foot contacts.
+- Each part has one format. Timed formats (Circuit, Tabata, HIIT, Mobility, Aerobic) are dosed by time and RPE only, never reps. Rep formats (AMRAP, EMOM, ForTime, Station, RaceSim, Compromised) give reps or distance. Strength gives working sets × reps and the intent, no RPE number (e.g. "3 sets (2–3) × 6–8, hard with intent: finish with 1–2 good reps left"). Plyometrics give foot contacts.
 - Timing (work, rest, rounds, blocks) comes from the database; don't restate it in the dose.
 - Weekly mix (core sessions, each need in a different session): with running programmed, 3 sessions = a key run, a strength session and a hybrid/station session; 4 or more = a key run, an easy or long run, a strength session and a hybrid/station session. Otherwise, 2 or more sessions = at least one strength session and one conditioning/station session. Race week is exempt.
 - Plyometrics go first, straight after the warm-up, with full recovery.
@@ -172,7 +192,9 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
     `Athlete type: ${athlete.athlete_type ?? 'hyathlon'}`,
     `Trains at: ${athlete.training_locations.length ? athlete.training_locations.join(', ') : 'not specified'}`,
     `Equipment: ${athlete.equipment?.length ? athlete.equipment.join(', ') : 'bodyweight only'}`,
-    `Training days: ${inputs.training_days.join(', ')} (${inputs.training_days.length} days; sessions only on these days)`,
+    `Training days: ${inputs.training_days.join(', ')} (${inputs.training_days.length} days; sessions only on these days, up to 2 a day)`,
+    `can_double: ${inputs.can_double ?? 'no'}`,
+    `strength_placement: ${inputs.strength_placement ?? 'with_hard_sessions'}`,
     `Key session day: ${inputs.key_session_day}`,
     `Minutes per session: ${inputs.minutes_per_session}`,
     `Race: ${inputs.race_name ?? race.label} (${race.label}) on ${inputs.race_date}`,
@@ -222,7 +244,7 @@ Total weeks: ${window.totalWeeks} (week ${window.totalWeeks} is race week)
 Outline every week from 1 to ${window.totalWeeks}:
 - Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final 1 to 2 weeks and includes race week.
 - For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload weeks "deload", otherwise frequency, intensity or volume), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
-- Core sessions per week are never more than ${days} (the athlete trains ${days} days). Optional sessions go on the same days.
+- Core sessions per week are never more than ${days * 2} (the athlete trains ${days} days, up to 2 sessions a day; see can_double). Optional sessions go on the same days.
 - Plan the weekly mix and running for the athlete's running choice (${RUNNING_LABEL[inputs.running.mode]}).
 - Build up core sessions gradually; add at most one new stimulus per 4-week block, first as an optional session.
 - In the summary, describe core and optional sessions accurately: core sessions are the week's planned sessions; optional ones are extras "if you have time".`;
@@ -277,7 +299,7 @@ ${weeks.map((w) => {
     return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions, up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== outline.weeks.length ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
   }).join('\n')}
 Every session: ${frame.warmup_min} min warm-up + parts totalling ${partsMinutes} min + ${frame.cooldown_min} min cool-down = ${inputs.minutes_per_session} min (deload weeks may be shorter).
-Sessions only on ${inputs.training_days.join(', ')}; one core session per day.
+Sessions only on ${inputs.training_days.join(', ')}; up to 2 sessions a day (order_in_day 1 and 2; see can_double). Days with one session use order_in_day 1.
 </targets>
 
 <formats>

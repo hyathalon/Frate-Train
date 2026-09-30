@@ -31,6 +31,10 @@ export const SESSION_TYPES = [
   'vo2max', 'speed', 'compromised', 'station_skill', 'strength_endurance',
 ] as const;
 export const PROGRESSION_TYPES = ['extend', 'qualify', 'benchmark'] as const;
+export const CAN_DOUBLE = ['no', 'sometimes', 'yes'] as const;
+export type CanDouble = (typeof CAN_DOUBLE)[number];
+export const STRENGTH_PLACEMENTS = ['with_hard_sessions', 'own_days'] as const;
+export type StrengthPlacement = (typeof STRENGTH_PLACEMENTS)[number];
 
 export interface OutlineWeek {
   week: number;
@@ -121,6 +125,7 @@ export interface SessionPart {
 
 export interface Session {
   day: (typeof DAYS)[number];
+  order_in_day: 1 | 2; // 1 = first session of the day (AM), 2 = second (PM)
   title: string;
   key_session: boolean;
   pillar: (typeof PILLARS)[number];
@@ -193,9 +198,10 @@ export const BLOCK_SCHEMA = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['day', 'title', 'key_session', 'pillar', 'session_type', 'build_or_maintain', 'progression', 'optional', 'parts'],
+              required: ['day', 'order_in_day', 'title', 'key_session', 'pillar', 'session_type', 'build_or_maintain', 'progression', 'optional', 'parts'],
               properties: {
                 day: { type: 'string', enum: [...DAYS] },
+                order_in_day: { type: 'integer', enum: [1, 2], description: '1 = first session of the day (AM), 2 = second (PM).' },
                 title: { type: 'string' },
                 key_session: { type: 'boolean' },
                 pillar: { type: 'string', enum: [...PILLARS] },
@@ -251,6 +257,7 @@ export function normalizeBlock(block: Block): Block {
   for (const week of block.weeks ?? []) {
     for (const session of week.sessions ?? []) {
       session.slot ??= null;
+      session.order_in_day ??= 1;
       session.alternatives ??= [];
       for (const alt of session.alternatives) alt.note ??= null;
       for (const part of session.parts ?? []) {

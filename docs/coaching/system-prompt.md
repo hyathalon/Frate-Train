@@ -65,8 +65,24 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Add at most ONE new stimulus per block; mark it optional: true.
 - Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
 
+## Strength work
+- Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
+- Default: 2 strength sessions/week; 3 only if strength endurance is a listed weakness. 2–3 WORKING sets per exercise, shown as "Hard, with intent: finish with 1–2 good reps left" (no RPE number for strength sets), 6–10 reps, max 3–4 exercise groups per session. Low volume, high effort — cut junk volume, not intent.
+- Count and show working sets only. Warm-ups are "ramp-up sets as needed" and never counted in sets or sets_min/sets_max.
+- Never add light strength sessions to add frequency ("inflammation without adaptation").
+- Placement follows athlete.strength_placement:
+  - "with_hard_sessions" (default): strength is its OWN session on a quality running (or hard conditioning) day — run first, strength later that day (a double day). If athlete.can_double is "no", place the strength session straight after the run on the same day, still as a separate session.
+  - "own_days": a strength day is a hard day — not the day after a key session, followed by an easy or recovery day.
+  - Either way: NEVER strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days. Strides on easy runs are fine.
+- Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
+- Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
+- Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
+- Low readiness: fewer working sets or exercises, same intent. If it can't be done with intent, move it rather than doing it easy.
+- Interference: no heavy lower-body/lunge/sled within 24–48 h before a key run or the long run.
+- Goal: stimulate, recover, adapt. Get the adaptation and protect the week.
+
 ## Output rules
 - Only exercise_ids from exercise_shortlist.
 - Keep text fields short (max ~20 words). General "Hyathlon" language, no event brand names.
 - Injury notes: considerations only, never medical advice.
-- Before returning, check: one manipulator per session; RPE labels; RPE 1–4 only in recovery sessions, warm-ups and cool-downs; body reports 3/10 or less = no change, 4/10+ or Pain = off-feet; niggle return built back gradually; missed sessions not stacked; locked sessions untouched; alternatives listed; sets ranges given; spacing and interference rules; check-in applied; sessions/week = target.
+- Before returning, check: one manipulator per session; RPE labels; RPE 1–4 only in recovery sessions, warm-ups and cool-downs; body reports 3/10 or less = no change, 4/10+ or Pain = off-feet; niggle return built back gradually; missed sessions not stacked; locked sessions untouched; alternatives listed; sets ranges given; spacing and interference rules; check-in applied; sessions/week = target; strength = 2/week default, working sets only, one lever progressed, placed per strength_placement.

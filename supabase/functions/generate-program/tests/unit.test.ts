@@ -134,15 +134,15 @@ const item = (id: string, dose: string, over: Record<string, unknown> = {}) => (
   exercise_id: id, race_session_id: null, dose, cue: null, block: null, foot_contacts: null, run_minutes: null, run_distance_m: null, ...over,
 });
 
-type Meta = Pick<Session, 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
-const META: Meta = { session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
+type Meta = Pick<Session, 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
+const META: Meta = { order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
 const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
 
 // 45-minute sessions: 10 min warm-up + 30 min of parts + 5 min cool-down.
 function week(n: number, reps: number, deload = false) {
   const sessions: Session[] = [
     { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
-      parts: [{ format: 'Strength', template_id: 'STR-45', run_type: null, minutes: 30, items: [item('SQ', `3 × ${reps}, moderate load, RPE 7`), item('PU', `3 × ${reps}, bodyweight`)] }] },
+      parts: [{ format: 'Strength', template_id: 'STR-45', run_type: null, minutes: 30, items: [item('SQ', `3 × ${reps}, hard with intent: 1–2 good reps left`), item('PU', `3 × ${reps}, bodyweight, hard with intent`)] }] },
     { day: 'Wed', title: 'Circuit + Tabata', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
       parts: [
         { format: 'Circuit', template_id: 'CIR-30', run_type: null, minutes: 20, items: [item('SQ', `RPE ${reps - 1}`), item('CORE', 'steady, RPE 7')] },
@@ -177,7 +177,7 @@ function outline(): Outline {
 }
 
 const ctx: BlockContext = {
-  startWeek: 1, endWeek: 4, outlineWeeks: outline().weeks, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat'], keySessionDay: 'Wed',
+  startWeek: 1, endWeek: 4, outlineWeeks: outline().weeks, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat'], canDouble: 'no', keySessionDay: 'Wed',
   minutesPerSession: 45, frame: { warmup_min: 10, cooldown_min: 5 }, candidates, timings,
   settings: { minutesTolerance: 5, deloadMin: 0.6, deloadMax: 0.7, deloadSessionMinRatio: 0.5, runShareMax: 0.25 },
   availableFormats: ALL_FORMATS, running: 'none', ownRuns: [], longestRunMin: null, previousLongRunMin: null, finalWeek: 4,
@@ -201,7 +201,7 @@ Deno.test('validateOutline: good outline passes; levers, taper and counts are ch
   const d = outline();
   d.weeks[3].lever = 'volume';
   assert.match(validateOutline(d, { totalWeeks: 4, daysAvailable: 4 }).join(' '), /deload, so its lever must be "deload"/);
-  assert.match(validateOutline(outline(), { totalWeeks: 4, daysAvailable: 2 }).join(' '), /between 1 and 2/);
+  assert.match(validateOutline(outline(), { totalWeeks: 4, daysAvailable: 1 }).join(' '), /between 1 and 2 \(1 training days, up to 2 sessions a day\)/);
 });
 
 Deno.test('validateBlock: a good block passes', () => {
@@ -210,7 +210,7 @@ Deno.test('validateBlock: a good block passes', () => {
 
 Deno.test('days, key session and session length', () => {
   assert.match(errorsFor((b) => { b.weeks[0].sessions[0].day = 'Tue'; }), /isn't one of the athlete's training days/);
-  assert.match(errorsFor((b) => { b.weeks[0].sessions[1].day = 'Mon'; }), /only one core session per day/);
+  assert.match(errorsFor((b) => { b.weeks[0].sessions[1].day = 'Mon'; }), /order_in_day 1 and 2/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[1].key_session = false; }), /exactly one core session as the key session/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts[1].minutes = 25; }), /lasts 55 min; sessions must be 45 min/);
 });
@@ -228,7 +228,7 @@ Deno.test('formats: templates, Tabata, HIIT, doses and units', () => {
   assert.match(errorsFor((b) => { b.weeks[0].sessions[1].parts[1].items[0].exercise_id = 'DL'; }), /DL is not Tabata-suitable/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[1].parts[1].items.forEach((it) => { it.block = 1; }); }), /Tabata block 1 needs 1 exercise, or 2 alternating; it has 3.*Tabata block 2 needs 1 exercise, or 2 alternating; it has 0/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[1].parts[0].items[0].dose = '12 reps'; }), /Circuit is timed, so the dose is time only/);
-  assert.match(errorsFor((b) => { b.weeks[0].sessions[0].parts[0].items[0].dose = '3 sets, RPE 7'; }), /strength is dosed as sets × reps plus a load by feel/);
+  assert.match(errorsFor((b) => { b.weeks[0].sessions[0].parts[0].items[0].dose = '3 sets, RPE 7'; }), /strength is dosed as working sets × reps plus the intent/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[0].parts[0].items[0].dose = '3 × 8 @ 60 kg'; }), /never kg, watts, paces or zones/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts[1].items[0].dose = 'Zone 2 steady'; }), /never kg, watts, paces or zones/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts[0].items[0].exercise_id = 'DL'; }), /HIIT uses ergs or bodyweight exercises/);
@@ -289,6 +289,46 @@ Deno.test('own run plan: no heavy lower-body or sled work the day before a hard 
   assert.deepEqual(validateBlock(block(), { ...own, ownRuns: [{ day: 'Tue', intensity: 'easy' }] }), []);
 });
 
+Deno.test('two sessions a day: order_in_day, can_double, strength never inside a run session', () => {
+  const pm = (b: Block) => {
+    const s = structuredClone(b.weeks[1].sessions[0]); // Monday strength, moved to Wednesday PM
+    s.day = 'Wed'; s.order_in_day = 2; s.optional = true; s.slot = 'pm-strength'; s.title = 'PM strength';
+    b.weeks[1].sessions.push(s);
+  };
+  assert.doesNotMatch(errorsFor(pm), /order_in_day|twice a day|at most 2/);
+  assert.match(errorsFor((b) => { pm(b); b.weeks[1].sessions.at(-1)!.order_in_day = 1; }), /order_in_day 1 and 2/);
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].order_in_day = 2; }), /only session on Mon, so order_in_day is 1/);
+  // Two conditioning sessions on one day: only allowed when the athlete can double.
+  const conditioningDouble = (b: Block) => {
+    const s = structuredClone(b.weeks[1].sessions[2]); // Friday bike
+    s.day = 'Wed'; s.order_in_day = 2; s.optional = true; s.slot = 'pm-bike'; s.title = 'PM bike';
+    b.weeks[1].sessions.push(s);
+  };
+  assert.match(errorsFor(conditioningDouble), /can't train twice a day/);
+  const b = block(); conditioningDouble(b);
+  assert.doesNotMatch(validateBlock(b, { ...ctx, canDouble: 'yes' }).join(' '), /twice a day/);
+  // Strength inside a run session.
+  assert.match(errorsFor((b) => {
+    b.weeks[1].sessions[0].parts.push({ format: 'Run', template_id: null, run_type: 'easy', minutes: 5, items: [item('RUN', '5 min @ RPE 5–6 · Easy')] });
+  }), /strength is its own session/);
+});
+
+Deno.test('strength: working sets, reps, no RPE number, exercise groups; easy days stay easy', () => {
+  const dose = (d: string) => errorsFor((b) => { b.weeks[1].sessions[0].parts[0].items[0].dose = d; });
+  assert.doesNotMatch(dose('3 sets (2–3) × 6–8, hard with intent: finish with 1–2 good reps left'), /working sets|reps;|RPE number/);
+  assert.match(dose('4 × 8, hard with intent'), /2–3 working sets/);
+  assert.match(dose('3 × 12, hard with intent'), /6–10 reps/);
+  assert.match(dose('3 × 8, hard with intent, RPE 8'), /not an RPE number/);
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].build_or_maintain = 'maintain'; }), /1–2 working sets to maintain/);
+  assert.match(errorsFor((b) => {
+    const items = b.weeks[1].sessions[0].parts[0].items;
+    items.push(...Array.from({ length: 8 }, () => ({ ...items[0] })));
+  }), /at most 4 exercise groups/);
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].session_type = 'easy_steady'; }), /easy or recovery day/);
+  // The athlete's own easy run day.
+  assert.match(validateBlock(block(), { ...ctx, running: 'own_plan', ownRuns: [{ day: 'Mon', intensity: 'easy' }] }).join(' '), /Strength part on Mon, an easy or recovery day \(their own easy run\)/);
+});
+
 Deno.test('session fields: progression change and cross-training alternatives', () => {
   assert.match(errorsFor((b) => { b.weeks[1].sessions[0].progression.change = ' '; }), /progression\.change/);
   // One erg only: nothing to switch to, so no alternatives needed.
@@ -328,6 +368,15 @@ Deno.test('parseInputs: running choice', () => {
   assert.deepEqual(parseInputs({ ...baseInputs, running: { mode: 'own_plan', own_runs: [{ day: 'Thu', intensity: 'easy' }, { day: 'Tue', intensity: 'hard' }] } }).running.own_runs, [{ day: 'Tue', intensity: 'hard' }, { day: 'Thu', intensity: 'easy' }]);
   assert.throws(() => parseInputs({ ...baseInputs, running: { mode: 'own_plan', own_runs: [] } }), /which days you run/);
   assert.throws(() => parseInputs({ ...baseInputs, running: { mode: 'sometimes' } }), /Choose your running/);
+});
+
+Deno.test('parseInputs: two a day and strength placement (onboarding 10b, 10c)', () => {
+  const d = parseInputs(baseInputs);
+  assert.deepEqual([d.can_double, d.strength_placement], ['no', 'with_hard_sessions']);
+  const set = parseInputs({ ...baseInputs, can_double: 'sometimes', strength_placement: 'own_days' });
+  assert.deepEqual([set.can_double, set.strength_placement], ['sometimes', 'own_days']);
+  assert.throws(() => parseInputs({ ...baseInputs, can_double: 'maybe' }), /twice in a day/);
+  assert.throws(() => parseInputs({ ...baseInputs, strength_placement: 'mornings' }), /with_hard_sessions or own_days/);
 });
 
 Deno.test('parseInputs: training days, key day, minutes and the optional coach inputs', () => {

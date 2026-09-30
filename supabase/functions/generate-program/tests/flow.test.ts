@@ -15,8 +15,8 @@ import { localDate } from '../lib/time.ts';
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SECRET_KEY')!, { auth: { persistSession: false } });
 const RUN = Date.now();
-type Meta = Pick<Session, 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
-const META: Meta = { session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
+type Meta = Pick<Session, 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
+const META: Meta = { order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
 const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
 const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
@@ -80,7 +80,7 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
   const week = (n: number, deload = false) => {
     const sessions = [
       { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
-        parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `3 × ${6 + n}, moderate load, RPE 7`) }] },
+        parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `3 × ${6 + n}, hard with intent: 1–2 good reps left`) }] },
       { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...ERG_META,
         parts: [
           { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },

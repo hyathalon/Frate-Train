@@ -5,7 +5,7 @@ import type { Anthropic, SupabaseClient } from './deps.ts';
 import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
-import { type Block, BLOCK_SCHEMA, type BlockWeek, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, RUNNING_MODES, type RunningMode } from './schemas.ts';
+import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, RUNNING_MODES, type RunningMode, STRENGTH_PLACEMENTS } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow } from './time.ts';
 import { type BlockSettings, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
@@ -86,7 +86,15 @@ export function parseInputs(raw: unknown): ProgramInputs {
     longest_run_min: longestRun,
     cross_training_preferences: stringList(body.cross_training_preferences, 'Cross-training preferences', 8),
     running: parseRunning(body.running),
+    can_double: oneOf(body.can_double, CAN_DOUBLE, 'no', 'Can you train twice in a day: no, sometimes or yes.'),
+    strength_placement: oneOf(body.strength_placement, STRENGTH_PLACEMENTS, 'with_hard_sessions', 'Strength sessions: with_hard_sessions or own_days.'),
   };
+}
+
+function oneOf<T extends string>(value: unknown, allowed: readonly T[], fallback: T, message: string): T {
+  if (value === undefined || value === null) return fallback;
+  if (!allowed.includes(value as T)) throw new HttpError(400, 'invalid_input', message);
+  return value as T;
 }
 
 function parseRunning(raw: unknown): ProgramInputs['running'] {
@@ -494,6 +502,7 @@ async function generateFirstBlock(
         endWeek,
         outlineWeeks: outline.weeks,
         trainingDays: inputs.training_days,
+        canDouble: inputs.can_double ?? 'no',
         keySessionDay: inputs.key_session_day,
         minutesPerSession: inputs.minutes_per_session,
         frame,
@@ -706,7 +715,7 @@ async function adjustWeek(
   // Targets for this week: fewer core sessions if fewer days; a lighter (deload) week when tired.
   const target: OutlineWeek = {
     ...planned,
-    core_sessions: Math.min(planned.core_sessions, inputs.training_days.length),
+    core_sessions: Math.min(planned.core_sessions, inputs.training_days.length * 2),
     ...(tired ? { deload: true, lever: 'deload' as const, load: 'Low' as const } : {}),
   };
   const index = block.sessions.weeks.findIndex((w) => w.week === week);
@@ -750,6 +759,7 @@ async function adjustWeek(
         endWeek: week,
         outlineWeeks: [target],
         trainingDays: inputs.training_days,
+        canDouble: inputs.can_double ?? 'no',
         keySessionDay: inputs.key_session_day,
         minutesPerSession: inputs.minutes_per_session,
         frame,

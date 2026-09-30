@@ -1,5 +1,5 @@
 import { type Candidates, type Exercise, isBodyweightOnly, isErg, isRunning, partMinutes, slotMatches } from './candidates.ts';
-import { type Block, type BlockWeek, DAYS, type Outline, type RunningMode, type Session, type SessionPart } from './schemas.ts';
+import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type RunningMode, type Session, type SessionPart } from './schemas.ts';
 
 // Each validator returns plain-English errors. An empty list means valid.
 // The same messages go back to Claude in the one automatic repair attempt.
@@ -18,8 +18,9 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
   }
   weeks.forEach((w, i) => {
     if (w.week !== i + 1) errors.push(`Weeks must be numbered 1 to ${ctx.totalWeeks} in order; position ${i + 1} is week ${w.week}.`);
-    if (w.core_sessions < 1 || w.core_sessions > ctx.daysAvailable) {
-      errors.push(`Week ${w.week}: core_sessions must be between 1 and ${ctx.daysAvailable} (training days); it is ${w.core_sessions}.`);
+    // Up to 2 sessions a day, so up to twice the training days.
+    if (w.core_sessions < 1 || w.core_sessions > ctx.daysAvailable * 2) {
+      errors.push(`Week ${w.week}: core_sessions must be between 1 and ${ctx.daysAvailable * 2} (${ctx.daysAvailable} training days, up to 2 sessions a day); it is ${w.core_sessions}.`);
     }
     if (w.optional_sessions < 0 || w.optional_sessions > 2) {
       errors.push(`Week ${w.week}: optional_sessions must be between 0 and 2; it is ${w.optional_sessions}.`);
@@ -77,6 +78,7 @@ export interface BlockContext {
   endWeek: number;
   outlineWeeks: Outline['weeks'];
   trainingDays: string[];
+  canDouble: CanDouble;
   keySessionDay: string;
   minutesPerSession: number;
   frame: { warmup_min: number; cooldown_min: number };
@@ -98,7 +100,7 @@ const LONG_RUN_SESSION_MAX = 120;
 // "10 reps", "3 x 10", "3 × 10" – but not "4 x 20 m" or "5 x 2 min".
 const REPS_RE = /\b\d+\s*reps?\b|\b\d+\s*[x×]\s*\d+(?![\d.])(?!\s*(?:s|sec|secs|seconds|min|mins|minutes|m|km|cal|cals)\b)(?!\s*[-–(])/i;
 const SETS_REPS_RE = /\b\d+\s*(?:sets?\s*(?:\([^)]*\)\s*)?)?[x×]\s*\d+/i;
-const LOAD_BY_FEEL_RE = /\b(rpe|load|bodyweight|light|moderate|heavy|by feel|race standard)\b/i;
+const LOAD_BY_FEEL_RE = /\b(rpe|load|bodyweight|light|moderate|heavy|hard|intent|reps? left|by feel|race standard)\b/i;
 // Coach's rule: intensity by RPE and feel, never fixed units or zones.
 const FORBIDDEN_UNITS_RE = /\b\d+(?:\.\d+)?\s*(?:kg|kgs|lb|lbs|watts?|w)\b|\/\s*km\b|\bmin\/km\b|\bpace\s*\d|\bzone\s*\d/i;
 
@@ -145,7 +147,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     for (const s of week.sessions) {
       if (!ctx.trainingDays.includes(s.day)) errors.push(`${label}: "${s.title}" is on ${s.day}, which isn't one of the athlete's training days (${ctx.trainingDays.join(', ')}).`);
     }
-    if (new Set(core.map((s) => s.day)).size !== core.length) errors.push(`${label}: only one core session per day.`);
+    checkDays(week, label, ctx, errors);
     const keys = core.filter((s) => s.key_session);
     if (keys.length !== 1) errors.push(`${label}: mark exactly one core session as the key session.`);
     else if (keys[0].day !== ctx.keySessionDay) errors.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
@@ -175,9 +177,57 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     week.sessions.forEach((s, j) => validateSession(s, `${label}, session ${j + 1} ("${s.title}")`, week.progression.lever === 'deload', ctx, errors));
     if (week.week !== ctx.finalWeek) checkWeeklyMix(core, label, ctx, errors);
     if (ctx.running === 'own_plan') checkOwnRunSpacing(week, label, ctx, errors);
+    checkEasyDays(week, label, ctx, errors);
   });
   if (ctx.running === 'programmed') checkLongRuns(block, ctx, errors);
   return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Days: up to 2 sessions a day; strength as its own session; easy days stay easy
+// ---------------------------------------------------------------------------
+
+const isStrengthSession = (s: Session) => s.parts.some((p) => p.format === 'Strength');
+const EASY_RUN_TYPES = ['easy', 'recovery'];
+
+function checkDays(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
+  for (const day of DAYS) {
+    const sessions = week.sessions.filter((s) => s.day === day);
+    if (sessions.length === 0) continue;
+    if (sessions.length > 2) {
+      errors.push(`${label}: ${day} has ${sessions.length} sessions; at most 2 a day.`);
+      continue;
+    }
+    if (sessions.length === 1) {
+      if (sessions[0].order_in_day !== 1) errors.push(`${label}: "${sessions[0].title}" is the only session on ${day}, so order_in_day is 1.`);
+      continue;
+    }
+    const [first, second] = [...sessions].sort((a, b) => a.order_in_day - b.order_in_day);
+    if (first.order_in_day !== 1 || second.order_in_day !== 2) {
+      errors.push(`${label}: the two sessions on ${day} need order_in_day 1 and 2.`);
+    } else if (ctx.canDouble === 'no' && !(isStrengthSession(second) && !isStrengthSession(first))) {
+      errors.push(`${label}: the athlete can't train twice a day, so the only double day is a strength session straight after the run (order_in_day 2); ${day} has "${first.title}" and "${second.title}".`);
+    }
+  }
+}
+
+/** Easy or recovery days: an easy/recovery session type, an easy or recovery Run, or the athlete's own easy run. */
+function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
+  for (const day of DAYS) {
+    const sessions = week.sessions.filter((s) => s.day === day);
+    const easy = sessions.find((s) =>
+      s.session_type === 'recovery' || s.session_type === 'easy_steady'
+      || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && EASY_RUN_TYPES.includes(p.run_type ?? '')))
+    );
+    const ownEasy = ctx.running === 'own_plan' && ctx.ownRuns.some((r) => r.day === day && r.intensity === 'easy');
+    if (!easy && !ownEasy) continue;
+    for (const s of sessions) {
+      const hard = s.parts.find((p) => p.format === 'Strength' || p.format === 'Circuit');
+      if (hard) {
+        errors.push(`${label}: "${s.title}" has a ${hard.format} part on ${day}, an easy or recovery day (${easy ? `"${easy.title}"` : 'their own easy run'}); strength and circuits go on hard days.`);
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -264,6 +314,38 @@ function checkLongRuns(block: Block, ctx: BlockContext, errors: string[]) {
   }
 }
 
+// "3 × 8", "3 sets (2–3) × 6–8", "2 working sets x 10": planned sets, optional set range, reps or rep range.
+const STRENGTH_DOSE_RE = /(\d+)\s*(?:working\s+)?(?:sets?\s*)?(?:\((\d+)\s*[-–]\s*(\d+)\)\s*)?[x×]\s*(\d+)(?:\s*[-–]\s*(\d+))?(?!\s*(?:s|sec|secs|seconds|min|mins|minutes|m|km|cal|cals)\b)/i;
+const STRENGTH_REPS: [number, number] = [6, 10];
+const STRENGTH_GROUPS_MAX = 4;
+
+/** Strength: its own session (no Run parts), 2–3 working sets (1–2 to maintain), 6–10 reps, no RPE number, at most 4 exercise groups. */
+function checkStrength(s: Session, where: string, deload: boolean, errors: string[]) {
+  const strengthParts = s.parts.filter((p) => p.format === 'Strength');
+  if (strengthParts.length === 0) return;
+  if (s.parts.some((p) => p.format === 'Run')) {
+    errors.push(`${where}: strength is its own session, never a part inside a run session; make it a separate session (order_in_day 2 after the run).`);
+  }
+  // Template slots pair into supersets (A1/A2), so a group is up to 2 items.
+  const groups = strengthParts.reduce((n, p) => n + Math.ceil(p.items.length / 2), 0);
+  if (groups > STRENGTH_GROUPS_MAX) errors.push(`${where}: at most ${STRENGTH_GROUPS_MAX} exercise groups in a strength session; it has ${groups}.`);
+  const [minSets, maxSets] = s.build_or_maintain === 'maintain' ? [1, 2] : deload ? [1, 3] : [2, 3];
+  strengthParts.forEach((p) => p.items.forEach((item, k) => {
+    const at = `${where}, ${p.format} item ${k + 1}`;
+    if (/\brpe\s*\d/i.test(item.dose)) errors.push(`${at}: strength sets show intent ("hard, with intent: finish with 1–2 good reps left"), not an RPE number ("${item.dose}").`);
+    const m = STRENGTH_DOSE_RE.exec(item.dose);
+    if (!m) return; // timed or distance items (carries, holds) are not rep sets
+    const sets = [Number(m[1]), ...(m[2] ? [Number(m[2]), Number(m[3])] : [])];
+    if (sets.some((n) => n < minSets || n > maxSets)) {
+      errors.push(`${at}: ${minSets}–${maxSets} working sets${s.build_or_maintain === 'maintain' ? ' to maintain' : ''} (ramp-up sets not counted); got "${item.dose}".`);
+    }
+    const reps = [Number(m[4]), ...(m[5] ? [Number(m[5])] : [])];
+    if (reps.some((n) => n < STRENGTH_REPS[0] || n > STRENGTH_REPS[1])) {
+      errors.push(`${at}: strength sets are ${STRENGTH_REPS[0]}–${STRENGTH_REPS[1]} reps; got "${item.dose}".`);
+    }
+  }));
+}
+
 function validateSession(s: Session, where: string, deload: boolean, ctx: BlockContext, errors: string[]) {
   if (s.optional && !s.slot) errors.push(`${where}: optional sessions need a slot key.`);
   if (!s.optional && s.slot) errors.push(`${where}: core sessions have slot null.`);
@@ -280,6 +362,8 @@ function validateSession(s: Session, where: string, deload: boolean, ctx: BlockC
   if (crossTraining && ergCount >= 2 && s.alternatives.length === 0) {
     errors.push(`${where}: cross-training sessions list alternatives from the athlete's equipment.`);
   }
+
+  checkStrength(s, where, deload, errors);
 
   const total = ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
   const tol = ctx.settings.minutesTolerance;
@@ -333,7 +417,7 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
     if (f.dose_kind === 'time' && REPS_RE.test(item.dose)) errors.push(`${at}: ${part.format} is timed, so the dose is time only, no reps ("${item.dose}").`);
     if (f.dose_kind === 'reps' && !/\d/.test(item.dose)) errors.push(`${at}: ${part.format} is dosed in reps (or distance); give a number.`);
     if (f.dose_kind === 'sets_reps_load' && (!SETS_REPS_RE.test(item.dose) || !LOAD_BY_FEEL_RE.test(item.dose))) {
-      errors.push(`${at}: strength is dosed as sets × reps plus a load by feel (e.g. "3 × 8, moderate load, RPE 7"); got "${item.dose}".`);
+      errors.push(`${at}: strength is dosed as working sets × reps plus the intent (e.g. "3 sets (2–3) × 6–8, hard with intent: finish with 1–2 good reps left"); got "${item.dose}".`);
     }
     if (f.dose_kind === 'foot_contacts' && !(item.foot_contacts && item.foot_contacts > 0)) errors.push(`${at}: plyometric drills need foot_contacts.`);
     // Running only in race simulations and compromised parts.
