@@ -6,7 +6,7 @@ import { HttpError } from '../lib/http.ts';
 import { type AppAllowance, assertCanConfirm, assertCanPreview, type CoachAllowance } from '../lib/limits.ts';
 import { parseInputs } from '../lib/program.ts';
 import { COACHING_RULES } from '../lib/prompts.ts';
-import { type Block, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
+import { type Block, type BlockWeek, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
 import { trimDeload } from '../lib/deload.ts';
 import { type BlockContext, strengthTarget, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
@@ -227,6 +227,33 @@ Deno.test('progression: unchanged sessions, frequency and deload size', () => {
   assert.match(errorsFor((b) => { b.weeks[1].progression.lever = 'intensity'; }), /the outline's lever is "volume"/);
   // Deload with all three core sessions is 100% of the week before.
   assert.match(errorsFor((b) => { b.weeks[3] = { ...week(4, 7), progression: { lever: 'deload', change: 'c' } }; }), /deload week should be about 60–70%/);
+});
+
+Deno.test('unchanged repeats: only quality sessions must progress', () => {
+  const repeat = (mutate: (w: BlockWeek) => void) => errorsFor((b) => {
+    const w2: BlockWeek = { ...week(1, 8), week: 2, progression: { lever: 'volume', change: 'c' } };
+    mutate(w2);
+    b.weeks[1] = w2;
+  });
+  // Friday's bike session repeated unchanged: flagged while it's a quality session…
+  assert.match(repeat(() => {}), /"Bike" repeats a session from the week before unchanged/);
+  // …but easy, recovery, maintain and optional sessions may repeat.
+  assert.doesNotMatch(repeat((w) => { w.sessions[2].session_type = 'easy_steady'; }), /"Bike" repeats/);
+  assert.doesNotMatch(repeat((w) => { w.sessions[2].session_type = 'recovery'; }), /"Bike" repeats/);
+  assert.doesNotMatch(repeat((w) => { w.sessions[0].build_or_maintain = 'maintain'; w.sessions[0].parts[0].items.forEach((it) => { it.dose = '2 × 8, hard with intent'; }); }), /"Strength" repeats/);
+  assert.doesNotMatch(repeat(() => {}), /"Compromised" repeats/); // Saturday's optional session
+});
+
+Deno.test('beginners: strength as the second session on quality days, other days for conditioning', () => {
+  const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
+  const beginner: BlockContext = { ...ctx, beginner: true };
+  // Monday strength alone (own_days would allow it); for a beginner it belongs after a quality session.
+  assert.match(week2(validateBlock(block(), beginner)), /strength goes on hard days first|for beginners, strength is the second session on a quality day/);
+  // Outline: a run or conditioning session on every training day, plus the strength sessions.
+  const o = outline();
+  for (const w of o.weeks) w.strength_sessions = w.week === 4 ? 1 : 2;
+  assert.match(validateOutline(o, { totalWeeks: 4, daysAvailable: 3, running: 'none', strengthPref: 2, raceDay: 'Sat', beginner: true }).join(' '),
+    /plan at least 5 core sessions .*beginners: a run or conditioning session on every training day/);
 });
 
 Deno.test('formats: templates, Tabata, HIIT, doses and units', () => {

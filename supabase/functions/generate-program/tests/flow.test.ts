@@ -17,7 +17,6 @@ const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE
 const RUN = Date.now();
 type Meta = Pick<Session, 'note' | 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
 const META: Meta = { note: null, order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
-const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
 const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, strength_placement: 'own_days', goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 // --- fake Claude -----------------------------------------------------------
@@ -75,7 +74,6 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
   const race = (await loadRaceOption(admin, 'hyathlon-open'))!;
   const c = await loadCandidates(admin, athlete, race, { includeRaceSessions: false });
   const all = [...c.exercises.values()];
-  const erg = all.find((e) => e.movement_pattern === 'Erg')!;
   const run = all.find((e) => e.movement_pattern === 'Running')!;
   const station = all.find((e) => e.id === 'EX0199') ?? all.find((e) => e.movement_pattern === 'Med ball / throw')!;
   const strength = [...c.templates.values()].find((t) => t.method === 'Strength' && partMinutes(t) === 30)!;

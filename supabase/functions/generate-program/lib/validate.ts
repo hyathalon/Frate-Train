@@ -11,6 +11,7 @@ export interface OutlineContext {
   strengthPref: number;
   strengthChoice?: StrengthChoice; // default 'program'
   raceDay: string | null; // weekday of the race, in the final week
+  beginner?: boolean; // beginners: one run/conditioning session per training day, strength as second sessions
 }
 
 /** Race week gets one short maintain strength session, at least 5 days before the race. */
@@ -68,10 +69,9 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
     if (deloadOptionalStrength(w, sctx) > w.optional_sessions) {
       errors.push(`Week ${w.week}: a deload week has 1 optional strength session, so optional_sessions must be at least 1.`);
     }
-    const others = weeklyOthers(ctx.running, w.core_sessions).length;
-    if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload && (ctx.strengthChoice ?? 'program') === 'program'
-        && w.core_sessions - others < ctx.strengthPref && w.core_sessions < ctx.daysAvailable * 2) {
-      errors.push(`Week ${w.week}: plan at least ${Math.min(ctx.daysAvailable * 2, others + ctx.strengthPref)} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day).`);
+    const needed = coreSessionsForStrength(ctx.running, ctx.daysAvailable, ctx.strengthPref, ctx.beginner);
+    if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload && (ctx.strengthChoice ?? 'program') === 'program' && w.core_sessions < needed) {
+      errors.push(`Week ${w.week}: plan at least ${needed} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day${ctx.beginner ? '; beginners: a run or conditioning session on every training day, strength as second sessions' : ''}).`);
     }
     if (i === 0 && w.lever !== 'start') errors.push('Week 1 must use lever "start".');
     if (i > 0 && w.deload && w.lever !== 'deload') errors.push(`Week ${w.week} is a deload, so its lever must be "deload".`);
@@ -129,6 +129,7 @@ export interface BlockContext {
   strengthPref: number; // strength sessions a week the athlete chose
   strengthPlacement: StrengthPlacement;
   strengthChoice?: StrengthChoice; // default 'program'
+  beginner?: boolean; // beginners: strength as second sessions on quality days
   ownStrength?: OwnStrengthSession[]; // strength_choice 'own': the athlete's own strength/classes
   raceDay: string | null; // weekday of the race (final week)
   postEventWeeks?: number[]; // weeks straight after a raced event
@@ -244,7 +245,8 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     }
     if (previous) {
       const before = new Set(previous.sessions.map(sessionSignature));
-      for (const s of week.sessions) {
+      // One-lever progression is for quality sessions; easy, recovery, optional and maintain sessions may repeat.
+      for (const s of week.sessions.filter((x) => !x.optional && x.build_or_maintain !== 'maintain' && !isEasySession(x) && !isRecoverySession(x))) {
         if (before.has(sessionSignature(s))) errors.push(`${label}: "${s.title}" repeats a session from the week before unchanged; progress load, sets, reps or density.`);
       }
     }
@@ -408,8 +410,9 @@ export function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<n
 }
 
 /** Core sessions a normal week needs so the athlete's strength sessions fit beside the running and hybrid needs. */
-export function coreSessionsForStrength(running: RunningMode, daysAvailable: number, strengthPref: number): number {
-  return Math.min(daysAvailable * 2, weeklyOthers(running, 99).length + strengthPref);
+export function coreSessionsForStrength(running: RunningMode, daysAvailable: number, strengthPref: number, beginner = false): number {
+  const others = beginner ? Math.max(daysAvailable, weeklyOthers(running, 99).length) : weeklyOthers(running, 99).length;
+  return Math.min(daysAvailable * 2, others + strengthPref);
 }
 
 /** The week's running and hybrid needs (strength comes on top; see strengthTarget). */
@@ -507,7 +510,7 @@ function checkStrengthWeek(
   const on = (day: string) => week.sessions.filter((s) => s.day === day && !s.optional);
   const hardDay = (day: string) => on(day).some(hard) || ownHard(day);
 
-  if (ctx.strengthPlacement === 'with_hard_sessions') {
+  if (ctx.strengthPlacement === 'with_hard_sessions' || ctx.beginner) {
     for (const s of strength) {
       if (!hardDay(s.day)) continue;
       const first = on(s.day).find((x) => x !== s && hard(x));
@@ -520,6 +523,8 @@ function checkStrengthWeek(
     const elsewhere = strength.filter((s) => !hardDay(s.day) && !s.key_session); // a key strength session stands on its own
     if (free.length && elsewhere.length) {
       errors.push(`${label}: strength goes on hard days first (as the day's second session); ${free.join(', ')} ${free.length === 1 ? 'has' : 'have'} room, but "${elsewhere[0].title}" is on ${elsewhere[0].day}.`);
+    } else if (ctx.beginner && elsewhere.length && strength.length <= ctx.trainingDays.filter(hardDay).length) {
+      errors.push(`${label}: for beginners, strength is the second session on a quality day, leaving the other training days for runs or conditioning; "${elsewhere[0].title}" is on its own on ${elsewhere[0].day}.`);
     }
     return;
   }
