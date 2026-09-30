@@ -6,10 +6,10 @@ import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockContent, blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
 import { trimDeload } from './deload.ts';
-import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE } from './schemas.ts';
+import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_CHOICES, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE, TRAINING_AGES, VARIETY_PREFERENCES, EVENT_TYPES } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow, weekdayOf } from './time.ts';
-import { type BlockContext, type BlockSettings, raceWeekStrengthDays, sessionFrame as validatorSessionFrame, strengthTarget, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
+import { type BlockContext, type BlockSettings, deloadOptionalStrength, raceWeekStrengthDays, sessionFrame as validatorSessionFrame, strengthTarget, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
 
 export interface Deps {
   admin: SupabaseClient;
@@ -103,6 +103,62 @@ export function parseInputs(raw: unknown): ProgramInputs {
     strength_placement: oneOf(body.strength_placement, STRENGTH_PLACEMENTS, 'with_hard_sessions', 'Strength sessions: with_hard_sessions or own_days.'),
     limiters,
     strength_sessions_pref: strengthPref,
+    ...parseProfileExtras(body),
+  };
+}
+
+/** Onboarding answers the prompt uses (1b, 1c, 2b, 3, 4, 6, 10a, 14, 15). All optional. */
+function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInputs> {
+  const text = (v: unknown, max: number) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null);
+  const day = (v: unknown) => ((DAYS as readonly unknown[]).includes(v) ? (v as string) : null);
+  const date = (v: unknown, field: string) => {
+    if (v === undefined || v === null || v === '') return null;
+    if (!isValidDate(v)) throw new HttpError(400, 'invalid_input', `${field}: use a date like 2026-10-31.`);
+    return v;
+  };
+  const list = (v: unknown, field: string, max: number) => {
+    if (v === undefined || v === null) return [];
+    if (!Array.isArray(v) || v.length > max) throw new HttpError(400, 'invalid_input', `${field} must be a list of up to ${max}.`);
+    return v.map((x) => (x ?? {}) as Record<string, unknown>);
+  };
+
+  const strengthChoice = oneOf(body.strength_choice, STRENGTH_CHOICES, 'program', 'Strength: program, own or none.');
+  const ownStrength = strengthChoice === 'own'
+    ? list(body.own_strength, 'Your own strength or classes', 6).map((o) => {
+      const days = Array.isArray(o.days) ? DAYS.filter((d) => (o.days as unknown[]).includes(d)) as string[] : [];
+      if (!text(o.title, 60) || !days.length || (o.intensity !== 'hard' && o.intensity !== 'easy')) {
+        throw new HttpError(400, 'invalid_input', 'Each of your own strength sessions or classes needs a title, its days, and whether it is hard or easy.');
+      }
+      return { title: text(o.title, 60)!, days, intensity: o.intensity as 'hard' | 'easy', details: text(o.details, 300) };
+    })
+    : [];
+  let runsPerWeek: number | null = null;
+  if (body.runs_per_week !== undefined && body.runs_per_week !== null) {
+    runsPerWeek = Number(body.runs_per_week);
+    if (!Number.isInteger(runsPerWeek) || runsPerWeek < 0 || runsPerWeek > 5) throw new HttpError(400, 'invalid_input', 'Runs per week must be 0 to 5 (5 means 5 or more).');
+  }
+  const rr = body.recent_result as Record<string, unknown> | null | undefined;
+  const lr = body.last_race as Record<string, unknown> | null | undefined;
+  return {
+    strength_choice: strengthChoice,
+    own_strength: ownStrength,
+    training_age: body.training_age == null ? null : oneOf(body.training_age, TRAINING_AGES, 'under_6_months', 'Training age: under_6_months, 6_12_months, 1_3_years or 3_plus_years.'),
+    runs_per_week: runsPerWeek,
+    recent_result: rr && text(rr.event, 80) && text(rr.time, 20)
+      ? { event: text(rr.event, 80)!, time: text(rr.time, 20)!, date: date(rr.date, 'Recent result date'), avg_run_pace: text(rr.avg_run_pace, 20) }
+      : null,
+    variety_preference: body.variety_preference == null ? null : oneOf(body.variety_preference, VARIETY_PREFERENCES, 'balance', 'Variety: same, balance or variety.'),
+    dislikes: text(body.dislikes, 300),
+    preferred_long_run_day: day(body.preferred_long_run_day),
+    last_race: lr && lr.date
+      ? { type: oneOf(lr.type, EVENT_TYPES, 'other', `Last race type: ${EVENT_TYPES.join(', ')}.`), date: date(lr.date, 'Last race date')! }
+      : null,
+    other_events: list(body.other_events, 'Other events', 10).map((e) => {
+      if (!text(e.name, 80) || !isValidDate(e.date) || (e.mode !== 'race' && e.mode !== 'training')) {
+        throw new HttpError(400, 'invalid_input', 'Each event needs a name, a date, and whether you will race it or run it as training.');
+      }
+      return { name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date, mode: e.mode as 'race' | 'training' };
+    }),
   };
 }
 
@@ -367,6 +423,7 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
       daysAvailable: inputs.training_days.length,
       running: inputs.running.mode,
       strengthPref: inputs.strength_sessions_pref ?? 2,
+      strengthChoice: inputs.strength_choice ?? 'program',
       raceDay: weekdayOf(inputs.race_date),
     }),
     maxTokens: 16000,
@@ -552,6 +609,7 @@ async function generateFirstBlock(
 // ---------------------------------------------------------------------------
 
 const WEEK_MAX_TOKENS = 16000;
+const WEEK_ATTEMPTS = 3; // one call plus two repairs
 const WEEK_RE = /^Week (\d+)\b/;
 
 async function generateBlockWeeks(a: {
@@ -594,7 +652,7 @@ async function generateBlockWeeks(a: {
       deps, settings, event, model, system, prompt, schema: BLOCK_SCHEMA, validate,
       maxTokens: WEEK_MAX_TOKENS, effort,
       timeoutMs: effort === 'high' ? BLOCK_TIMEOUT_MS.high : BLOCK_TIMEOUT_MS.other,
-      repairTimeoutMs: REPAIR_TIMEOUT_MS, deadline, countsAs: null, paidWith: null, ...more,
+      repairTimeoutMs: REPAIR_TIMEOUT_MS, deadline, countsAs: null, paidWith: null, attempts: WEEK_ATTEMPTS, ...more,
     });
   const trim = (week: BlockWeek, previous: BlockWeek | undefined, c: BlockContext) => {
     if (previous) trimDeload(week, previous, c);
@@ -645,7 +703,7 @@ async function generateBlockWeeks(a: {
       return validateBlock(n, c);
     }, {
       history: [{ role: 'assistant', content: texts[i] }, { role: 'user', content: repairPrompt(mine) }],
-      attempts: 1,
+      attempts: WEEK_ATTEMPTS - 1,
     });
     if (!fixed.data) return fail(fixed.error);
     block.weeks[i] = fixed.data.weeks[0];
@@ -689,6 +747,8 @@ async function blockContext(a: {
     canDouble: inputs.can_double ?? 'no',
     strengthPref: inputs.strength_sessions_pref ?? 2,
     strengthPlacement: inputs.strength_placement ?? 'with_hard_sessions',
+    strengthChoice: inputs.strength_choice ?? 'program',
+    ownStrength: inputs.own_strength ?? [],
     raceDay: a.raceDay,
     keySessionDay: inputs.key_session_day,
     minutesPerSession: inputs.minutes_per_session,
@@ -855,19 +915,30 @@ async function adjustWeek(
   const planned = program.outline.weeks.find((w) => w.week === week)!;
   const tired = reasons.includes('low energy') || reasons.includes('poor sleep');
   // Targets for this week: fewer core sessions if fewer days; a lighter (deload) week when tired.
-  const coreSessions = Math.min(planned.core_sessions, inputs.training_days.length * 2);
   const raceDay = weekdayOf(inputs.race_date);
+  const sctx = {
+    running: inputs.running.mode, strengthPref: inputs.strength_sessions_pref ?? 2, strengthChoice: inputs.strength_choice ?? 'program',
+    finalWeek: program.total_weeks, raceDay,
+  };
+  const deload = tired || planned.deload;
+  let coreSessions = Math.min(planned.core_sessions, inputs.training_days.length * 2);
+  // Fewer sessions can mean fewer strength sessions.
+  let strengthSessions = Math.min(planned.strength_sessions ?? 0, strengthTarget({ ...planned, core_sessions: coreSessions }, sctx));
+  let optionalSessions = planned.optional_sessions;
+  if (tired && !planned.deload) {
+    // A lighter (deload) week: 1 core strength session; the others become 1 optional one.
+    const deloadStrength = strengthTarget({ ...planned, core_sessions: coreSessions, deload: true }, sctx);
+    const dropped = Math.max(0, strengthSessions - deloadStrength);
+    coreSessions = Math.max(1, coreSessions - dropped);
+    strengthSessions = deloadStrength;
+    optionalSessions = Math.min(2, optionalSessions + deloadOptionalStrength({ ...planned, core_sessions: coreSessions, deload: true }, sctx));
+  }
   const target: OutlineWeek = {
     ...planned,
     core_sessions: coreSessions,
-    // Fewer sessions can mean fewer strength sessions.
-    strength_sessions: Math.min(
-      planned.strength_sessions ?? 0,
-      strengthTarget({ ...planned, core_sessions: coreSessions }, {
-        running: inputs.running.mode, strengthPref: inputs.strength_sessions_pref ?? 2, finalWeek: program.total_weeks, raceDay,
-      }),
-    ),
-    ...(tired ? { deload: true, lever: 'deload' as const, load: 'Low' as const } : {}),
+    strength_sessions: strengthSessions,
+    optional_sessions: optionalSessions,
+    ...(deload ? { deload: true, lever: 'deload' as const, load: 'Low' as const } : {}),
   };
   const index = block.sessions.weeks.findIndex((w) => w.week === week);
   const previousWeek: BlockWeek | undefined = index > 0 ? block.sessions.weeks[index - 1] : await lastWeekBefore(admin, program.id, block.block_no);

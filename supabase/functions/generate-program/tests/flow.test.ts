@@ -55,7 +55,7 @@ function outline(totalWeeks: number): Outline {
     ],
     weeks: Array.from({ length: totalWeeks }, (_, i) => ({
       week: i + 1, phase: i + 1 === totalWeeks ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: deload(i + 1),
-      lever: i === 0 ? 'start' : deload(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, strength_sessions: deload(i + 1) || i + 1 === totalWeeks ? 1 : 2, optional_sessions: 1,
+      lever: i === 0 ? 'start' : deload(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, strength_sessions: deload(i + 1) || i + 1 === totalWeeks ? 1 : 2, optional_sessions: deload(i + 1) ? 2 : 1,
       key_session: 'Circuit + intervals', key_sessions: ['k'], pillars: ['Aerobic Engine'],
     })),
   } as Outline;
@@ -96,7 +96,12 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
       { day: 'Sat', title: 'Strength 2', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
         parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `2 × ${6 + n}, hard with intent: 1–2 good reps left`) }] },
     ];
-    if (deload) sessions.splice(3, 1); // drop Saturday's strength; keep Monday's and the key session
+    if (deload) {
+      // Deload: 1 core strength session plus 1 optional, both at maintain (2 working sets).
+      const maintain = { build_or_maintain: 'maintain', progression: { type: 'extend', change: 'fewer sets, same load' } };
+      Object.assign(sessions[0], maintain, { parts: [{ ...sessions[0].parts[0], items: fill(strength, () => `2 × ${6 + n}, hard with intent: 1–2 good reps left`) }] });
+      Object.assign(sessions[3], maintain, { title: 'Optional strength', optional: true, slot: 'deload-strength' });
+    }
     return { week: n, focus: 'f', progression: { lever: n === 1 ? 'start' : deload ? 'deload' : 'volume', change: 'c' }, sessions };
   };
   return { summary: 'Weeks 1-4', weeks: [week(1), week(2), week(3), week(4, true)] } as unknown as Block;
@@ -189,7 +194,9 @@ Deno.test({
 
       await t.step('weekly check-in: tired athlete gets a lighter week 1; the original is kept; nothing counted', async () => {
         const before = (await events(a.athlete.id)).length;
-        const lighter = (await validBlock(a.athlete)).weeks[0];
+        // Deload shape: Monday strength at maintain, key session, optional compromised and optional strength.
+        const lighter = (await validBlock(a.athlete)).weeks[3];
+        lighter.week = 1;
         lighter.progression = { lever: 'deload', change: 'lighter week' };
         lighter.sessions.forEach((s) => s.parts.forEach((p) => p.items.forEach((it) => { it.cue = 'keep it easy'; })));
         const fake = fakeClaude([{ data: { summary: 'Lighter week', weeks: [lighter] } }]);
@@ -226,10 +233,10 @@ Deno.test({
         secondId = (await preview(makeDeps(fake.fn, background), a.caller, { inputs })).program.id;
         const bad = await validBlock(a.athlete);
         bad.weeks[0].sessions[0].parts[0].items[0].exercise_id = 'EX9999';
-        const failing = fakeClaude([{ data: bad }, { data: bad }]);
+        const failing = fakeClaude([{ data: bad }, { data: bad }, { data: bad }]);
         await confirm(makeDeps(failing.fn, background), a.caller, { program_id: secondId });
         await Promise.all(background.splice(0));
-        assert.equal(failing.calls.length, 2, 'first try plus one repair');
+        assert.equal(failing.calls.length, 3, 'first try plus two repairs');
         const { data: block } = await admin.from('program_blocks').select('status, last_error').eq('program_id', secondId).single();
         assert.equal(block!.status, 'failed');
         assert.match(block!.last_error!, /didn't use a confirmation/);

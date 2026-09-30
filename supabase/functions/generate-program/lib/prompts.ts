@@ -2,7 +2,10 @@ import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
 import { coreSessionsForStrength, raceWeekStrengthDays, type Timing, weeklyNeeds } from './validate.ts';
 import { weekdayOf } from './time.ts';
-import type { BlockWeek, CanDouble, Limiter, Outline, OutlineWeek, RunningMode, StrengthPlacement } from './schemas.ts';
+import type {
+  BlockWeek, CanDouble, EventType, Limiter, Outline, OutlineWeek, OwnStrengthSession, RunningMode, StrengthChoice, StrengthPlacement, TrainingAge,
+  VarietyPreference,
+} from './schemas.ts';
 
 // The system prompt is identical for every call, so it is cached; everything
 // that varies (athlete, dates, candidate lists) goes in the user message.
@@ -23,6 +26,16 @@ export interface ProgramInputs {
   strength_placement?: StrengthPlacement; // onboarding 10c
   limiters?: Limiter[]; // onboarding 3b, up to 2
   strength_sessions_pref?: number; // onboarding 10d, 2–6
+  strength_choice?: StrengthChoice; // onboarding 10a (default program)
+  own_strength?: OwnStrengthSession[]; // strength_choice 'own'
+  training_age?: TrainingAge | null; // onboarding 3
+  runs_per_week?: number | null; // onboarding 4 (5 = 5+)
+  recent_result?: { event: string; time: string; date: string | null; avg_run_pace: string | null } | null; // onboarding 6
+  variety_preference?: VarietyPreference | null; // onboarding 14
+  dislikes?: string | null; // onboarding 15
+  preferred_long_run_day?: string | null; // onboarding 2b
+  last_race?: { type: EventType; date: string } | null; // onboarding 1c, only if in the last 4 weeks
+  other_events?: { name: string; type: EventType; date: string; mode: 'race' | 'training' }[]; // onboarding 1b / §12
   running: {
     mode: RunningMode; // programmed | own_plan | none
     own_runs: { day: string; intensity: 'hard' | 'easy' }[]; // own_plan only
@@ -87,7 +100,11 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
-- Add at most ONE new stimulus per block; mark it optional: true.
+- Add at most ONE new stimulus per block, except for experienced athletes (3+ years consistent training, no current injury), who can take more than one; mark new additions optional: true.
+- Athlete's own strength/classes (strength_choice = own): fixed sessions; count in load (hard unless marked easy); place runs around them with the interference rule; don't program other strength.
+- Race recovery before quality run sessions return: marathon or longer → 3 weeks (easy running and off-feet only); half marathon or Hyathlon race → 1 week; 10 km or shorter → straight back into normal sessions. "Race it" events: lighter day or two before. "Run it as training" events replace that day's session.
+- Travel weeks: only the equipment the athlete says they'll have; no equipment → bodyweight maintenance.
+- CrossFit-style WODs are hard sessions: same consolidation rule as strength.
 - Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
 
 ## Strength work
@@ -101,7 +118,9 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
   - Either way: NEVER strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days. Strides on easy runs are fine.
 - Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
 - Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
+- Strength progression stays WITHIN 2–3 working sets and 6–10 reps: a volume or intensity week means more load, slower tempo, longer pauses or better execution. Never progress by adding a 4th set or going past 10 reps (unless the athlete chose that).
 - Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
+- Deload weeks: 1 strength session plus 1 OPTIONAL strength session (optional: true), both with fewer working sets at the same load and intent.
 - Taper: 1 strength session/week at maintain. Race week: 1 short maintain session early in the week, at least 5 days before the race.
 - A strength session that is the second session of the day is 30–45 min (use the 30/45-min templates), not the athlete's usual minutes per session.
 - Low readiness: fewer working sets or exercises, same intent. If it can't be done with intent, move it rather than doing it easy.
@@ -185,6 +204,14 @@ ${RUNNING_RULES}
 ${FORMAT_RULES}`;
 }
 
+const TRAINING_AGE_LABEL: Record<string, string> = {
+  under_6_months: 'less than 6 months', '6_12_months': '6–12 months', '1_3_years': '1–3 years', '3_plus_years': '3+ years (experienced)',
+};
+const VARIETY_LABEL: Record<string, string> = { same: 'mostly the same sessions', balance: 'a balance', variety: 'lots of variety' };
+const EVENT_LABEL: Record<EventType, string> = {
+  hyathlon: 'Hyathlon race', marathon_or_longer: 'marathon or longer', half_marathon: 'half marathon', '10k_or_shorter': '10 km or shorter', other: 'other event',
+};
+
 const RUNNING_LABEL: Record<RunningMode, string> = {
   programmed: 'Program my running',
   own_plan: 'I already have a run plan',
@@ -202,7 +229,18 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
     `Training days: ${inputs.training_days.join(', ')} (${inputs.training_days.length} days; sessions only on these days, up to 2 a day)`,
     `can_double: ${inputs.can_double ?? 'no'}`,
     `strength_placement: ${inputs.strength_placement ?? 'with_hard_sessions'}`,
-    `strength_sessions_pref: ${inputs.strength_sessions_pref ?? 2}`,
+    `strength_choice: ${inputs.strength_choice ?? 'program'}`,
+    ...(inputs.strength_choice === 'own'
+      ? [`Their own strength/classes (fixed; count in load): ${(inputs.own_strength ?? []).map((o) => `${o.title} on ${o.days.join('/')} (${o.intensity})${o.details ? `: ${o.details}` : ''}`).join('; ') || 'not given'}`]
+      : [`strength_sessions_pref: ${inputs.strength_sessions_pref ?? 2}`]),
+    `Training age: ${TRAINING_AGE_LABEL[inputs.training_age ?? ''] ?? 'not specified'}`,
+    `Runs per week now: ${inputs.runs_per_week == null ? 'not specified' : inputs.runs_per_week >= 5 ? '5+' : inputs.runs_per_week}`,
+    `Recent race or time trial: ${inputs.recent_result ? `${inputs.recent_result.event} in ${inputs.recent_result.time}${inputs.recent_result.date ? ` (${inputs.recent_result.date})` : ''}${inputs.recent_result.avg_run_pace ? `, average run pace ${inputs.recent_result.avg_run_pace}` : ''}` : 'none given'}`,
+    `Variety: ${VARIETY_LABEL[inputs.variety_preference ?? ''] ?? 'not specified'}`,
+    `Dislikes or won't do: ${inputs.dislikes || 'none given'}`,
+    ...(inputs.preferred_long_run_day ? [`Preferred long-run day: ${inputs.preferred_long_run_day}`] : []),
+    `Last race (in the last 4 weeks): ${inputs.last_race ? `${EVENT_LABEL[inputs.last_race.type]} on ${inputs.last_race.date}` : 'none'}`,
+    `Other events: ${inputs.other_events?.length ? inputs.other_events.map((e) => `${e.name} (${EVENT_LABEL[e.type]}) on ${e.date}, ${e.mode === 'race' ? 'race it' : 'run it as training'}`).join('; ') : 'none'}`,
     `limiters (the athlete's answer): ${inputs.limiters?.length ? inputs.limiters.join(', ') : 'not specified'}`,
     `Key session day: ${inputs.key_session_day}`,
     `Minutes per session: ${inputs.minutes_per_session}`,
@@ -254,7 +292,7 @@ Outline every week from 1 to ${window.totalWeeks}:
 - Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final 1 to 2 weeks and includes race week.
 - For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload weeks "deload", otherwise frequency, intensity or volume), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
 - Core sessions per week are never more than ${days * 2} (the athlete trains ${days} days, up to 2 sessions a day; see can_double). Optional sessions go on the same days.
-- strength_sessions per week (counted inside core_sessions): the athlete chose ${inputs.strength_sessions_pref ?? 2}, usually as the second session on hard days. Normal weeks (not deload, taper or race week): core_sessions at least ${coreSessionsForStrength(inputs.running.mode, days, inputs.strength_sessions_pref ?? 2)} (${weeklyNeeds(inputs.running.mode, 99, 0).join(', ') || 'no other needs'}, plus ${inputs.strength_sessions_pref ?? 2} strength), and strength_sessions = the smaller of ${inputs.strength_sessions_pref ?? 2} and core_sessions minus ${weeklyNeeds(inputs.running.mode, 99, 0).length}. Deload weeks: 1 up to that number. Taper weeks: 1 (maintain). Race week (week ${window.totalWeeks}): ${raceWeekStrengthDays(inputs.race_date ? weekdayOf(inputs.race_date) : null).length ? '1 short maintain session, at least 5 days before the race' : '0 (the race is too early in the week for one at least 5 days before it)'}.
+${(inputs.strength_choice ?? 'program') !== 'program' ? `- strength_sessions is 0 every week: the athlete ${inputs.strength_choice === 'own' ? 'does their own strength or classes (fixed sessions that count in load; plan around them)' : 'wants no strength sessions'}.` : `- strength_sessions per week (counted inside core_sessions): the athlete chose ${inputs.strength_sessions_pref ?? 2}, usually as the second session on hard days. Normal weeks (not deload, taper or race week): core_sessions at least ${coreSessionsForStrength(inputs.running.mode, days, inputs.strength_sessions_pref ?? 2)} (${weeklyNeeds(inputs.running.mode, 99, 0).join(', ') || 'no other needs'}, plus ${inputs.strength_sessions_pref ?? 2} strength), and strength_sessions = the smaller of ${inputs.strength_sessions_pref ?? 2} and core_sessions minus ${weeklyNeeds(inputs.running.mode, 99, 0).length}. Deload weeks: strength_sessions 1, plus 1 optional strength session (count it in optional_sessions), both at maintain. Taper weeks: 1 (maintain). Race week (week ${window.totalWeeks}): ${raceWeekStrengthDays(inputs.race_date ? weekdayOf(inputs.race_date) : null).length ? '1 short maintain session, at least 5 days before the race' : '0 (the race is too early in the week for one at least 5 days before it)'}.`}
 - Plan the weekly mix and running for the athlete's running choice (${RUNNING_LABEL[inputs.running.mode]}).
 - Build up core sessions gradually; add at most one new stimulus per 4-week block, first as an optional session.
 - In the summary, describe core and optional sessions accurately: core sessions are the week's planned sessions; optional ones are extras "if you have time".`;
@@ -318,7 +356,7 @@ Running exercises for this athlete (use these ids for any run): ${args.runExerci
 Rules for sessions:
 - Every session: ${frame.warmup_min} min warm-up + parts totalling ${partsMinutes} min + ${frame.cooldown_min} min cool-down = ${inputs.minutes_per_session} min (deload weeks may be shorter). Exception: a strength session that is the day's second session (order_in_day 2), and race week's short strength session, is exactly one 30- or 45-min Strength template with its own warm-up and cool-down.
 - Sessions only on ${inputs.training_days.join(', ')}; up to 2 sessions a day (order_in_day 1 and 2; see can_double). Days with one session use order_in_day 1.
-- Strength: each week has exactly the outline's strength_sessions core strength sessions. strength_placement "with_hard_sessions": each strength session is the second session (order_in_day 2) on a day with a hard session (the key session or another hard run, conditioning, circuit or station session), straight after it. Never leave strength alone on a day while a hard day has no strength session yet; only extras beyond the hard days go on other days, never on recovery days. "own_days": give them days without another hard session, not the day after a key session, followed by an easy, recovery or rest day. Taper and race-week strength is maintain.${args.raceStrengthDays.length ? ` Race week's strength session is on ${args.raceStrengthDays.join(' or ')} (at least 5 days before the race).` : ' Race week has no strength session.'}
+- Strength: each week has exactly the outline's strength_sessions core strength sessions. strength_placement "with_hard_sessions": each strength session is the second session (order_in_day 2) on a day with a hard session (the key session or another hard run, conditioning, circuit or station session), straight after it. Never leave strength alone on a day while a hard day has no strength session yet; only extras beyond the hard days go on other days, never on recovery days. "own_days": give them days without another hard session, not the day after a key session, followed by an easy, recovery or rest day. Deload weeks: 1 core strength session plus 1 optional strength session (optional: true, slot "deload-strength") when the athlete normally does 2 or more; both maintain (fewer working sets, same load and intent). Taper and race-week strength is maintain. strength_choice "own" or "none": no programmed strength sessions (strength_sessions is 0); with "own", plan around their own sessions.${args.raceStrengthDays.length ? ` Race week's strength session is on ${args.raceStrengthDays.join(' or ')} (at least 5 days before the race).` : ' Race week has no strength session.'}
 - Use only the exercises, templates and race sessions listed below, by their exact id. Never invent an exercise or rename one.
 - Strength, Circuit and Mobility parts use a template: set template_id, set minutes to the template's part length, and give exactly one item per slot, in slot order, whose movement pattern fits the slot (and body region, where the slot names one). Other formats have template_id null.
 - Each item sets exactly one of exercise_id or race_session_id; the other is null. Set block only for Tabata items, foot_contacts only for plyometric drills, run_minutes only for running in compromised parts, and run_distance_m only for run segments in race simulations${candidates.race.run_distance_m ? ` (${candidates.race.run_distance_m} m)` : ''}. Leave the others null.

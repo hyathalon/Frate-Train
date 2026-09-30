@@ -63,7 +63,11 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
-- Add at most ONE new stimulus per block; mark it optional: true.
+- Add at most ONE new stimulus per block, except for experienced athletes (3+ years consistent training, no current injury), who can take more than one; mark new additions optional: true.
+- Athlete's own strength/classes (strength_choice = own): fixed sessions; count in load (hard unless marked easy); place runs around them with the interference rule; don't program other strength.
+- Race recovery before quality run sessions return: marathon or longer → 3 weeks (easy running and off-feet only); half marathon or Hyathlon race → 1 week; 10 km or shorter → straight back into normal sessions. "Race it" events: lighter day or two before. "Run it as training" events replace that day's session.
+- Travel weeks: only the equipment the athlete says they'll have; no equipment → bodyweight maintenance.
+- CrossFit-style WODs are hard sessions: same consolidation rule as strength.
 - Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
 
 ## Strength work
@@ -77,7 +81,9 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
   - Either way: NEVER strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days. Strides on easy runs are fine.
 - Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
 - Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
+- Strength progression stays WITHIN 2–3 working sets and 6–10 reps: a volume or intensity week means more load, slower tempo, longer pauses or better execution. Never progress by adding a 4th set or going past 10 reps (unless the athlete chose that).
 - Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
+- Deload weeks: 1 strength session plus 1 OPTIONAL strength session (optional: true), both with fewer working sets at the same load and intent.
 - Taper: 1 strength session/week at maintain. Race week: 1 short maintain session early in the week, at least 5 days before the race.
 - A strength session that is the second session of the day is 30–45 min (use the 30/45-min templates), not the athlete's usual minutes per session.
 - Low readiness: fewer working sets or exercises, same intent. If it can't be done with intent, move it rather than doing it easy.

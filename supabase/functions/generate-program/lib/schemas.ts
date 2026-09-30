@@ -39,6 +39,23 @@ export type StrengthPlacement = (typeof STRENGTH_PLACEMENTS)[number];
 export const LIMITERS = ['running', 'strength', 'strength_endurance', 'aerobic_fitness', 'not_sure'] as const;
 export type Limiter = (typeof LIMITERS)[number];
 export const STRENGTH_SESSIONS_RANGE: [number, number] = [2, 6]; // onboarding 10d
+// Onboarding 10a: program my strength / I already do strength or classes / no strength.
+export const STRENGTH_CHOICES = ['program', 'own', 'none'] as const;
+export type StrengthChoice = (typeof STRENGTH_CHOICES)[number];
+export interface OwnStrengthSession {
+  title: string; // e.g. "F45", "CrossFit", "Strength with my coach"
+  days: string[];
+  intensity: 'hard' | 'easy';
+  details: string | null; // optional exercises and sets
+}
+// Onboarding 3: training age.
+export const TRAINING_AGES = ['under_6_months', '6_12_months', '1_3_years', '3_plus_years'] as const;
+export type TrainingAge = (typeof TRAINING_AGES)[number];
+export const VARIETY_PREFERENCES = ['same', 'balance', 'variety'] as const;
+export type VarietyPreference = (typeof VARIETY_PREFERENCES)[number];
+// Onboarding 1c / §12: how demanding the athlete's last or upcoming event is.
+export const EVENT_TYPES = ['hyathlon', 'marathon_or_longer', 'half_marathon', '10k_or_shorter', 'other'] as const;
+export type EventType = (typeof EVENT_TYPES)[number];
 
 export interface OutlineWeek {
   week: number;

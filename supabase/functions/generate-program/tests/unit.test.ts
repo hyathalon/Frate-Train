@@ -402,21 +402,26 @@ Deno.test('strength placement: with_hard_sessions, own_days, short second sessio
   assert.match(ownDays, /followed by a hard day \(Fri\)/);
 
   // Race week (week 2 here): maintain, and at least 5 days before the race.
-  assert.match(week2(validateBlock(block(), { ...ctx, finalWeek: 2 })), /strength in the taper and race week is maintain/);
+  assert.match(week2(validateBlock(block(), { ...ctx, finalWeek: 2 })), /strength in deload, taper and race weeks is maintain/);
   assert.match(week2(validateBlock(block(), { ...ctx, finalWeek: 2, raceDay: 'Thu' })), /at least 5 days before the race \(no day fits\)/);
 });
 
-Deno.test('outline strength_sessions: the choice in normal weeks, 1 up to it in deloads, enough core sessions', () => {
+Deno.test('outline strength_sessions: the choice in normal weeks, 1 + 1 optional in deloads, 0 for own or none', () => {
   const o = outline();
   const oc = { totalWeeks: 4, daysAvailable: 4, running: 'none' as const, strengthPref: 2, raceDay: 'Sat' };
   for (const w of o.weeks) w.strength_sessions = w.week === 4 ? 1 : 2; // 3 core: hybrid + 2 strength
   assert.deepEqual(validateOutline(o, oc), []);
   o.weeks[1].strength_sessions = 1;
   assert.match(validateOutline(o, oc).join(' '), /Week 2: strength_sessions must be 2/);
-  // A deload week (not race week) may drop to 1.
+  // A deload week: 1 core strength session plus 1 optional (so at least 1 optional session).
   const d = { ...o, weeks: o.weeks.map((w) => ({ ...w })) };
-  d.weeks[1] = { ...d.weeks[1], deload: true, lever: 'deload', strength_sessions: 1 };
-  assert.doesNotMatch(validateOutline(d, oc).join(' '), /Week 2: strength_sessions/);
+  d.weeks[1] = { ...d.weeks[1], deload: true, lever: 'deload', strength_sessions: 1, optional_sessions: 1 };
+  assert.doesNotMatch(validateOutline(d, oc).join(' '), /Week 2: (strength_sessions|a deload week)/);
+  d.weeks[1] = { ...d.weeks[1], strength_sessions: 2, optional_sessions: 0 };
+  assert.match(validateOutline(d, oc).join(' '), /Week 2: strength_sessions must be 1 \(deload/);
+  assert.match(validateOutline(d, oc).join(' '), /Week 2: a deload week has 1 optional strength session/);
+  // Own strength or none: no programmed strength.
+  assert.match(validateOutline(o, { ...oc, strengthChoice: 'own' }).join(' '), /strength_sessions must be 0 \(the athlete does their own strength or none\)/);
   // Too few core sessions for the choice.
   o.weeks[1] = { ...o.weeks[1], strength_sessions: 1, core_sessions: 2 };
   assert.match(validateOutline(o, { ...oc, strengthPref: 2 }).join(' '), /Week 2: plan at least 3 core sessions/);

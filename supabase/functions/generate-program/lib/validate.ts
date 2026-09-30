@@ -1,5 +1,5 @@
 import { type Candidates, type Exercise, isBodyweightOnly, isErg, isRunning, partMinutes, slotMatches, type Template } from './candidates.ts';
-import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type OutlineWeek, type RunningMode, type Session, type SessionPart, type StrengthPlacement } from './schemas.ts';
+import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type OutlineWeek, type OwnStrengthSession, type RunningMode, type Session, type SessionPart, type StrengthChoice, type StrengthPlacement } from './schemas.ts';
 
 // Each validator returns plain-English errors. An empty list means valid.
 // The same messages go back to Claude in the one automatic repair attempt.
@@ -9,6 +9,7 @@ export interface OutlineContext {
   daysAvailable: number;
   running: RunningMode;
   strengthPref: number;
+  strengthChoice?: StrengthChoice; // default 'program'
   raceDay: string | null; // weekday of the race, in the final week
 }
 
@@ -24,12 +25,22 @@ export function raceWeekStrengthDays(raceDay: string | null): string[] {
  * 5 days before the race falls in it, otherwise 0.
  */
 export function strengthTarget(
-  week: Pick<OutlineWeek, 'week' | 'phase' | 'core_sessions'>,
-  ctx: { running: RunningMode; strengthPref: number; finalWeek: number; raceDay: string | null },
+  week: Pick<OutlineWeek, 'week' | 'phase' | 'core_sessions'> & { deload?: boolean },
+  ctx: StrengthCtx,
 ): number {
+  if ((ctx.strengthChoice ?? 'program') !== 'program') return 0; // own strength/classes, or none
   if (week.week === ctx.finalWeek) return raceWeekStrengthDays(ctx.raceDay).length ? 1 : 0;
   if (week.phase === 'taper') return 1;
-  return Math.min(ctx.strengthPref, Math.max(0, week.core_sessions - weeklyOthers(ctx.running, week.core_sessions).length));
+  const normal = Math.min(ctx.strengthPref, Math.max(0, week.core_sessions - weeklyOthers(ctx.running, week.core_sessions).length));
+  return week.deload ? Math.min(1, normal) : normal; // deload: 1 required (+ 1 optional, see deloadOptionalStrength)
+}
+
+type StrengthCtx = { running: RunningMode; strengthPref: number; strengthChoice?: StrengthChoice; finalWeek: number; raceDay: string | null };
+
+/** Deload weeks add 1 optional strength session when the athlete normally does 2 or more. */
+export function deloadOptionalStrength(week: Pick<OutlineWeek, 'week' | 'phase' | 'core_sessions' | 'deload'>, ctx: StrengthCtx): number {
+  if (!week.deload || week.week === ctx.finalWeek || week.phase === 'taper' || (ctx.strengthChoice ?? 'program') !== 'program') return 0;
+  return ctx.strengthPref >= 2 && strengthTarget(week, ctx) >= 1 ? 1 : 0;
 }
 
 export function validateOutline(outline: Outline, ctx: OutlineContext): string[] {
@@ -49,16 +60,16 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
       errors.push(`Week ${w.week}: optional_sessions must be between 0 and 2; it is ${w.optional_sessions}.`);
     }
     if (w.pillars.length === 0) errors.push(`Week ${w.week}: list at least one pillar.`);
-    const strength = strengthTarget(w, { ...ctx, finalWeek: ctx.totalWeeks });
-    // Deload weeks may drop strength sessions (at least 1 if any are planned).
-    const strengthOk = w.deload && w.week !== ctx.totalWeeks
-      ? w.strength_sessions <= strength && w.strength_sessions >= Math.min(1, strength)
-      : w.strength_sessions === strength;
-    if (!strengthOk) {
-      errors.push(`Week ${w.week}: strength_sessions must be ${w.deload && w.week !== ctx.totalWeeks ? `1 to ${strength}` : strength} (${w.week === ctx.totalWeeks ? 'race week: one short maintain session at least 5 days before the race, if the week allows' : w.phase === 'taper' ? 'taper: 1 at maintain' : `the athlete chose ${ctx.strengthPref}, within ${w.core_sessions} core sessions`}); it is ${w.strength_sessions}.`);
+    const sctx = { ...ctx, finalWeek: ctx.totalWeeks };
+    const strength = strengthTarget(w, sctx);
+    if (w.strength_sessions !== strength) {
+      errors.push(`Week ${w.week}: strength_sessions must be ${strength} (${(ctx.strengthChoice ?? 'program') !== 'program' ? 'the athlete does their own strength or none' : w.week === ctx.totalWeeks ? 'race week: one short maintain session at least 5 days before the race, if the week allows' : w.phase === 'taper' ? 'taper: 1 at maintain' : w.deload ? 'deload: 1 core strength session, plus 1 optional' : `the athlete chose ${ctx.strengthPref}, within ${w.core_sessions} core sessions`}); it is ${w.strength_sessions}.`);
+    }
+    if (deloadOptionalStrength(w, sctx) > w.optional_sessions) {
+      errors.push(`Week ${w.week}: a deload week has 1 optional strength session, so optional_sessions must be at least 1.`);
     }
     const others = weeklyOthers(ctx.running, w.core_sessions).length;
-    if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload
+    if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload && (ctx.strengthChoice ?? 'program') === 'program'
         && w.core_sessions - others < ctx.strengthPref && w.core_sessions < ctx.daysAvailable * 2) {
       errors.push(`Week ${w.week}: plan at least ${Math.min(ctx.daysAvailable * 2, others + ctx.strengthPref)} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day).`);
     }
@@ -117,6 +128,8 @@ export interface BlockContext {
   canDouble: CanDouble;
   strengthPref: number; // strength sessions a week the athlete chose
   strengthPlacement: StrengthPlacement;
+  strengthChoice?: StrengthChoice; // default 'program'
+  ownStrength?: OwnStrengthSession[]; // strength_choice 'own': the athlete's own strength/classes
   raceDay: string | null; // weekday of the race (final week)
   crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
@@ -236,11 +249,12 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
 
     const final = week.week === ctx.finalWeek;
     week.sessions.forEach((s, j) => validateSession(s, `${label}, session ${j + 1} ("${s.title}")`, week.progression.lever === 'deload', final, ctx, errors));
-    const strengthCount = plan?.strength_sessions ?? strengthTarget({ week: week.week, phase: plan?.phase ?? 'base', core_sessions: core.length }, ctx);
+    const strengthCount = plan?.strength_sessions ?? strengthTarget({ week: week.week, phase: plan?.phase ?? 'base', core_sessions: core.length, deload: plan?.deload }, ctx);
+    const optionalStrength = plan ? deloadOptionalStrength(plan, ctx) : 0;
     if (!final) checkWeeklyMix(core, label, ctx, strengthCount, errors);
     if (ctx.running === 'own_plan') checkOwnRunSpacing(week, label, ctx, errors);
     checkEasyDays(week, label, ctx, strengthCount, errors);
-    checkStrengthWeek(week, label, ctx, strengthCount, plan?.phase === 'taper' || final, errors);
+    checkStrengthWeek(week, label, ctx, strengthCount, optionalStrength, plan?.phase === 'taper' || !!plan?.deload || final, errors);
   });
   if (ctx.running === 'programmed' && ctx.crossWeek !== false) checkLongRuns(block, ctx, errors);
   return errors;
@@ -288,6 +302,7 @@ const isStrengthOnly = (s: Session) => s.parts.every((p) => p.format === 'Streng
 function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, strengthCount: number, errors: string[]) {
   const hardDays = new Set<string>(week.sessions.filter((s) => !isRecoverySession(s) && !isEasySession(s) && !isStrengthOnly(s)).map((s) => s.day));
   if (ctx.running === 'own_plan') for (const r of ctx.ownRuns) if (r.intensity === 'hard') hardDays.add(r.day);
+  for (const o of ctx.ownStrength ?? []) if (o.intensity === 'hard') for (const d of o.days) hardDays.add(d);
   const extrasOnEasyDays = strengthCount > hardDays.size;
   for (const day of DAYS) {
     const sessions = week.sessions.filter((s) => s.day === day);
@@ -411,14 +426,20 @@ function checkLongRuns(block: Block, ctx: BlockContext, errors: string[]) {
  * - own_days: not the day after a key session, and followed by an easy or rest day
  *   (when there are enough days without hard sessions).
  */
-function checkStrengthWeek(week: BlockWeek, label: string, ctx: BlockContext, strengthCount: number, maintainOnly: boolean, errors: string[]) {
+function checkStrengthWeek(
+  week: BlockWeek, label: string, ctx: BlockContext, strengthCount: number, optionalCount: number, maintainOnly: boolean, errors: string[],
+) {
   const strength = week.sessions.filter((s) => !s.optional && isStrengthSession(s));
+  const optional = week.sessions.filter((s) => s.optional && isStrengthSession(s));
   if (strength.length !== strengthCount) {
     errors.push(`${label}: ${strengthCount} core strength session${strengthCount === 1 ? '' : 's'} this week (the outline's strength_sessions); the block has ${strength.length}.`);
   }
+  if (optionalCount && optional.length !== optionalCount) {
+    errors.push(`${label}: a deload week has 1 core strength session plus 1 optional strength session (optional: true); the block has ${optional.length} optional.`);
+  }
   if (maintainOnly) {
-    for (const s of strength.filter((x) => x.build_or_maintain !== 'maintain')) {
-      errors.push(`${label}: "${s.title}": strength in the taper and race week is maintain (same load and intent, 1–2 working sets).`);
+    for (const s of [...strength, ...optional].filter((x) => x.build_or_maintain !== 'maintain')) {
+      errors.push(`${label}: "${s.title}": strength in deload, taper and race weeks is maintain (same load and intent, 1–2 working sets).`);
     }
   }
   if (week.week === ctx.finalWeek) {
