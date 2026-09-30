@@ -1,0 +1,245 @@
+# Onboarding & Weekly Check-In — Final Wording
+
+**Purpose:** The exact questions, answer options and app rules for sign-up, the weekly check-in, session logging, the weekly adjustment, athlete control and pillar suggestions. Replaces the check-in spec in `HANDOFF-for-vscode-claude.md` (task 2), which said energy/sleep "good / OK / poor".
+
+Principles:
+- Onboarding takes about 3 minutes. The weekly check-in takes 30–60 seconds.
+- Follow-up questions only appear when needed.
+- All readiness sliders go the same way: **10 = good**.
+- No "HYROX" in the app. Use general Hyathlon language.
+- Body reports are health data (see §4).
+
+`Field` = suggested app field name. Map equipment answers to the existing equipment vocabulary in the code.
+
+---
+
+## 1. Onboarding (sign-up)
+
+### Screen 1: Your goal
+**1. Are you training for an event?** *(required)* `event_goal`
+- Yes: a hybrid race → event name (optional text) + event date (date picker)
+- Yes: a running race → distance + date
+- No: general fitness and strength
+
+**2. Do you want running in your program?** *(required)* `include_running`
+- Yes
+- No, off-feet training only
+
+**3. How long have you been training consistently?** `training_age`
+- Less than 6 months · 6–12 months · 1–3 years · 3+ years
+
+### Screen 2: Your running *(skipped if Q2 = No)*
+**4. How many times a week do you run at the moment?** `runs_per_week`
+- 0 · 1 · 2 · 3 · 4 · 5+
+
+**5. What was your longest run in the last 3 weeks?** `longest_run_min` (integer 0–300)
+- Number entry in **minutes**
+- Tick box: "I haven't run in the last 3 weeks" (saves 0)
+- Tick box: "Not sure" (saves nothing, and the app starts conservatively)
+
+**6. Do you have a recent race or time-trial result?** *(optional)* `recent_result`
+- Distance or event · time · date
+- Helper text: "This helps us set your personal training zones. Skip it if you don't have one."
+
+### Screen 3: Your week
+**7. How many days a week can you realistically train?** `days_available`
+- 2 · 3 · 4 · 5 · 6 · 7
+
+**8. Are there any days you can't train?** `days_unavailable`
+- Mon · Tue · Wed · Thu · Fri · Sat · Sun (select any) · None
+
+**9. How much time do you usually have for a session?** `session_min`
+- Under 30 min · 30–45 min · 45–60 min · 60–90 min · 90+ min
+
+**10. Where do you usually train?** `training_locations` (select all)
+- Gym · Home · Outdoors
+
+### Screen 4: Your equipment
+**11. What equipment do you have access to and would use for strength training?** `strength_equipment` (select all)
+- Bodyweight only · Dumbbells · Kettlebells · Barbell and plates · Resistance bands · Cable machine · Pin-loaded machines · Smith machine · Pull-up bar · Bench · Sled · Sandbag · Wall ball · Full gym · Other (text)
+
+**12. What equipment do you have access to and would use for off-feet cardio?** `off_feet_equipment` (select all)
+- Air bike · BikeErg · Bike (indoor or outdoor) · Elliptical · SkiErg · Rowing erg · Treadmill · Pool: swimming · Pool: aqua / pool running · None
+
+**13. Rank your off-feet options from favourite to least favourite.** `cross_training_preferences` (ordered list, max 8)
+- Drag to rank. Only shows what was selected in Q12.
+- Helper text: "When we swap a run for cross-training, we'll use your favourite first."
+
+**14. How much variety do you like?** `variety_preference`
+- Mostly the same sessions · A balance · Lots of variety
+
+**15. Anything you dislike or won't do?** *(optional text)* `dislikes`
+
+### Screen 5: Your body
+**16. Is there anything you're currently noticing in your body?** `current_body_reports`
+- No
+- Yes → same body-report questions as the weekly check-in (§2, Q4–Q7)
+
+Footer text: "We use this to adjust your training. It isn't medical advice. If something persists or worsens, check with your medical professional."
+
+---
+
+## 2. Weekly check-in
+
+### Readiness (three sliders, 0–10, 10 = good)
+**1. How fresh do your body and legs feel?** `fresh` 🪫 → 🔋
+- 0 = completely drained · 10 = fully fresh
+- *(This is the fatigue question, turned round so 10 = good.)*
+
+**2. How has your energy been over the last few days?** `energy` 😩 → ⚡
+- 0 = flat · 10 = full of energy
+
+**3. How well have you slept over the last few days?** `sleep` 😵 → 😴
+- 0 = very poorly · 10 = really well
+
+### Body check
+**4. Anything you're noticing in your body?** `body_reports[].category`
+- 😊 Nothing
+- 👀 Awareness: *I can feel it, but it doesn't hurt or change how I move.*
+- 💪 Soreness: *general muscle soreness from training that eases as I warm up and fades in a day or two.*
+- ⚠️ Niggle: *one specific spot that keeps bothering me, but I can still train normally.*
+- 🛑 Pain: *it hurts, changes how I move, or gets worse as I train.*
+
+If not "Nothing", show Q5–Q7. Button: "+ Add another area".
+
+**5. Where?** `body_reports[].area` + `side`
+- Foot · Ankle · Achilles · Calf · Shin · Knee · Hamstring · Quad · Hip / groin · Glute · Lower back · Upper back / neck · Shoulder · Elbow · Wrist / hand · Other (text)
+- Left · Right · Both
+
+**6. How much does it hurt at its worst?** `body_reports[].rating` (0–10 slider; hidden for Awareness)
+- 0 = no pain · 10 = worst pain imaginable
+
+**7. Compared with last week, is it…** `body_reports[].trend` (hidden the first time an area is reported)
+- Better · Same · Worse
+
+### Your week
+**8. Has anything changed with your availability this week?** `availability_changed`
+- No
+- Yes → days available this week (Mon–Sun chips) + time per session (same options as onboarding Q9)
+
+**9. Anything else your coach should know?** *(optional text)* `note`
+- Placeholder: "Travel, work, illness, a race, anything else"
+
+---
+
+## 3. App rules
+
+### Readiness score
+- **Score** = average of `fresh`, `energy`, `sleep` (0–10).
+- **First 3 check-ins** (no baseline yet): 🟢 7+ · 🟡 5–6.9 · 🔴 below 5.
+- **After that**, compare with the athlete's own average over the last 4 check-ins:
+  - 🟢 no more than 1 point below their average
+  - 🟡 1–2 points below
+  - 🔴 more than 2 points below, **or** any single slider at 3 or less
+- These thresholds are starting values. Tune them once there is real data.
+
+| Readiness | What happens to the coming week (from `04` Step 9b) |
+|---|---|
+| 🟢 | As planned |
+| 🟡 | Keep session types; use the lower end of RPE ranges and set ranges (`low_readiness_option`) |
+| 🔴 | Swap the next key session for a Z1 (RPE 1–4) recovery session or reduce the shift; flag to the coach (member accounts) |
+
+The athlete sees their colour and one line about what changed (e.g. "Tuesday's intervals trimmed from 6 to 4 reps"). No numbers shown.
+
+### Body reports: wait and watch, then act
+The rating decides, not the label. Small things get watched before the plan changes.
+
+| Report | What happens |
+|---|---|
+| Awareness | No change. Logged, and asked about again next week |
+| Soreness or niggle rated **3/10 or less** | **Wait and watch.** No change to the plan. The athlete can update the report any time during the week (e.g. from the Today screen), and it's asked about again at the next check-in |
+| Wait and watch with trend "Worse" | Still no change to the plan, plus the message *"If this persists or worsens, check with your medical professional"* |
+| Soreness or niggle rated **4/10 or more**, or any **Pain** report | Affected running sessions go **fully off-feet** on the athlete's favourite modality, same purpose and RPE. Nothing that loads that area in the coming week. Show *"If this persists or worsens, check with your medical professional"*. Coach flag (member accounts). When it's back to 3/10 or less, the 2-week build-back starts (`03` / `04` Step 9b) |
+
+Pain is treated like a 4+ whatever its rating, because by definition it changes how the athlete moves. The app gives considerations only, never medical advice.
+
+### Availability
+- Less time: keep the key session(s), drop or shorten the rest. Optional sessions go first.
+- More time: offer one extra **optional** session (one new stimulus at a time). Optional sessions never break streaks.
+
+---
+
+## 4. Health data handling
+- Body reports and ratings are health data. Store them behind row-level security so only the athlete (and their coach, for member accounts) can read them.
+- Send program generation only what it needs: category, area, side, rating, trend. Don't send free-text notes about the body.
+- Don't send body reports to any third party.
+
+---
+
+## 5. Session log (after each session)
+Kept to a few taps. This is what the weekly adjustment reads.
+
+**1. How hard was the session overall?** `session_rpe` (0–10 slider)
+**2. What did you complete?** `completed` — sets done, or duration, pre-filled with the plan so the athlete only changes what was different
+**3. Who did you train with?** `training_with` (optional) — Solo · With a friend · Group session · With my coach
+**4. Where?** `location` (optional) — Gym · Home · Outdoors
+**5. Did you change the session?** `modification_reason` (only shown if completed ≠ planned) — Couldn't finish the sets · Couldn't hold the effort · Short on time · Niggle · Felt great, did more · Other
+
+A planned session with nothing logged by the end of its day is marked **missed** (the athlete can still log it late).
+
+---
+
+## 6. Weekly adjustment: the plan follows the training
+At the end of each week (after the check-in, or on the athlete's chosen day if they skip it) the app drafts next week, then the athlete decides.
+
+### What it reads
+- Missed sessions
+- Planned vs completed (sets, duration, sessions per week) and the modification reasons
+- Session RPE vs target RPE
+- Athlete-added and moved sessions (they count in load)
+- The check-in: readiness colour, body reports, availability
+
+### How it adjusts (one change at a time, as in `04`)
+| Signal | Adjustment |
+|---|---|
+| Missed sessions | **Never stacked onto next week.** Missed key session → keep the next one, don't double up. Most of the week missed → repeat the week instead of progressing |
+| Ran hot: 2+ sessions logged about 1 RPE above target, or "Couldn't hold the effort / Couldn't finish the sets" twice | Trim volume, keep session types (lower end of set ranges) |
+| Ran easy: 2+ sessions about 1 RPE below target for 2 weeks, or "Felt great, did more" | Progress **one** manipulator (Extend or Qualify) |
+| Readiness 🟡 / 🔴 | As in §3 |
+| Body report 4/10+ or Pain | Off-feet, as in §3 |
+| Availability change | As in §3 |
+
+### What the athlete sees
+- A short **"What changed and why"** card (max 3 lines), e.g. *"Thursday intervals 6 → 4 reps: last week's sessions ran about 1.5 above target."*
+- Buttons: **Accept** · **Keep original** · **Edit**
+- If they don't respond, the adjusted week is used.
+- No guilt language about missed sessions. The plan just recalibrates.
+
+---
+
+## 7. Athlete control
+
+| Action | Self-serve athlete | Coached member |
+|---|---|---|
+| Accept, keep original or edit the adjusted week | ✅ | ✅ (coach sees it) |
+| Move a session to another day | ✅ | ✅ |
+| Modify a session (fewer sets, shorter, lower effort, swap to an off-feet alternative) | ✅ | ✅ with a reason chip; coach sees it |
+| Add a session (their own or from the workout builder) | ✅ | ✅ |
+| Lock a session (e.g. a Saturday group run) so the app always plans around it | ✅ | ✅ |
+| Delete a key session | ✅ | ❌ Coach only (athlete can move or modify it, or mark it missed) |
+
+- Everything the athlete adds, moves or modifies is logged and **counts in their load**, so next week accounts for it.
+- **Guardrails are notes, not blocks.** Examples: adding intervals the day before a key run ("You've got intervals tomorrow. Want to move this?"); adding running while a body report is 4/10+ (consideration + "check with your medical professional"). The athlete can still go ahead.
+- Optional sessions and athlete-added sessions never break streaks.
+
+---
+
+## 8. Pillar suggestions
+Each week the app checks the last 3 weeks of logs against the Hyathlon pillars. If a pillar hasn't been touched, it offers an **optional suggestion** alongside the adjusted week.
+
+| Pillar | "Not touched" when… | Example suggestions |
+|---|---|---|
+| **Connection & Courage: Connection** | No sessions logged "With a friend / Group session / With my coach" and no coach message in 3 weeks | "Train with others this week: join a group session, or do your long run with a friend." · "Swap one home session for the gym." · "Send your coach a quick update on how training's going." (members) |
+| **Connection & Courage: Courage** | No event set, no benchmark or new session tried in the block | "Pick a race and put a date on it." · "Try this week's benchmark session." · "Give a session you haven't done before a go." |
+| **Economy** | No strides, drills or hill sprints in 2 weeks | "Add 4–6 strides after one easy run." |
+| **Balanced Athleticism** | No strength or mobility logged in 2 weeks | "Add 10 minutes of mobility, or one strength session from the builder." |
+| **Fatigue Management** | No recovery session or rest day in 2 weeks, or readiness 🟡/🔴 two weeks running | "Make one day this week an RPE 1–4 recovery day." |
+
+Aerobic Engine, Threshold, Durability and Training Principles are driven by the plan itself, so they don't get suggestions. If an athlete keeps skipping those sessions, the weekly adjustment handles it.
+
+Rules:
+- Max **2 suggestions** a week. Connection first if it's due.
+- One tap: **Add to my week** or **Not this week**. A dismissed suggestion isn't repeated for 2 weeks.
+- Never suggest extra load when readiness is 🔴 or a body report is 4/10+. Connection and recovery suggestions are still fine.
+- Positive framing, never guilt. Suggestions are optional and never affect streaks.
+- Suggestions come from these app rules, not the AI, so they cost nothing to generate.
