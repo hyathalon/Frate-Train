@@ -28,6 +28,10 @@ Principles:
 **3. How long have you been training consistently?** `training_age`
 - Less than 6 months · 6–12 months · 1–3 years · 3+ years
 
+**3b. What holds you back most in a race?** `limiters` (select up to 2)
+- Running · Strength · Strength endurance (stations fall apart late in the race) · Aerobic fitness · Not sure
+- "Strength endurance" allows a 3rd strength session a week.
+
 ### Screen 2: Your running *(skipped if Q2 = No)*
 **4. How many times a week do you run at the moment?** `runs_per_week`
 - 0 · 1 · 2 · 3 · 4 · 5+
@@ -61,6 +65,10 @@ Principles:
 - Same day as my hard sessions *(recommended: keeps your easy days easy)*. Strength is a separate session later that day, or straight after the run if you can't train twice.
 - On their own days
 - Helper text: "You can change this any time, or move a session in any week."
+
+**10d. How many strength sessions a week would you like?** `strength_sessions_pref`
+- 2 *(recommended for most athletes)* · 3 · 4 · 5 · 6
+- Helper text for 3+: "More sessions mean more recovery cost. Great if you want an upper / lower / core split. We'll place them where they cost your running least."
 
 ### Screen 4: Your equipment
 **11. What equipment do you have access to and would use for strength training?** `strength_equipment` (select all)
@@ -229,6 +237,7 @@ At the end of each week (after the check-in, or on the athlete's chosen day if t
 - Everything the athlete adds, moves or modifies is logged and **counts in their load**, so next week accounts for it.
 - **Guardrails are notes, not blocks.** Examples: adding intervals the day before a key run ("You've got intervals tomorrow. Want to move this?"); adding running while a body report is 4/10+ (consideration + "check with your medical professional"). The athlete can still go ahead.
 - Optional sessions and athlete-added sessions never break streaks.
+- **Strength on a recovery day:** the app never puts it there, but the athlete can add or move one there. Warning: *"This is on a recovery day. It may slow your recovery before your next hard session, but doing it is better than not doing it."* [Keep it here] [Move it]
 
 ---
 
@@ -251,3 +260,33 @@ Rules:
 - Never suggest extra load when readiness is 🔴 or a body report is 4/10+. Connection and recovery suggestions are still fine.
 - Positive framing, never guilt. Suggestions are optional and never affect streaks.
 - Suggestions come from these app rules, not the AI, so they cost nothing to generate.
+
+---
+
+## 9. Plan your next block (before each 4-week block)
+Before the app generates the next 4 weeks, the athlete sees a short **"Plan your next block"** screen. Everything is pre-filled from their current answers, so most athletes just tap **Looks good**.
+
+It shows what they actually did last block (sessions per week, long run, strength sessions), then lets them change:
+- Event and date (or "no event")
+- Days available and time per session
+- Can train twice in a day
+- Running choice (program my running / I have a run plan / no running)
+- **Strength sessions per week** (2 recommended · 3 · 4 · 5 · 6) and placement (with hard sessions / own days)
+- Limiters
+- Equipment
+- Anything coming up in the next 4 weeks (travel, a race, a busy period) — optional text
+
+Buttons: **Looks good** · **Change something**
+
+## 10. Changing preferences any time
+**Settings → My training preferences** shows every onboarding answer and lets the athlete edit it.
+
+| Change | When it takes effect |
+|---|---|
+| Days available, time per session, can train twice | Next week (through the weekly adjustment) |
+| Strength sessions per week or placement, running choice, equipment, variety, dislikes | Next week's draft |
+| Event, event date, goal | Offer **"Rebuild my plan from next week"** (new outline), or keep the current plan until the block ends |
+| Limiters | Next block |
+
+- The athlete sees one line confirming when the change applies, e.g. *"Got it. Next week will have 3 strength sessions."*
+- Coached members: the coach is notified of changes. Coach-set key sessions stay unless the coach changes them.

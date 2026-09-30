@@ -102,7 +102,7 @@ Rules for the format:
    - No heavy lower-body, lunge or sled work within ~24–48 h before a key run.
    - No "go to the well" run within 48 h of a hard station or strength session.
 6. Count station and erg work in weekly load, not just running km.
-6b. **Consolidate the stress** (`06`): strength, circuits and accessories go on hard days, paired with quality running days as a second session that day (run first, strength later), never on recovery or easy days. Strength is 2 sessions a week (3 only if strength endurance is a limiter), 2–3 working sets, 6–10 reps, max 3–4 exercise groups. Don't add light strength sessions for frequency.
+6b. **Consolidate the stress** (`06`): strength, circuits and accessories go on hard days, paired with quality running days as a second session that day (run first, strength later), never on recovery or easy days. Strength is the athlete's chosen number of sessions (default 2; 3 if strength endurance is a limiter; 4+ if they choose it; see `06` §7), 2–3 working sets, 6–10 reps, max 3–4 exercise groups. Don't add light strength sessions for frequency.
 7. Fit around the **strength coach's plan**. Complement it, don't duplicate it.
 8. Add **one new stimulus at a time** (e.g. 1 → 2 interval sessions, or 3 → 4 sessions/week). Mark the new addition as **optional ("if you have time")**. Optional sessions never break streaks.
 

@@ -47,6 +47,7 @@ Strength is not seasoning to dabble through the week: a little lift here, a litt
 - **No strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days.** Short strides on an easy run are neural work, not dabbling, and stay allowed.
 - **Pair strength with quality running days** (the recommended default). Strength is **its own session on the same day**: the run first, strength later that day (a double day, like a running double). Hard days stay hard and easy days stay easy.
 - If the athlete can't train twice in a day, the strength session goes straight after the run in the same visit, still as its own session.
+- A strength session that is the **second session of the day is 30–45 min**, not the athlete's full session length.
 - **The athlete chooses.** At onboarding (and any time in settings) they can pick "Same day as my hard sessions" or "On its own days". On its own days, a strength day counts as a hard day: never the day after a key session that needs recovery, never on a recovery day, and followed by an easy or recovery day. They can still move individual sessions week to week.
 - The interference rule still applies: no heavy lower-body, lunge or sled work within ~24–48 h **before** a key run **or the long run**.
 
@@ -58,20 +59,31 @@ Strength training still needs progression: more load, more reps, better executio
 
 - Every strength session progresses **one** lever against the last similar session, labelled Extend (more reps or sets) or Qualify (more load, force, density, pause, slower tempo or better execution), as in `01`.
 - **Maintaining strength** (e.g. in taper or a busy block): same load and intent, **fewer working sets** (1–2). Strength is held by keeping the intensity, not the volume, so don't drop to light loads.
+- **Taper:** 1 strength session a week, at maintain. **Race week:** 1 short maintain session early in the week, at least 5 days before the race.
 
-## 7. Stimulate, recover, adapt
+## 7. Athlete choice: more strength sessions
+
+Two is the recommendation, but the athlete decides. Some athletes want more, e.g. an upper / lower / core split.
+
+- At onboarding (and before each new block) the athlete chooses **2 (recommended), 3, or 4+** strength sessions a week.
+- The app programs what they choose. Extra sessions are placed on hard days first, then on their own days, then on easy days (upper body and core first), with a short note about recovery cost.
+- The app never puts strength on a recovery day itself. **The athlete can**, by adding or moving a session there. They see a warning and can go ahead: *"This is on a recovery day. It may slow your recovery before your next hard session, but doing it is better than not doing it."*
+- A Hyathlon race simulation is a hard hybrid session, not a strength session, so it doesn't count towards the strength number.
+- The athlete can also add a strength session to any generated week. It counts in their load and the next week accounts for it.
+
+## 8. Stimulate, recover, adapt
 
 This is the point. Not to sprinkle strength through the week. Not to make every day feel productive. Not to turn recovery days into extra work. Create a real stimulus. Recover from it. Adapt. This is how strength training should serve Hyathlon.
 
-## 8. How this fits the rest of Hyathlon training
+## 9. How this fits the rest of Hyathlon training
 
 - **Strength-endurance circuits and station work** (EMOM, AMRAP, density blocks, sled, wall balls, lunges) are hard sessions too. They follow the same consolidation rule and go on hard days, not as light add-ons.
 - Work around the **strength coach's plan**. Complement it, don't duplicate it.
 - Exercises come from the exercise database.
 
-## 9. Rules for Claude
+## 10. Rules for Claude
 
-- [ ] Strength sessions: 2 per week (3 only if strength endurance is a limiter), 2–3 working sets, 6–10 reps, max 3–4 exercise groups.
+- [ ] Strength sessions: the athlete's chosen number (default 2; 3 if strength endurance is a limiter; 4+ if they choose it), 2–3 working sets, 6–10 reps, max 3–4 exercise groups.
 - [ ] Only working sets are counted and shown; warm-ups are "ramp-up sets as needed".
 - [ ] Working sets are written as hard sets with intent ("Hard, with intent: 1–2 good reps left"; no RPE number), never as light filler.
 - [ ] No strength, circuits or accessories on recovery or easy days; strength follows the athlete's placement choice (default: paired with quality running days, run first).
