@@ -79,6 +79,7 @@ export interface BlockContext {
   outlineWeeks: Outline['weeks'];
   trainingDays: string[];
   canDouble: CanDouble;
+  strengthPref: number; // strength sessions a week the athlete chose
   keySessionDay: string;
   minutesPerSession: number;
   frame: { warmup_min: number; cooldown_min: number };
@@ -211,20 +212,34 @@ function checkDays(week: BlockWeek, label: string, ctx: BlockContext, errors: st
   }
 }
 
-/** Easy or recovery days: an easy/recovery session type, an easy or recovery Run, or the athlete's own easy run. */
+const isRecoverySession = (s: Session) =>
+  s.session_type === 'recovery' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && p.run_type === 'recovery'));
+const isEasySession = (s: Session) =>
+  s.session_type === 'easy_steady' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && EASY_RUN_TYPES.includes(p.run_type ?? '')));
+const isStrengthOnly = (s: Session) => s.parts.every((p) => p.format === 'Strength' || p.format === 'Mobility');
+
+/**
+ * Strength and circuits go on hard days. Recovery days never get them. Easy days
+ * (an easy session, easy Run or the athlete's own easy run) get no circuits, and
+ * strength only when the athlete chose more strength sessions than there are hard days.
+ */
 function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
+  const hardDays = new Set<string>(week.sessions.filter((s) => !isRecoverySession(s) && !isEasySession(s) && !isStrengthOnly(s)).map((s) => s.day));
+  if (ctx.running === 'own_plan') for (const r of ctx.ownRuns) if (r.intensity === 'hard') hardDays.add(r.day);
+  const extrasOnEasyDays = ctx.strengthPref > hardDays.size;
   for (const day of DAYS) {
     const sessions = week.sessions.filter((s) => s.day === day);
-    const easy = sessions.find((s) =>
-      s.session_type === 'recovery' || s.session_type === 'easy_steady'
-      || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && EASY_RUN_TYPES.includes(p.run_type ?? '')))
-    );
+    const recovery = sessions.find(isRecoverySession);
+    const easy = sessions.find(isEasySession);
     const ownEasy = ctx.running === 'own_plan' && ctx.ownRuns.some((r) => r.day === day && r.intensity === 'easy');
-    if (!easy && !ownEasy) continue;
+    if (!recovery && !easy && !ownEasy) continue;
+    const kind = recovery ? `a recovery day ("${recovery.title}")` : `an easy day (${easy ? `"${easy.title}"` : 'their own easy run'})`;
     for (const s of sessions) {
-      const hard = s.parts.find((p) => p.format === 'Strength' || p.format === 'Circuit');
-      if (hard) {
-        errors.push(`${label}: "${s.title}" has a ${hard.format} part on ${day}, an easy or recovery day (${easy ? `"${easy.title}"` : 'their own easy run'}); strength and circuits go on hard days.`);
+      for (const p of s.parts) {
+        if (p.format === 'Circuit' || (p.format === 'Strength' && (recovery || !extrasOnEasyDays))) {
+          errors.push(`${label}: "${s.title}" has a ${p.format} part on ${day}, ${kind}; ${p.format === 'Strength' && !recovery ? `strength goes on hard days (${hardDays.size} this week; the athlete chose ${ctx.strengthPref} strength sessions)` : 'strength and circuits go on hard days'}.`);
+          break;
+        }
       }
     }
   }
@@ -264,17 +279,25 @@ function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<number>(
   return false;
 }
 
-export function weeklyNeeds(running: RunningMode, coreSessions: number): Need[] {
-  if (running === 'programmed') {
-    if (coreSessions >= 4) return ['key run', 'easy or long run', 'strength', 'hybrid or station'];
-    if (coreSessions === 3) return ['key run', 'strength', 'hybrid or station'];
-    return coreSessions >= 1 ? ['key run'] : [];
-  }
-  return coreSessions >= 2 ? ['strength', 'hybrid or station'] : [];
+/**
+ * What the week's core sessions must include, each need in a different session.
+ * Strength follows the athlete's choice (strength_sessions_pref), in whatever
+ * sessions are left after the running and hybrid needs, and at least one.
+ */
+export function weeklyNeeds(running: RunningMode, coreSessions: number, strengthPref: number): Need[] {
+  const others: Need[] = running === 'programmed'
+    ? coreSessions >= 4 ? ['key run', 'easy or long run', 'hybrid or station']
+      : coreSessions === 3 ? ['key run', 'hybrid or station']
+      : coreSessions >= 1 ? ['key run'] : []
+    : coreSessions >= 2 ? ['hybrid or station'] : [];
+  if (running === 'programmed' ? coreSessions < 3 : coreSessions < 2) return others;
+  const strength = Math.max(1, Math.min(strengthPref, coreSessions - others.length));
+  const keyRun = others.filter((n) => n === 'key run');
+  return [...keyRun, ...Array<Need>(strength).fill('strength'), ...others.filter((n) => n !== 'key run')];
 }
 
 function checkWeeklyMix(core: Session[], label: string, ctx: BlockContext, errors: string[]) {
-  const needs = weeklyNeeds(ctx.running, core.length);
+  const needs = weeklyNeeds(ctx.running, core.length, ctx.strengthPref);
   if (needs.length && !matchable(needs, core.map(serves))) {
     errors.push(`${label}: with ${core.length} core sessions the week needs, each in a different core session: ${needs.join(', ')}.`);
   }

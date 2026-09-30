@@ -1,7 +1,7 @@
 import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
 import { type Timing, weeklyNeeds } from './validate.ts';
-import type { BlockWeek, CanDouble, Outline, OutlineWeek, RunningMode, StrengthPlacement } from './schemas.ts';
+import type { BlockWeek, CanDouble, Limiter, Outline, OutlineWeek, RunningMode, StrengthPlacement } from './schemas.ts';
 
 // The system prompt is identical for every call, so it is cached; everything
 // that varies (athlete, dates, candidate lists) goes in the user message.
@@ -20,6 +20,8 @@ export interface ProgramInputs {
   cross_training_preferences?: string[]; // ranked, most preferred first
   can_double?: CanDouble; // onboarding 10b: can train twice in a day
   strength_placement?: StrengthPlacement; // onboarding 10c
+  limiters?: Limiter[]; // onboarding 3b, up to 2
+  strength_sessions_pref?: number; // onboarding 10d, 2–6
   running: {
     mode: RunningMode; // programmed | own_plan | none
     own_runs: { day: string; intensity: 'hard' | 'easy' }[]; // own_plan only
@@ -88,7 +90,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 
 ## Strength work
 - Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
-- Default: 2 strength sessions/week; 3 only if strength endurance is a listed weakness. 2–3 WORKING sets per exercise, shown as "Hard, with intent: finish with 1–2 good reps left" (no RPE number for strength sets), 6–10 reps, max 3–4 exercise groups per session. Low volume, high effort — cut junk volume, not intent.
+- Strength sessions/week = athlete.strength_sessions_pref (default 2; 3 if strength endurance is a limiter). Honour a higher choice (4+, e.g. upper/lower/core split): place extras on hard days first, then own days, then easy days (upper body/core first) with a short recovery-cost note. Never place strength on a recovery day yourself. A Hyathlon race simulation is a hard hybrid session, not a strength session. 2–3 WORKING sets per exercise, shown as "Hard, with intent: finish with 1–2 good reps left" (no RPE number for strength sets), 6–10 reps, max 3–4 exercise groups per session. Low volume, high effort — cut junk volume, not intent.
 - Count and show working sets only. Warm-ups are "ramp-up sets as needed" and never counted in sets or sets_min/sets_max.
 - Never add light strength sessions to add frequency ("inflammation without adaptation").
 - Placement follows athlete.strength_placement:
@@ -195,6 +197,8 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
     `Training days: ${inputs.training_days.join(', ')} (${inputs.training_days.length} days; sessions only on these days, up to 2 a day)`,
     `can_double: ${inputs.can_double ?? 'no'}`,
     `strength_placement: ${inputs.strength_placement ?? 'with_hard_sessions'}`,
+    `strength_sessions_pref: ${inputs.strength_sessions_pref ?? 2}`,
+    `limiters (the athlete's answer): ${inputs.limiters?.length ? inputs.limiters.join(', ') : 'not specified'}`,
     `Key session day: ${inputs.key_session_day}`,
     `Minutes per session: ${inputs.minutes_per_session}`,
     `Race: ${inputs.race_name ?? race.label} (${race.label}) on ${inputs.race_date}`,
@@ -245,6 +249,7 @@ Outline every week from 1 to ${window.totalWeeks}:
 - Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final 1 to 2 weeks and includes race week.
 - For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload weeks "deload", otherwise frequency, intensity or volume), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
 - Core sessions per week are never more than ${days * 2} (the athlete trains ${days} days, up to 2 sessions a day; see can_double). Optional sessions go on the same days.
+- Core sessions include the athlete's ${inputs.strength_sessions_pref ?? 2} strength sessions a week (strength_sessions_pref), usually as the second session on hard days; plan core_sessions so they fit alongside the running and hybrid work. Race week is exempt.
 - Plan the weekly mix and running for the athlete's running choice (${RUNNING_LABEL[inputs.running.mode]}).
 - Build up core sessions gradually; add at most one new stimulus per 4-week block, first as an optional session.
 - In the summary, describe core and optional sessions accurately: core sessions are the week's planned sessions; optional ones are extras "if you have time".`;
@@ -295,7 +300,7 @@ ${JSON.stringify(outline)}
 ${previous}${adjustment}
 <targets>
 ${weeks.map((w) => {
-    const needs = weeklyNeeds(inputs.running.mode, w.core_sessions);
+    const needs = weeklyNeeds(inputs.running.mode, w.core_sessions, inputs.strength_sessions_pref ?? 2);
     return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions, up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== outline.weeks.length ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
   }).join('\n')}
 Every session: ${frame.warmup_min} min warm-up + parts totalling ${partsMinutes} min + ${frame.cooldown_min} min cool-down = ${inputs.minutes_per_session} min (deload weeks may be shorter).

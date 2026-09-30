@@ -86,8 +86,8 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
           { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },
           { format: 'HIIT', template_id: null, minutes: 10, items: [item(erg.id, `hard, RPE 8, week ${n}`)] },
         ] },
-      { day: 'Fri', title: 'Steady erg', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null, ...ERG_META,
-        parts: [{ format: 'Aerobic', template_id: null, minutes: 30, items: [item(erg.id, `steady, RPE 6-7, build ${n}`)] }] },
+      { day: 'Fri', title: 'Strength 2', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
+        parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `2 × ${6 + n}, hard with intent: 1–2 good reps left`) }] },
       { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
         parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item(run.id, '400 m run, RPE 8', { run_minutes: 6 }), item(station.id, `${10 + n} wall balls`)] }] },
     ];
@@ -280,11 +280,9 @@ Deno.test({
           (e: { message: string }) => /key session/.test(e.message),
         );
         const adjusted = (await validBlock(d.athlete)).weeks[0];
-        // Three days now: Mon, Wed and Sat, all core (Saturday's session is no longer optional).
-        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Fri');
-        const sat = adjusted.sessions.find((s) => s.day === 'Sat')!;
-        sat.optional = false;
-        sat.slot = null;
+        // Three days now: Mon, Wed and Sat. Friday's strength moves to Saturday (2 strength sessions a week).
+        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Sat');
+        adjusted.sessions.find((s) => s.day === 'Fri')!.day = 'Sat';
         const deps2 = makeDeps(fakeClaude([{ data: { summary: 's', weeks: [adjusted] } }]).fn, background);
         const r = await weeklyCheckin(deps2, d.caller, {
           program_id: id, week: 1, energy: 'good', sleep: 'good',

@@ -35,6 +35,10 @@ export const CAN_DOUBLE = ['no', 'sometimes', 'yes'] as const;
 export type CanDouble = (typeof CAN_DOUBLE)[number];
 export const STRENGTH_PLACEMENTS = ['with_hard_sessions', 'own_days'] as const;
 export type StrengthPlacement = (typeof STRENGTH_PLACEMENTS)[number];
+// Onboarding 3b: what holds the athlete back most in a race (up to 2).
+export const LIMITERS = ['running', 'strength', 'strength_endurance', 'aerobic_fitness', 'not_sure'] as const;
+export type Limiter = (typeof LIMITERS)[number];
+export const STRENGTH_SESSIONS_RANGE: [number, number] = [2, 6]; // onboarding 10d
 
 export interface OutlineWeek {
   week: number;

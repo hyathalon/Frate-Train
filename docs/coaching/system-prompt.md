@@ -67,7 +67,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 
 ## Strength work
 - Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
-- Default: 2 strength sessions/week; 3 only if strength endurance is a listed weakness. 2–3 WORKING sets per exercise, shown as "Hard, with intent: finish with 1–2 good reps left" (no RPE number for strength sets), 6–10 reps, max 3–4 exercise groups per session. Low volume, high effort — cut junk volume, not intent.
+- Strength sessions/week = athlete.strength_sessions_pref (default 2; 3 if strength endurance is a limiter). Honour a higher choice (4+, e.g. upper/lower/core split): place extras on hard days first, then own days, then easy days (upper body/core first) with a short recovery-cost note. Never place strength on a recovery day yourself. A Hyathlon race simulation is a hard hybrid session, not a strength session. 2–3 WORKING sets per exercise, shown as "Hard, with intent: finish with 1–2 good reps left" (no RPE number for strength sets), 6–10 reps, max 3–4 exercise groups per session. Low volume, high effort — cut junk volume, not intent.
 - Count and show working sets only. Warm-ups are "ramp-up sets as needed" and never counted in sets or sets_min/sets_max.
 - Never add light strength sessions to add frequency ("inflammation without adaptation").
 - Placement follows athlete.strength_placement:

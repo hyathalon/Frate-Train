@@ -8,7 +8,7 @@ import { parseInputs } from '../lib/program.ts';
 import { COACHING_RULES } from '../lib/prompts.ts';
 import { type Block, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
-import { type BlockContext, type Timing, timingKey, validateBlock, validateOutline } from '../lib/validate.ts';
+import { type BlockContext, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
 
 // ---------------------------------------------------------------------------
 // time
@@ -177,7 +177,7 @@ function outline(): Outline {
 }
 
 const ctx: BlockContext = {
-  startWeek: 1, endWeek: 4, outlineWeeks: outline().weeks, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat'], canDouble: 'no', keySessionDay: 'Wed',
+  startWeek: 1, endWeek: 4, outlineWeeks: outline().weeks, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat'], canDouble: 'no', strengthPref: 1, keySessionDay: 'Wed',
   minutesPerSession: 45, frame: { warmup_min: 10, cooldown_min: 5 }, candidates, timings,
   settings: { minutesTolerance: 5, deloadMin: 0.6, deloadMax: 0.7, deloadSessionMinRatio: 0.5, runShareMax: 0.25 },
   availableFormats: ALL_FORMATS, running: 'none', ownRuns: [], longestRunMin: null, previousLongRunMin: null, finalWeek: 4,
@@ -324,9 +324,40 @@ Deno.test('strength: working sets, reps, no RPE number, exercise groups; easy da
     const items = b.weeks[1].sessions[0].parts[0].items;
     items.push(...Array.from({ length: 8 }, () => ({ ...items[0] })));
   }), /at most 4 exercise groups/);
-  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].session_type = 'easy_steady'; }), /easy or recovery day/);
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].session_type = 'easy_steady'; }), /Strength part on Mon, an easy day/);
   // The athlete's own easy run day.
-  assert.match(validateBlock(block(), { ...ctx, running: 'own_plan', ownRuns: [{ day: 'Mon', intensity: 'easy' }] }).join(' '), /Strength part on Mon, an easy or recovery day \(their own easy run\)/);
+  assert.match(validateBlock(block(), { ...ctx, running: 'own_plan', ownRuns: [{ day: 'Mon', intensity: 'easy' }] }).join(' '), /Strength part on Mon, an easy day \(their own easy run\)/);
+});
+
+Deno.test('strength sessions follow the athlete\'s choice; extras on easy days only beyond the hard days', () => {
+  assert.deepEqual(weeklyNeeds('none', 3, 2), ['strength', 'strength', 'hybrid or station']);
+  assert.deepEqual(weeklyNeeds('none', 3, 6), ['strength', 'strength', 'hybrid or station']); // capped by sessions
+  assert.equal(weeklyNeeds('programmed', 6, 3).filter((n) => n === 'strength').length, 3);
+  assert.equal(weeklyNeeds('programmed', 4, 2).filter((n) => n === 'strength').length, 1); // at least one
+  assert.match(validateBlock(block(), { ...ctx, strengthPref: 2 }).join(' '), /strength, strength/);
+
+  // Monday strength beside an easy session: rejected at 1 strength session (3 hard days), allowed at 4.
+  const easyMon = (b: Block) => {
+    const s = structuredClone(b.weeks[1].sessions[2]); // Friday bike, as an easy Monday AM session
+    s.day = 'Mon'; s.order_in_day = 1; s.optional = true; s.slot = 'easy-am'; s.session_type = 'easy_steady'; s.title = 'Easy bike';
+    b.weeks[1].sessions[0].order_in_day = 2;
+    b.weeks[1].sessions.push(s);
+  };
+  const b1 = block(); easyMon(b1);
+  assert.match(validateBlock(b1, ctx).join(' '), /Strength part on Mon, an easy day \("Easy bike"\); strength goes on hard days \(3 this week/);
+  assert.doesNotMatch(validateBlock(b1, { ...ctx, strengthPref: 4 }).join(' '), /easy day/);
+  // A recovery day never gets strength, whatever the choice.
+  const b2 = block(); easyMon(b2); b2.weeks[1].sessions.at(-1)!.session_type = 'recovery';
+  assert.match(validateBlock(b2, { ...ctx, strengthPref: 6 }).join(' '), /Strength part on Mon, a recovery day/);
+});
+
+Deno.test('parseInputs: limiters and strength sessions a week (onboarding 3b, 10d)', () => {
+  assert.equal(parseInputs(baseInputs).strength_sessions_pref, 2);
+  assert.equal(parseInputs({ ...baseInputs, limiters: ['strength_endurance'] }).strength_sessions_pref, 3);
+  assert.equal(parseInputs({ ...baseInputs, limiters: ['strength_endurance'], strength_sessions_pref: 5 }).strength_sessions_pref, 5);
+  assert.throws(() => parseInputs({ ...baseInputs, strength_sessions_pref: 7 }), /2 to 6/);
+  assert.throws(() => parseInputs({ ...baseInputs, limiters: ['running', 'strength', 'aerobic_fitness'] }), /up to 2/);
+  assert.throws(() => parseInputs({ ...baseInputs, limiters: ['speed'] }), /Limiters must be/);
 });
 
 Deno.test('session fields: progression change and cross-training alternatives', () => {

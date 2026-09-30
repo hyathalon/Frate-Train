@@ -5,7 +5,7 @@ import type { Anthropic, SupabaseClient } from './deps.ts';
 import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
-import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, RUNNING_MODES, type RunningMode, STRENGTH_PLACEMENTS } from './schemas.ts';
+import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow } from './time.ts';
 import { type BlockSettings, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
@@ -73,6 +73,18 @@ export function parseInputs(raw: unknown): ProgramInputs {
   const goal = typeof body.goal === 'string' ? body.goal.trim().slice(0, 200) : '';
   if (!goal) throw new HttpError(400, 'invalid_input', 'Describe your race goal.');
   const raceName = typeof body.race_name === 'string' && body.race_name.trim() ? body.race_name.trim().slice(0, 80) : null;
+  const limiters = stringList(body.limiters, 'Limiters', 2) as Limiter[];
+  if (limiters.some((l) => !LIMITERS.includes(l))) {
+    throw new HttpError(400, 'invalid_input', `Limiters must be up to 2 of: ${LIMITERS.join(', ')}.`);
+  }
+  // Onboarding 10d: default 2, or 3 when strength endurance holds them back.
+  let strengthPref = limiters.includes('strength_endurance') ? 3 : 2;
+  if (body.strength_sessions_pref !== undefined && body.strength_sessions_pref !== null) {
+    strengthPref = Number(body.strength_sessions_pref);
+    if (!Number.isInteger(strengthPref) || strengthPref < STRENGTH_SESSIONS_RANGE[0] || strengthPref > STRENGTH_SESSIONS_RANGE[1]) {
+      throw new HttpError(400, 'invalid_input', `Strength sessions a week must be ${STRENGTH_SESSIONS_RANGE[0]} to ${STRENGTH_SESSIONS_RANGE[1]}.`);
+    }
+  }
   return {
     race_option_id: raceOption,
     race_name: raceName,
@@ -88,6 +100,8 @@ export function parseInputs(raw: unknown): ProgramInputs {
     running: parseRunning(body.running),
     can_double: oneOf(body.can_double, CAN_DOUBLE, 'no', 'Can you train twice in a day: no, sometimes or yes.'),
     strength_placement: oneOf(body.strength_placement, STRENGTH_PLACEMENTS, 'with_hard_sessions', 'Strength sessions: with_hard_sessions or own_days.'),
+    limiters,
+    strength_sessions_pref: strengthPref,
   };
 }
 
@@ -503,6 +517,7 @@ async function generateFirstBlock(
         outlineWeeks: outline.weeks,
         trainingDays: inputs.training_days,
         canDouble: inputs.can_double ?? 'no',
+        strengthPref: inputs.strength_sessions_pref ?? 2,
         keySessionDay: inputs.key_session_day,
         minutesPerSession: inputs.minutes_per_session,
         frame,
@@ -760,6 +775,7 @@ async function adjustWeek(
         outlineWeeks: [target],
         trainingDays: inputs.training_days,
         canDouble: inputs.can_double ?? 'no',
+        strengthPref: inputs.strength_sessions_pref ?? 2,
         keySessionDay: inputs.key_session_day,
         minutesPerSession: inputs.minutes_per_session,
         frame,
