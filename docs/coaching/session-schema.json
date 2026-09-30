@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HyathlonBlock",
+  "type": "object",
+  "required": ["block_number", "phase", "block_focus", "weeks"],
+  "properties": {
+    "block_number": { "type": "integer" },
+    "phase": { "enum": ["base", "specific", "taper"] },
+    "block_focus": { "type": "string", "description": "One line: main adaptation for this block" },
+    "weeks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["week", "sessions"],
+        "properties": {
+          "week": { "type": "integer" },
+          "week_note": { "type": "string" },
+          "sessions": { "type": "array", "items": { "$ref": "#/$defs/session" } }
+        }
+      }
+    },
+    "modifications": {
+      "type": "array",
+      "description": "Changes made from a weekly check-in",
+      "items": {
+        "type": "object",
+        "properties": {
+          "week": { "type": "integer" },
+          "day": { "type": "string" },
+          "reason": { "type": "string" },
+          "change": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "zone": { "enum": ["rest", "Z1", "Z2", "Z3", "Z4", "Z5"] },
+    "session": {
+      "type": "object",
+      "required": ["day", "optional", "title", "pillar", "purpose", "build_or_maintain", "session_type", "modality", "progression", "segments", "execution_note", "low_readiness_option", "alternatives"],
+      "properties": {
+        "day": { "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] },
+        "optional": { "type": "boolean" },
+        "title": { "type": "string" },
+        "pillar": { "enum": ["aerobic_engine", "threshold", "durability", "economy", "balanced_athleticism", "fatigue_management"] },
+        "purpose": { "type": "string" },
+        "build_or_maintain": { "enum": ["build", "maintain"] },
+        "session_type": {
+          "enum": ["recovery", "easy_steady", "long", "progression", "aerobic_threshold", "lactate_threshold", "critical_velocity", "vo2max", "speed", "compromised", "station_skill", "strength_endurance"]
+        },
+        "modality": {
+          "enum": ["run", "treadmill", "track", "air_bike", "bike_erg", "elliptical", "ski_erg", "row_erg", "pool_run", "stations", "mixed"]
+        },
+        "progression": {
+          "type": "object",
+          "required": ["type", "change"],
+          "properties": {
+            "type": { "enum": ["extend", "qualify", "benchmark", "maintain"] },
+            "change": { "type": "string", "description": "What changed vs last similar session, e.g. 'recovery 90 → 75 s'" }
+          }
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["part", "rpe", "feel", "zone"],
+            "properties": {
+              "part": { "enum": ["warmup", "main", "cooldown"] },
+              "sets": { "type": "integer" },
+              "reps": { "type": "integer" },
+              "exercise_id": { "type": "string" },
+              "distance_m": { "type": "number" },
+              "duration_s": { "type": "number" },
+              "rep_count": { "type": "integer", "description": "For station reps, e.g. 20 wall balls" },
+              "zone": { "$ref": "#/$defs/zone", "description": "Internal only; not shown to athlete" },
+              "zone_to": { "$ref": "#/$defs/zone", "description": "For progressions: ending zone" },
+              "rpe": { "type": "string", "description": "Athlete-facing, e.g. '5–6'. Z1 1–4 Recovery; Z2 5–6 Easy or 6–8 Steady; Z3 8–8.5; Z4 8.5–9.5; Z5 9.5–10" },
+              "recovery": {
+                "type": "object",
+                "properties": {
+                  "duration_s": { "type": "number" },
+                  "distance_m": { "type": "number" },
+                  "style": { "enum": ["standing", "walk", "jog", "float", "active_station", "none"], "description": "VO2max reps: standing only" },
+                  "zone": { "$ref": "#/$defs/zone" },
+                  "rpe": { "type": "string" }
+                }
+              },
+              "set_recovery_s": { "type": "number" },
+              "note": { "type": "string" },
+              "sets_min": { "type": "integer" },
+              "sets_max": { "type": "integer" },
+              "feel": { "enum": ["Recovery", "Easy", "Steady", "Mod. Hard", "Hard", "Very Hard"] },
+              "start_at_min": { "type": "number", "description": "For timed insertions, e.g. hill sprints at the 20 min mark" }
+            }
+          }
+        },
+        "execution_note": { "type": "string" },
+        "low_readiness_option": { "type": "string" },
+        "considerations": { "type": "string", "description": "Only if injury notes exist; awareness only + 'check with your medical professional'" },
+        "alternatives": {
+          "type": "array",
+          "description": "Other modalities from the athlete's equipment, preferred first",
+          "items": {
+            "type": "object",
+            "properties": { "modality": { "type": "string" }, "note": { "type": "string" } }
+          }
+        },
+        "duration_range_min": {
+          "type": "object",
+          "description": "For long runs etc: planned, min, max minutes",
+          "properties": { "planned": { "type": "number" }, "min": { "type": "number" }, "max": { "type": "number" } }
+        }
+      }
+    }
+  }
+}
