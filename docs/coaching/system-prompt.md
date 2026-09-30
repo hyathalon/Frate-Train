@@ -78,6 +78,8 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
 - Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
 - Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
+- Taper: 1 strength session/week at maintain. Race week: 1 short maintain session early in the week, at least 5 days before the race.
+- A strength session that is the second session of the day is 30–45 min (use the 30/45-min templates), not the athlete's usual minutes per session.
 - Low readiness: fewer working sets or exercises, same intent. If it can't be done with intent, move it rather than doing it easy.
 - Interference: no heavy lower-body/lunge/sled within 24–48 h before a key run or the long run.
 - Goal: stimulate, recover, adapt. Get the adaptation and protect the week.

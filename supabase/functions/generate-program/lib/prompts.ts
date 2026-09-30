@@ -1,6 +1,7 @@
 import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
-import { type Timing, weeklyNeeds } from './validate.ts';
+import { raceWeekStrengthDays, type Timing, weeklyNeeds } from './validate.ts';
+import { weekdayOf } from './time.ts';
 import type { BlockWeek, CanDouble, Limiter, Outline, OutlineWeek, RunningMode, StrengthPlacement } from './schemas.ts';
 
 // The system prompt is identical for every call, so it is cached; everything
@@ -101,6 +102,8 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
 - Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
 - Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
+- Taper: 1 strength session/week at maintain. Race week: 1 short maintain session early in the week, at least 5 days before the race.
+- A strength session that is the second session of the day is 30–45 min (use the 30/45-min templates), not the athlete's usual minutes per session.
 - Low readiness: fewer working sets or exercises, same intent. If it can't be done with intent, move it rather than doing it easy.
 - Interference: no heavy lower-body/lunge/sled within 24–48 h before a key run or the long run.
 - Goal: stimulate, recover, adapt. Get the adaptation and protect the week.
@@ -145,7 +148,7 @@ const FORMAT_RULES = `Session structure:
 - A session is a warm-up, then 1 to 3 parts, then a cool-down. The warm-up and cool-down are added for you; give only the parts. The parts' minutes plus warm-up and cool-down must equal the athlete's minutes per session (within 5 minutes).
 - Each part has one format. Timed formats (Circuit, Tabata, HIIT, Mobility, Aerobic) are dosed by time and RPE only, never reps. Rep formats (AMRAP, EMOM, ForTime, Station, RaceSim, Compromised) give reps or distance. Strength gives working sets × reps and the intent, no RPE number (e.g. "3 sets (2–3) × 6–8, hard with intent: finish with 1–2 good reps left"). Plyometrics give foot contacts.
 - Timing (work, rest, rounds, blocks) comes from the database; don't restate it in the dose.
-- Weekly mix (core sessions, each need in a different session): with running programmed, 3 sessions = a key run, a strength session and a hybrid/station session; 4 or more = a key run, an easy or long run, a strength session and a hybrid/station session. Otherwise, 2 or more sessions = at least one strength session and one conditioning/station session. Race week is exempt.
+- Weekly mix (core sessions, each need in a different session): with running programmed, 3 sessions = a key run and a hybrid/station session; 4 or more = a key run, an easy or long run and a hybrid/station session. Otherwise, 2 or more sessions = at least one conditioning/station session. On top of these come the week's strength sessions (the outline's strength_sessions). Race week is exempt from the mix.
 - Plyometrics go first, straight after the warm-up, with full recovery.
 - Tabata is classic only: 20 s maximal work / 10 s complete rest × 8 rounds per 4-minute block, 1 exercise or 2 alternating, Tabata-suitable exercises only (marked T). For beginners, cue it "hard but controlled".
 - Give a short technique cue (in cue) for race-station exercises and for exercises that target the athlete's weaknesses.
@@ -251,10 +254,15 @@ Outline every week from 1 to ${window.totalWeeks}:
 - Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final 1 to 2 weeks and includes race week.
 - For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload weeks "deload", otherwise frequency, intensity or volume), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
 - Core sessions per week are never more than ${days * 2} (the athlete trains ${days} days, up to 2 sessions a day; see can_double). Optional sessions go on the same days.
-- Core sessions include the athlete's ${inputs.strength_sessions_pref ?? 2} strength sessions a week (strength_sessions_pref), usually as the second session on hard days; plan core_sessions so they fit alongside the running and hybrid work. Race week is exempt.
+- strength_sessions per week (counted inside core_sessions): the athlete's ${inputs.strength_sessions_pref ?? 2} (strength_sessions_pref), usually as the second session on hard days; plan core_sessions so they fit alongside the running and hybrid work (deload weeks may have fewer). Taper weeks: 1 (maintain). Race week (week ${window.totalWeeks}): ${raceWeekStrengthDays(inputs.race_date ? weekdayOf(inputs.race_date) : null).length ? '1 short maintain session, at least 5 days before the race' : '0 (the race is too early in the week for one at least 5 days before it)'}.
 - Plan the weekly mix and running for the athlete's running choice (${RUNNING_LABEL[inputs.running.mode]}).
 - Build up core sessions gradually; add at most one new stimulus per 4-week block, first as an optional session.
 - In the summary, describe core and optional sessions accurately: core sessions are the week's planned sessions; optional ones are extras "if you have time".`;
+}
+
+export interface BlockPromptParts {
+  shared: string; // the same for every week of a block: cached
+  weekly: string; // this call's weeks
 }
 
 export function blockPrompt(args: {
@@ -270,23 +278,21 @@ export function blockPrompt(args: {
   availableFormats: Set<string>;
   plyoContacts: [number, number] | null; // this athlete's foot-contact range per session
   runExerciseIds: string[];
+  raceStrengthDays: string[]; // race-week strength days (at least 5 days before the race)
   targetWeeks?: OutlineWeek[]; // overrides the outline's targets (weekly adjustments)
   previousWeek?: BlockWeek; // the week before, for progression
+  referenceWeek?: BlockWeek; // week 1 of this block, when later weeks are written in parallel
   adjustment?: string; // why this week is being rewritten
-}): string {
+}): BlockPromptParts {
   const { athlete, inputs, coach, outline, startWeek, endWeek, candidates, frame, tabataTimings } = args;
   const weeks: OutlineWeek[] = args.targetWeeks ?? outline.weeks.filter((w) => w.week >= startWeek && w.week <= endWeek);
-  const adjustment = args.adjustment
-    ? `\n<adjustment>\n${args.adjustment}\n</adjustment>\n`
-    : '';
-  const previous = args.previousWeek
-    ? `\n<previous_week>\n${JSON.stringify(args.previousWeek)}\n</previous_week>\nProgress from the previous week; never repeat one of its sessions unchanged.\n`
-    : '';
   const partsMinutes = inputs.minutes_per_session - frame.warmup_min - frame.cooldown_min;
   const raceList = candidates.raceSessions.size
     ? `\n<race_sessions>\nid | station | name | dose | type | pillar | load\n${formatRaceSessions(candidates)}\n</race_sessions>\n`
     : '';
-  return `Write weeks ${startWeek} to ${endWeek} of this athlete's program in detail, following the season outline.
+  const finalWeek = outline.weeks.length;
+
+  const shared = `You are writing this athlete's program one week at a time, following the season outline.
 
 <athlete>
 ${athleteFacts(athlete, inputs, coach, candidates.race)}
@@ -299,15 +305,6 @@ ${raceFacts(candidates.race)}
 <season_outline>
 ${JSON.stringify(outline)}
 </season_outline>
-${previous}${adjustment}
-<targets>
-${weeks.map((w) => {
-    const needs = weeklyNeeds(inputs.running.mode, w.core_sessions, inputs.strength_sessions_pref ?? 2);
-    return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions, up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== outline.weeks.length ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
-  }).join('\n')}
-Every session: ${frame.warmup_min} min warm-up + parts totalling ${partsMinutes} min + ${frame.cooldown_min} min cool-down = ${inputs.minutes_per_session} min (deload weeks may be shorter).
-Sessions only on ${inputs.training_days.join(', ')}; up to 2 sessions a day (order_in_day 1 and 2; see can_double). Days with one session use order_in_day 1.
-</targets>
 
 <formats>
 Use only these formats for this athlete: ${[...args.availableFormats].join(', ')}.
@@ -319,12 +316,15 @@ Running exercises for this athlete (use these ids for any run): ${args.runExerci
 </formats>
 
 Rules for sessions:
+- Every session: ${frame.warmup_min} min warm-up + parts totalling ${partsMinutes} min + ${frame.cooldown_min} min cool-down = ${inputs.minutes_per_session} min (deload weeks may be shorter). Exception: a strength session that is the day's second session (order_in_day 2), and race week's short strength session, is exactly one 30- or 45-min Strength template with its own warm-up and cool-down.
+- Sessions only on ${inputs.training_days.join(', ')}; up to 2 sessions a day (order_in_day 1 and 2; see can_double). Days with one session use order_in_day 1.
+- Strength: each week has exactly the outline's strength_sessions core strength sessions. strength_placement "with_hard_sessions": put them on hard days first, as the day's second session after the run or hard session; extras beyond the hard days go on other days, never on recovery days. "own_days": give them days without another hard session, not the day after a key session, followed by an easy, recovery or rest day. Taper and race-week strength is maintain.${args.raceStrengthDays.length ? ` Race week's strength session is on ${args.raceStrengthDays.join(' or ')} (at least 5 days before the race).` : ' Race week has no strength session.'}
 - Use only the exercises, templates and race sessions listed below, by their exact id. Never invent an exercise or rename one.
 - Strength, Circuit and Mobility parts use a template: set template_id, set minutes to the template's part length, and give exactly one item per slot, in slot order, whose movement pattern fits the slot (and body region, where the slot names one). Other formats have template_id null.
 - Each item sets exactly one of exercise_id or race_session_id; the other is null. Set block only for Tabata items, foot_contacts only for plyometric drills, run_minutes only for running in compromised parts, and run_distance_m only for run segments in race simulations${candidates.race.run_distance_m ? ` (${candidates.race.run_distance_m} m)` : ''}. Leave the others null.
 - Running exercises are marked R; they only go in ${inputs.running.mode === 'programmed' ? 'Run, ' : ''}RaceSim and Compromised parts.${inputs.running.mode === 'programmed' ? ' Run parts set run_type (key, easy, long or recovery).' : ''}
-- Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot) instead of sending them empty.
-- Optional sessions have optional true and a short slot key that stays the same across these weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
+- Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot, note) instead of sending them empty.
+- Optional sessions have optional true and a short slot key that stays the same across the block's weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
 - Mark exactly one core session a week as the key session, on ${inputs.key_session_day}.
 - Give each week's progression: the lever from the outline and, in one sentence, what changes.
 
@@ -338,6 +338,31 @@ id | format | focus | part length | slots
 ${formatTemplates(candidates)}
 </templates>
 ${raceList}`;
+
+  const reference = args.referenceWeek
+    ? `<week_1>\n${JSON.stringify(args.referenceWeek)}\n</week_1>\nWeek 1 of this block is written. The other weeks are being written at the same time, each from week 1 and the outline, so progress from week 1 by following each week's lever in order (${outline.weeks.filter((w) => w.week > args.referenceWeek!.week && w.week <= endWeek).map((w) => `week ${w.week}: ${w.lever}`).join('; ')}). Keep the same session structure and optional slot keys as week 1, and never repeat a week-1 session unchanged. A programmed long run grows by at most 10 minutes a week from week 1's.\n`
+    : '';
+  const previous = args.previousWeek
+    ? `<previous_week>\n${JSON.stringify(args.previousWeek)}\n</previous_week>\nProgress from the previous week; never repeat one of its sessions unchanged.\n`
+    : '';
+  const adjustment = args.adjustment ? `<adjustment>\n${args.adjustment}\n</adjustment>\n` : '';
+  const weekly = `${reference}${previous}${adjustment}<targets>
+${weeks.map((w) => {
+    const needs = weeklyNeeds(inputs.running.mode, w.core_sessions, w.strength_sessions ?? 0);
+    return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions (${w.strength_sessions ?? 0} of them strength), up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== finalWeek ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
+  }).join('\n')}
+</targets>
+
+Write ${startWeek === endWeek ? `week ${startWeek}` : `weeks ${startWeek} to ${endWeek}`}.${startWeek === endWeek && !args.referenceWeek && !args.adjustment ? ` The summary describes the whole block (weeks ${startWeek} to ${outline.weeks.filter((w) => w.week >= startWeek).slice(0, 4).at(-1)?.week ?? startWeek}).` : ''}`;
+  return { shared, weekly };
+}
+
+/** The user message: the shared part is cached, so later weeks of a block read it from the cache. */
+export function blockContent(parts: BlockPromptParts) {
+  return [
+    { type: 'text' as const, text: parts.shared, cache_control: { type: 'ephemeral' as const } },
+    { type: 'text' as const, text: parts.weekly },
+  ];
 }
 
 export function repairPrompt(errors: string[]): string {

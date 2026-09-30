@@ -48,6 +48,7 @@ export interface OutlineWeek {
   deload: boolean;
   lever: (typeof LEVERS)[number];
   core_sessions: number;
+  strength_sessions: number; // core strength sessions this week (athlete's choice; taper 1; race week 0–1)
   optional_sessions: number;
   key_session: string;
   key_sessions: string[];
@@ -86,7 +87,7 @@ export const OUTLINE_SCHEMA = {
       items: {
         type: 'object',
         additionalProperties: false,
-        required: ['week', 'phase', 'focus', 'load', 'deload', 'lever', 'core_sessions', 'optional_sessions', 'key_session', 'key_sessions', 'pillars'],
+        required: ['week', 'phase', 'focus', 'load', 'deload', 'lever', 'core_sessions', 'strength_sessions', 'optional_sessions', 'key_session', 'key_sessions', 'pillars'],
         properties: {
           week: { type: 'integer' },
           phase: { type: 'string', enum: [...PHASE_KINDS] },
@@ -95,6 +96,7 @@ export const OUTLINE_SCHEMA = {
           deload: { type: 'boolean' },
           lever: { type: 'string', enum: [...LEVERS], description: 'The one progression lever this week uses.' },
           core_sessions: { type: 'integer' },
+          strength_sessions: { type: 'integer', description: 'Core strength sessions this week (included in core_sessions).' },
           optional_sessions: { type: 'integer' },
           key_session: { type: 'string', description: 'The week\'s key session, in a few words.' },
           key_sessions: { type: 'array', items: { type: 'string' } },

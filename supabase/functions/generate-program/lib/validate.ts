@@ -1,5 +1,5 @@
-import { type Candidates, type Exercise, isBodyweightOnly, isErg, isRunning, partMinutes, slotMatches } from './candidates.ts';
-import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type RunningMode, type Session, type SessionPart } from './schemas.ts';
+import { type Candidates, type Exercise, isBodyweightOnly, isErg, isRunning, partMinutes, slotMatches, type Template } from './candidates.ts';
+import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type OutlineWeek, type RunningMode, type Session, type SessionPart, type StrengthPlacement } from './schemas.ts';
 
 // Each validator returns plain-English errors. An empty list means valid.
 // The same messages go back to Claude in the one automatic repair attempt.
@@ -7,6 +7,29 @@ import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type Ru
 export interface OutlineContext {
   totalWeeks: number;
   daysAvailable: number;
+  running: RunningMode;
+  strengthPref: number;
+  raceDay: string | null; // weekday of the race, in the final week
+}
+
+/** Race week gets one short maintain strength session, at least 5 days before the race. */
+export function raceWeekStrengthDays(raceDay: string | null): string[] {
+  const i = raceDay ? DAYS.indexOf(raceDay as (typeof DAYS)[number]) : -1;
+  return i >= 5 ? DAYS.slice(0, i - 4) : [];
+}
+
+/**
+ * Strength sessions a week: the athlete's choice, in the core sessions left after
+ * the running and hybrid needs. Taper weeks 1; race week 1 if a day at least
+ * 5 days before the race falls in it, otherwise 0.
+ */
+export function strengthTarget(
+  week: Pick<OutlineWeek, 'week' | 'phase' | 'core_sessions'>,
+  ctx: { running: RunningMode; strengthPref: number; finalWeek: number; raceDay: string | null },
+): number {
+  if (week.week === ctx.finalWeek) return raceWeekStrengthDays(ctx.raceDay).length ? 1 : 0;
+  if (week.phase === 'taper') return 1;
+  return Math.min(ctx.strengthPref, Math.max(0, week.core_sessions - weeklyOthers(ctx.running, week.core_sessions).length));
 }
 
 export function validateOutline(outline: Outline, ctx: OutlineContext): string[] {
@@ -26,6 +49,15 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
       errors.push(`Week ${w.week}: optional_sessions must be between 0 and 2; it is ${w.optional_sessions}.`);
     }
     if (w.pillars.length === 0) errors.push(`Week ${w.week}: list at least one pillar.`);
+    const strength = strengthTarget(w, { ...ctx, finalWeek: ctx.totalWeeks });
+    if (w.strength_sessions !== strength) {
+      errors.push(`Week ${w.week}: strength_sessions must be ${strength} (${w.week === ctx.totalWeeks ? 'race week: one short maintain session at least 5 days before the race, if the week allows' : w.phase === 'taper' ? 'taper: 1 at maintain' : `the athlete chose ${ctx.strengthPref}, within ${w.core_sessions} core sessions`}); it is ${w.strength_sessions}.`);
+    }
+    const others = weeklyOthers(ctx.running, w.core_sessions).length;
+    if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload
+        && w.core_sessions - others < ctx.strengthPref && w.core_sessions < ctx.daysAvailable * 2) {
+      errors.push(`Week ${w.week}: plan at least ${Math.min(ctx.daysAvailable * 2, others + ctx.strengthPref)} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day).`);
+    }
     if (i === 0 && w.lever !== 'start') errors.push('Week 1 must use lever "start".');
     if (i > 0 && w.deload && w.lever !== 'deload') errors.push(`Week ${w.week} is a deload, so its lever must be "deload".`);
     if (i > 0 && !w.deload && (w.lever === 'start' || w.lever === 'deload')) {
@@ -80,6 +112,9 @@ export interface BlockContext {
   trainingDays: string[];
   canDouble: CanDouble;
   strengthPref: number; // strength sessions a week the athlete chose
+  strengthPlacement: StrengthPlacement;
+  raceDay: string | null; // weekday of the race (final week)
+  crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
   minutesPerSession: number;
   frame: { warmup_min: number; cooldown_min: number };
@@ -109,10 +144,29 @@ function sessionSignature(s: Session): string {
   return JSON.stringify(s.parts.map((p) => [p.format, p.template_id, p.minutes, p.items.map((i) => [i.exercise_id, i.race_session_id, i.dose])]));
 }
 
-function coreMinutes(week: BlockWeek, ctx: BlockContext): number {
-  return week.sessions
-    .filter((s) => !s.optional)
-    .reduce((sum, s) => sum + ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0), 0);
+/**
+ * A short strength session (the day's second session, or race week's) is one
+ * 30- or 45-min Strength template with its own warm-up and cool-down.
+ */
+export function shortStrengthTemplate(s: Session, finalWeek: boolean, candidates: Candidates): Template | undefined {
+  if (!(s.order_in_day === 2 || finalWeek) || !isStrengthOnly(s) || s.parts.length !== 1) return undefined;
+  const t = s.parts[0].template_id ? candidates.templates.get(s.parts[0].template_id) : undefined;
+  return t && SHORT_STRENGTH_MINUTES.includes(t.duration_min) ? t : undefined;
+}
+const SHORT_STRENGTH_MINUTES = [30, 45];
+
+export function sessionFrame(s: Session, finalWeek: boolean, ctx: Pick<BlockContext, 'frame' | 'candidates'>) {
+  const t = shortStrengthTemplate(s, finalWeek, ctx.candidates);
+  return t ? { warmup_min: t.warmup_min, cooldown_min: t.cooldown_min } : ctx.frame;
+}
+
+export function sessionTotal(s: Session, finalWeek: boolean, ctx: Pick<BlockContext, 'frame' | 'candidates'>): number {
+  const f = sessionFrame(s, finalWeek, ctx);
+  return f.warmup_min + f.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
+}
+
+export function coreMinutes(week: BlockWeek, ctx: Pick<BlockContext, 'frame' | 'candidates' | 'finalWeek'>): number {
+  return week.sessions.filter((s) => !s.optional).reduce((sum, s) => sum + sessionTotal(s, week.week === ctx.finalWeek, ctx), 0);
 }
 
 function range(value: unknown): [number, number] | null {
@@ -158,10 +212,11 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (plan && week.progression.lever !== plan.lever) {
       errors.push(`${label}: the outline's lever is "${plan.lever}" but the block uses "${week.progression.lever}".`);
     }
-    if (previous && week.progression.lever === 'frequency' && week.sessions.length <= previous.sessions.length) {
+    const cross = ctx.crossWeek !== false;
+    if (cross && previous && week.progression.lever === 'frequency' && week.sessions.length <= previous.sessions.length) {
       errors.push(`${label}: a frequency week must add a session (as optional first); it has ${week.sessions.length}, the week before had ${previous.sessions.length}.`);
     }
-    if (previous && week.progression.lever === 'deload') {
+    if (cross && previous && week.progression.lever === 'deload') {
       const ratio = coreMinutes(week, ctx) / Math.max(1, coreMinutes(previous, ctx));
       const lo = ctx.settings.deloadMin - DEFAULT_LEEWAY, hi = ctx.settings.deloadMax + DEFAULT_LEEWAY;
       if (ratio < lo || ratio > hi) {
@@ -175,12 +230,15 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
       }
     }
 
-    week.sessions.forEach((s, j) => validateSession(s, `${label}, session ${j + 1} ("${s.title}")`, week.progression.lever === 'deload', ctx, errors));
-    if (week.week !== ctx.finalWeek) checkWeeklyMix(core, label, ctx, errors);
+    const final = week.week === ctx.finalWeek;
+    week.sessions.forEach((s, j) => validateSession(s, `${label}, session ${j + 1} ("${s.title}")`, week.progression.lever === 'deload', final, ctx, errors));
+    const strengthCount = plan?.strength_sessions ?? strengthTarget({ week: week.week, phase: plan?.phase ?? 'base', core_sessions: core.length }, ctx);
+    if (!final) checkWeeklyMix(core, label, ctx, strengthCount, errors);
     if (ctx.running === 'own_plan') checkOwnRunSpacing(week, label, ctx, errors);
-    checkEasyDays(week, label, ctx, errors);
+    checkEasyDays(week, label, ctx, strengthCount, errors);
+    checkStrengthWeek(week, label, ctx, strengthCount, plan?.phase === 'taper' || final, errors);
   });
-  if (ctx.running === 'programmed') checkLongRuns(block, ctx, errors);
+  if (ctx.running === 'programmed' && ctx.crossWeek !== false) checkLongRuns(block, ctx, errors);
   return errors;
 }
 
@@ -223,10 +281,10 @@ const isStrengthOnly = (s: Session) => s.parts.every((p) => p.format === 'Streng
  * (an easy session, easy Run or the athlete's own easy run) get no circuits, and
  * strength only when the athlete chose more strength sessions than there are hard days.
  */
-function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
+function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, strengthCount: number, errors: string[]) {
   const hardDays = new Set<string>(week.sessions.filter((s) => !isRecoverySession(s) && !isEasySession(s) && !isStrengthOnly(s)).map((s) => s.day));
   if (ctx.running === 'own_plan') for (const r of ctx.ownRuns) if (r.intensity === 'hard') hardDays.add(r.day);
-  const extrasOnEasyDays = ctx.strengthPref > hardDays.size;
+  const extrasOnEasyDays = strengthCount > hardDays.size;
   for (const day of DAYS) {
     const sessions = week.sessions.filter((s) => s.day === day);
     const recovery = sessions.find(isRecoverySession);
@@ -237,7 +295,7 @@ function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, errors
     for (const s of sessions) {
       for (const p of s.parts) {
         if (p.format === 'Circuit' || (p.format === 'Strength' && (recovery || !extrasOnEasyDays))) {
-          errors.push(`${label}: "${s.title}" has a ${p.format} part on ${day}, ${kind}; ${p.format === 'Strength' && !recovery ? `strength goes on hard days (${hardDays.size} this week; the athlete chose ${ctx.strengthPref} strength sessions)` : 'strength and circuits go on hard days'}.`);
+          errors.push(`${label}: "${s.title}" has a ${p.format} part on ${day}, ${kind}; ${p.format === 'Strength' && !recovery ? `strength goes on hard days (${hardDays.size} this week, for ${strengthCount} strength sessions)` : 'strength and circuits go on hard days'}.`);
           break;
         }
       }
@@ -250,9 +308,9 @@ function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, errors
 // ---------------------------------------------------------------------------
 
 const HYBRID_FORMATS = ['Station', 'Compromised', 'RaceSim', 'Circuit', 'HIIT', 'Tabata', 'AMRAP', 'EMOM', 'ForTime', 'Aerobic'];
-type Need = 'key run' | 'easy or long run' | 'run' | 'strength' | 'hybrid or station';
+export type Need = 'key run' | 'easy or long run' | 'run' | 'strength' | 'hybrid or station';
 
-function serves(s: Session): Set<Need> {
+export function serves(s: Session): Set<Need> {
   const out = new Set<Need>();
   for (const p of s.parts) {
     if (p.format === 'Run') {
@@ -267,7 +325,7 @@ function serves(s: Session): Set<Need> {
 }
 
 /** Can each need be met by a different session? (small backtracking match) */
-function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<number>()): boolean {
+export function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<number>()): boolean {
   if (needs.length === 0) return true;
   const [first, ...rest] = needs;
   for (let i = 0; i < sessions.length; i++) {
@@ -279,25 +337,24 @@ function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<number>(
   return false;
 }
 
-/**
- * What the week's core sessions must include, each need in a different session.
- * Strength follows the athlete's choice (strength_sessions_pref), in whatever
- * sessions are left after the running and hybrid needs, and at least one.
- */
-export function weeklyNeeds(running: RunningMode, coreSessions: number, strengthPref: number): Need[] {
-  const others: Need[] = running === 'programmed'
+/** The week's running and hybrid needs (strength comes on top; see strengthTarget). */
+export function weeklyOthers(running: RunningMode, coreSessions: number): Need[] {
+  return running === 'programmed'
     ? coreSessions >= 4 ? ['key run', 'easy or long run', 'hybrid or station']
       : coreSessions === 3 ? ['key run', 'hybrid or station']
       : coreSessions >= 1 ? ['key run'] : []
     : coreSessions >= 2 ? ['hybrid or station'] : [];
-  if (running === 'programmed' ? coreSessions < 3 : coreSessions < 2) return others;
-  const strength = Math.max(1, Math.min(strengthPref, coreSessions - others.length));
-  const keyRun = others.filter((n) => n === 'key run');
-  return [...keyRun, ...Array<Need>(strength).fill('strength'), ...others.filter((n) => n !== 'key run')];
 }
 
-function checkWeeklyMix(core: Session[], label: string, ctx: BlockContext, errors: string[]) {
-  const needs = weeklyNeeds(ctx.running, core.length, ctx.strengthPref);
+/** What the week's core sessions must include, each need in a different session. */
+export function weeklyNeeds(running: RunningMode, coreSessions: number, strengthSessions: number): Need[] {
+  const others = weeklyOthers(running, coreSessions);
+  const keyRun = others.filter((n) => n === 'key run');
+  return [...keyRun, ...Array<Need>(strengthSessions).fill('strength'), ...others.filter((n) => n !== 'key run')];
+}
+
+function checkWeeklyMix(core: Session[], label: string, ctx: BlockContext, strengthCount: number, errors: string[]) {
+  const needs = weeklyNeeds(ctx.running, core.length, strengthCount);
   if (needs.length && !matchable(needs, core.map(serves))) {
     errors.push(`${label}: with ${core.length} core sessions the week needs, each in a different core session: ${needs.join(', ')}.`);
   }
@@ -337,6 +394,67 @@ function checkLongRuns(block: Block, ctx: BlockContext, errors: string[]) {
   }
 }
 
+/**
+ * Strength count and placement for the week.
+ * - Core strength sessions = the outline's strength_sessions.
+ * - Taper and race week: maintain; race week's at least 5 days before the race.
+ * - with_hard_sessions: on hard days first, after the day's first (hard) session.
+ * - own_days: not the day after a key session, and followed by an easy or rest day
+ *   (when there are enough days without hard sessions).
+ */
+function checkStrengthWeek(week: BlockWeek, label: string, ctx: BlockContext, strengthCount: number, maintainOnly: boolean, errors: string[]) {
+  const strength = week.sessions.filter((s) => !s.optional && isStrengthSession(s));
+  if (strength.length !== strengthCount) {
+    errors.push(`${label}: ${strengthCount} core strength session${strengthCount === 1 ? '' : 's'} this week (the outline's strength_sessions); the block has ${strength.length}.`);
+  }
+  if (maintainOnly) {
+    for (const s of strength.filter((x) => x.build_or_maintain !== 'maintain')) {
+      errors.push(`${label}: "${s.title}": strength in the taper and race week is maintain (same load and intent, 1–2 working sets).`);
+    }
+  }
+  if (week.week === ctx.finalWeek) {
+    const allowed = raceWeekStrengthDays(ctx.raceDay);
+    for (const s of strength.filter((x) => !allowed.includes(x.day))) {
+      errors.push(`${label}: "${s.title}" is on ${s.day}; race-week strength is early in the week, at least 5 days before the race (${allowed.join(' or ') || 'no day fits'}).`);
+    }
+    return;
+  }
+
+  const hard = (s: Session) => !isRecoverySession(s) && !isEasySession(s) && !isStrengthOnly(s);
+  const ownHard = (day: string) => ctx.running === 'own_plan' && ctx.ownRuns.some((r) => r.day === day && r.intensity === 'hard');
+  // Placement looks at core sessions: optional ones may not happen.
+  const on = (day: string) => week.sessions.filter((s) => s.day === day && !s.optional);
+  const hardDay = (day: string) => on(day).some(hard) || ownHard(day);
+
+  if (ctx.strengthPlacement === 'with_hard_sessions') {
+    for (const s of strength) {
+      if (!hardDay(s.day)) continue;
+      const first = on(s.day).find((x) => x !== s && hard(x));
+      if (first && s.order_in_day !== 2) {
+        errors.push(`${label}: "${s.title}" goes after "${first.title}" on ${s.day} (run or hard session first, then strength: order_in_day 2).`);
+      }
+    }
+    // Hard days with room for a strength session, while strength sits elsewhere.
+    const free = ctx.trainingDays.filter((d) => hardDay(d) && !on(d).some(isStrengthSession) && week.sessions.filter((s) => s.day === d).length < 2);
+    const elsewhere = strength.filter((s) => !hardDay(s.day));
+    if (free.length && elsewhere.length) {
+      errors.push(`${label}: strength goes on hard days first (as the day's second session); ${free.join(', ')} ${free.length === 1 ? 'has' : 'have'} room, but "${elsewhere[0].title}" is on ${elsewhere[0].day}.`);
+    }
+    return;
+  }
+
+  // own_days: only enforced while there are enough days without a hard session.
+  const quietDays = ctx.trainingDays.filter((d) => !on(d).some(hard) && !ownHard(d));
+  if (strength.length > quietDays.length) return;
+  const keyOn = (day: string) => on(day).some((s) => s.key_session) || ownHard(day);
+  for (const s of strength) {
+    const i = DAYS.indexOf(s.day);
+    if (i > 0 && keyOn(DAYS[i - 1])) errors.push(`${label}: "${s.title}" is the day after a key session (${DAYS[i - 1]}); strength days are hard days, not the day after a key session.`);
+    if (i < 6 && hardDay(DAYS[i + 1])) errors.push(`${label}: "${s.title}" on ${s.day} is followed by a hard day (${DAYS[i + 1]}); follow a strength day with an easy or recovery day.`);
+    if (on(s.day).some(hard)) errors.push(`${label}: "${s.title}" shares ${s.day} with a hard session; with strength on its own days, give it a day without one.`);
+  }
+}
+
 // "3 × 8", "3 sets (2–3) × 6–8", "2 working sets x 10": planned sets, optional set range, reps or rep range.
 const STRENGTH_DOSE_RE = /(\d+)\s*(?:working\s+)?(?:sets?\s*)?(?:\((\d+)\s*[-–]\s*(\d+)\)\s*)?[x×]\s*(\d+)(?:\s*[-–]\s*(\d+))?(?!\s*(?:s|sec|secs|seconds|min|mins|minutes|m|km|cal|cals)\b)/i;
 const STRENGTH_REPS: [number, number] = [6, 10];
@@ -369,7 +487,7 @@ function checkStrength(s: Session, where: string, deload: boolean, errors: strin
   }));
 }
 
-function validateSession(s: Session, where: string, deload: boolean, ctx: BlockContext, errors: string[]) {
+function validateSession(s: Session, where: string, deload: boolean, final: boolean, ctx: BlockContext, errors: string[]) {
   if (s.optional && !s.slot) errors.push(`${where}: optional sessions need a slot key.`);
   if (!s.optional && s.slot) errors.push(`${where}: core sessions have slot null.`);
   if (s.parts.length < 1 || s.parts.length > 3) errors.push(`${where}: a session has 1 to 3 parts.`);
@@ -388,8 +506,16 @@ function validateSession(s: Session, where: string, deload: boolean, ctx: BlockC
 
   checkStrength(s, where, deload, errors);
 
-  const total = ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
   const tol = ctx.settings.minutesTolerance;
+  const short = shortStrengthTemplate(s, final, ctx.candidates);
+  if (s.order_in_day === 2 && isStrengthOnly(s) && !short) {
+    errors.push(`${where}: a strength session that is the day's second session is one 30- or 45-min Strength template (its own warm-up and cool-down), not the usual ${ctx.minutesPerSession} min.`);
+  }
+  if (short) {
+    s.parts.forEach((part, k) => validatePart(part, k, `${where}, part ${k + 1} (${part.format})`, ctx, errors));
+    return;
+  }
+  const total = ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
   const minTotal = deload ? Math.floor(ctx.minutesPerSession * ctx.settings.deloadSessionMinRatio) : ctx.minutesPerSession - tol;
   // A long run may make its session longer than usual, up to LONG_RUN_SESSION_MAX.
   const longRun = s.parts.some((p) => p.format === 'Run' && p.run_type === 'long');

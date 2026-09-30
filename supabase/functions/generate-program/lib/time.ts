@@ -104,6 +104,11 @@ export function weekday(date: string): number {
   return new Date(toUtcMs(date)).getUTCDay();
 }
 
+/** The weekday name used in programs (Mon … Sun). */
+export function weekdayOf(date: string): string {
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][weekday(date)];
+}
+
 /** The first Monday after `today`. */
 export function nextMonday(today: string): string {
   const add = (8 - weekday(today)) % 7 || 7;

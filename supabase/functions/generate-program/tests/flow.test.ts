@@ -18,7 +18,7 @@ const RUN = Date.now();
 type Meta = Pick<Session, 'note' | 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
 const META: Meta = { note: null, order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
 const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
-const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
+const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, strength_placement: 'own_days', goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 // --- fake Claude -----------------------------------------------------------
 
@@ -55,7 +55,7 @@ function outline(totalWeeks: number): Outline {
     ],
     weeks: Array.from({ length: totalWeeks }, (_, i) => ({
       week: i + 1, phase: i + 1 === totalWeeks ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: deload(i + 1),
-      lever: i === 0 ? 'start' : deload(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, optional_sessions: 1,
+      lever: i === 0 ? 'start' : deload(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, strength_sessions: deload(i + 1) || i + 1 === totalWeeks ? 1 : 2, optional_sessions: 1,
       key_session: 'Circuit + intervals', key_sessions: ['k'], pillars: ['Aerobic Engine'],
     })),
   } as Outline;
@@ -65,7 +65,12 @@ const item = (id: string, dose: string, over: Record<string, unknown> = {}) => (
   exercise_id: id, race_session_id: null, dose, cue: null, block: null, foot_contacts: null, run_minutes: null, run_distance_m: null, ...over,
 });
 
-/** A valid block 1 (45-min sessions, Mon/Wed/Fri + optional Sat) from the athlete's real candidate lists. */
+/** A valid block 1 (45-min sessions, Mon/Wed/Sat + optional Fri; strength on its own days) from the athlete's real candidate lists. */
+/** Block generation is one call per week: the fake answers week by week. */
+function weekAnswers(block: Block): Answer[] {
+  return block.weeks.map((w) => ({ data: { summary: block.summary, weeks: [w] } }));
+}
+
 async function validBlock(athlete: AthleteRow): Promise<Block> {
   const race = (await loadRaceOption(admin, 'hyathlon-open'))!;
   const c = await loadCandidates(admin, athlete, race, { includeRaceSessions: false });
@@ -86,12 +91,12 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
           { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },
           { format: 'HIIT', template_id: null, minutes: 10, items: [item(erg.id, `hard, RPE 8, week ${n}`)] },
         ] },
-      { day: 'Fri', title: 'Strength 2', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
-        parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `2 × ${6 + n}, hard with intent: 1–2 good reps left`) }] },
-      { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
+      { day: 'Fri', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
         parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item(run.id, '400 m run, RPE 8', { run_minutes: 6 }), item(station.id, `${10 + n} wall balls`)] }] },
+      { day: 'Sat', title: 'Strength 2', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
+        parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `2 × ${6 + n}, hard with intent: 1–2 good reps left`) }] },
     ];
-    if (deload) sessions.splice(2, 1); // drop Friday; keep strength and the key session
+    if (deload) sessions.splice(3, 1); // drop Saturday's strength; keep Monday's and the key session
     return { week: n, focus: 'f', progression: { lever: n === 1 ? 'start' : deload ? 'deload' : 'volume', change: 'c' }, sessions };
   };
   return { summary: 'Weeks 1-4', weeks: [week(1), week(2), week(3), week(4, true)] } as unknown as Block;
@@ -159,7 +164,7 @@ Deno.test({
       });
 
       await t.step('confirm: block 1 generates in the background, program activates, one confirmation used', async () => {
-        const fake = fakeClaude([{ data: await validBlock(a.athlete) }]);
+        const fake = fakeClaude([...weekAnswers(await validBlock(a.athlete))]);
         const r = await confirm(makeDeps(fake.fn, background), a.caller, { program_id: programId });
         assert.deepEqual(r, { program_id: programId, block_no: 1, weeks: [1, 4], status: 'generating' });
         await Promise.all(background.splice(0));
@@ -173,8 +178,13 @@ Deno.test({
         assert.deepEqual(strength.frame, { warmup_min: 10, cooldown_min: 5, total_min: 45 });
         const { data: p } = await admin.from('training_programs').select('status, confirmed_at').eq('id', programId).single();
         assert.equal(p!.status, 'active');
-        const last = (await events(a.athlete.id)).at(-1)!;
-        assert.deepEqual([last.counts_as, last.paid_with], ['confirmation', 'monthly']);
+        // One call per week (week 1, then 2–4 in parallel); the block counts once, on week 1's call.
+        assert.equal(fake.calls.length, 4);
+        const blockEvents = (await events(a.athlete.id)).filter((e) => e.call_type === 'confirmation_block' && e.program_id === programId);
+        assert.equal(blockEvents.length, 4);
+        assert.deepEqual(blockEvents.map((e) => [e.counts_as, e.paid_with]), [['confirmation', 'monthly'], [null, null], [null, null], [null, null]]);
+        // Weeks 2–4 get week 1 as their reference.
+        assert.match(JSON.stringify(fake.calls[1].messages[0].content), /<week_1>/);
       });
 
       await t.step('weekly check-in: tired athlete gets a lighter week 1; the original is kept; nothing counted', async () => {
@@ -186,7 +196,7 @@ Deno.test({
         const r = await weeklyCheckin(makeDeps(fake.fn, background), a.caller, { program_id: programId, week: 1, energy: 'poor', sleep: 'ok' });
         assert.equal(r.status, 'adjusting');
         await Promise.all(background.splice(0));
-        assert.match(String(fake.calls[0].messages[0].content), /Rewrite week 1 only, because: low energy/);
+        assert.match(JSON.stringify(fake.calls[0].messages[0].content), /Rewrite week 1 only, because: low energy/);
         const { data: c } = await admin.from('weekly_checkins').select('status, reasons, previous_week').eq('program_id', programId).eq('week', 1).single();
         assert.equal(c!.status, 'adjusted');
         assert.deepEqual(c!.reasons, ['low energy']);
@@ -230,7 +240,7 @@ Deno.test({
       });
 
       await t.step('retry after failure succeeds; the older active program is archived', async () => {
-        const fake = fakeClaude([{ data: await validBlock(a.athlete) }]);
+        const fake = fakeClaude([...weekAnswers(await validBlock(a.athlete))]);
         await confirm(makeDeps(fake.fn, background), a.caller, { program_id: secondId });
         await Promise.all(background.splice(0));
         const { data: programs } = await admin.from('training_programs').select('id, status').in('id', [programId, secondId]);
@@ -241,13 +251,13 @@ Deno.test({
 
       await t.step('monthly confirmations used → a purchased credit is used and recorded', async () => {
         await admin.from('athlete_credit_ledger').insert({ athlete_id: a.athlete.id, kind: 'confirmation', delta: 1, reason: 'grant' });
-        const fake = fakeClaude([{ data: outline(16) }, { data: await validBlock(a.athlete) }]);
+        const fake = fakeClaude([{ data: outline(16) }, ...weekAnswers(await validBlock(a.athlete))]);
         const deps = makeDeps(fake.fn, background);
         const third = (await preview(deps, a.caller, { inputs })).program.id;
         await confirm(deps, a.caller, { program_id: third });
         await Promise.all(background.splice(0));
-        const last = (await events(a.athlete.id)).at(-1)!;
-        assert.deepEqual([last.counts_as, last.paid_with], ['confirmation', 'credit']);
+        const counted = (await events(a.athlete.id)).filter((e) => e.program_id === third && e.counts_as === 'confirmation');
+        assert.deepEqual(counted.map((e) => e.paid_with), ['credit']);
         const { data: ledger } = await admin.from('athlete_credit_ledger').select('delta, reason').eq('athlete_id', a.athlete.id).order('id');
         assert.deepEqual(ledger!.map((l) => [l.delta, l.reason]), [[1, 'grant'], [-1, 'used']]);
       });
@@ -261,7 +271,7 @@ Deno.test({
         assert.equal((await confirm(makeDeps(none.fn, background), b.caller, { program_id: id })).status, 'generating');
         assert.equal(background.length, 0, 'no second generation started');
         await admin.from('program_blocks').update({ started_at: new Date(Date.now() - 10 * 60_000).toISOString() }).eq('program_id', id);
-        const retry = fakeClaude([{ data: await validBlock(b.athlete) }]);
+        const retry = fakeClaude([...weekAnswers(await validBlock(b.athlete))]);
         await confirm(makeDeps(retry.fn, background), b.caller, { program_id: id });
         await Promise.all(background.splice(0));
         const { data: block } = await admin.from('program_blocks').select('status').eq('program_id', id).single();
@@ -270,7 +280,7 @@ Deno.test({
 
       await t.step('weekly check-in: ongoing availability change updates the program; key day must stay a training day', async () => {
         const d = await makeAthlete('d');
-        const fake = fakeClaude([{ data: outline(16) }, { data: await validBlock(d.athlete) }]);
+        const fake = fakeClaude([{ data: outline(16) }, ...weekAnswers(await validBlock(d.athlete))]);
         const deps = makeDeps(fake.fn, background);
         const id = (await preview(deps, d.caller, { inputs })).program.id;
         await confirm(deps, d.caller, { program_id: id });
@@ -280,9 +290,8 @@ Deno.test({
           (e: { message: string }) => /key session/.test(e.message),
         );
         const adjusted = (await validBlock(d.athlete)).weeks[0];
-        // Three days now: Mon, Wed and Sat. Friday's strength moves to Saturday (2 strength sessions a week).
-        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Sat');
-        adjusted.sessions.find((s) => s.day === 'Fri')!.day = 'Sat';
+        // Three days now: Mon, Wed and Sat; Friday's optional session goes.
+        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Fri');
         const deps2 = makeDeps(fakeClaude([{ data: { summary: 's', weeks: [adjusted] } }]).fn, background);
         const r = await weeklyCheckin(deps2, d.caller, {
           program_id: id, week: 1, energy: 'good', sleep: 'good',
