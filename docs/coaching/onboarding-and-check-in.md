@@ -48,10 +48,15 @@ Principles:
 **4. How many times a week do you run at the moment?** `runs_per_week`
 - 0 · 1 · 2 · 3 · 4 · 5+
 
+**4b. Have you done interval sessions before (e.g. reps with recoveries)?** `interval_experience` — Yes · No
+- No → first week is aerobic runs only; 30 s efforts come before the first interval session (`07` §4).
+
 **5. What was your longest run in the last 3 weeks?** `longest_run_min` (integer 0–300)
 - Number entry in **minutes**
 - Tick box: "I haven't run in the last 3 weeks" (saves 0)
 - Tick box: "Not sure" (saves nothing, and the app starts conservatively)
+- Sets the starting running level (`07` §1): 0 → Beginner 1 (walk–run); under 20 min → Beginner 2; 20+ min → normal programming.
+- **Beginners (0 or under 20 min) also see a pre-exercise screening prompt** (e.g. the ESSA screening tool): "If you answer yes to any question, check with your doctor before starting."
 
 **6. Do you have a recent race or time-trial result?** *(optional)* `recent_result`
 - Distance or event · time · date
