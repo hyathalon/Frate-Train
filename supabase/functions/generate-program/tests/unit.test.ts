@@ -1,10 +1,11 @@
-// Unit tests (no network): deno test tests/unit.test.ts
+// Unit tests (no network): deno test --allow-read tests/unit.test.ts
 import assert from 'node:assert/strict';
 import type { AthleteRow } from '../lib/auth.ts';
 import { availableFormats, type Candidates, type Exercise, filterExercises, type RaceOption, type SessionFormat, type Template } from '../lib/candidates.ts';
 import { HttpError } from '../lib/http.ts';
 import { type AppAllowance, assertCanConfirm, assertCanPreview, type CoachAllowance } from '../lib/limits.ts';
 import { parseInputs } from '../lib/program.ts';
+import { COACHING_RULES } from '../lib/prompts.ts';
 import { type Block, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
 import { type BlockContext, type Timing, timingKey, validateBlock, validateOutline } from '../lib/validate.ts';
@@ -346,4 +347,16 @@ Deno.test('allowance decisions: monthly first, then purchased credits, then refu
   assert.throws(() => assertCanConfirm(app(4, 0, 0)), (e: HttpError) => e.code === 'monthly_confirmations_used');
   const coach = (left: number): CoachAllowance => ({ kind: 'coach', builds: { used: 100 - left, limit: 100, left }, resetsAt: null });
   assert.equal(assertCanConfirm(coach(5)), null);
+});
+
+// ---------------------------------------------------------------------------
+// coaching rules stay in sync with docs/coaching/system-prompt.md
+// ---------------------------------------------------------------------------
+
+Deno.test('prompts.ts coaching rules match docs/coaching/system-prompt.md exactly', () => {
+  const doc = Deno.readTextFileSync(new URL('../../../../docs/coaching/system-prompt.md', import.meta.url));
+  const fromDoc = doc.slice(doc.indexOf('## Intensity: RPE (zones internal only)')).trimEnd();
+  assert.equal(COACHING_RULES, fromDoc, 'Update COACHING_RULES in lib/prompts.ts from docs/coaching/system-prompt.md');
+  assert.match(COACHING_RULES, /Body report rated 3\/10 or less \(soreness or niggle\): WAIT AND WATCH/);
+  assert.match(COACHING_RULES, /\| Z1 \| Recovery \| 1–4 \|/);
 });
