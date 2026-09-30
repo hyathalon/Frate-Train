@@ -29,10 +29,13 @@ Principles:
 - In the last 4 weeks → what was it (Hyathlon race / marathon or longer / half marathon / 10 km or shorter / other) + date
 - More than 4 weeks ago / never
 
+**1d. How many Hyathlon races have you done?** `hyathlon_races_count` — 0 · 1–2 · 3–5 · 6+
+- 3 or more → standard compromised sessions (`08` A3) from the first program; otherwise entry-level (`08` A2b) for the first program.
+
 **2. How do you want running in your program?** *(required)* `running_choice`
 - Program my running
 - I already have a run plan → which days, and is each run hard or easy?
-- No running (off-feet training only)
+- No running (off-feet training only) → **2c. What would you like in your off-feet program?** `off_feet_includes` (select any): Hyathlon race simulations (run segments swapped for your preferred erg or bike) · Erg sessions (SkiErg / row) · Bike sessions
 
 **2b. Which days suit your hardest session and your long run?** *(optional)* `preferred_key_day`, `preferred_long_run_day`
 - Mon–Sun chips for each · "No preference" (the app picks)
@@ -54,7 +57,7 @@ Principles:
 **5. What was your longest run in the last 3 weeks?** `longest_run_min` (integer 0–300)
 - Number entry in **minutes**
 - Tick box: "I haven't run in the last 3 weeks" (saves 0)
-- Tick box: "Not sure" (saves nothing, and the app starts conservatively)
+- Tick box: "Not sure" → follow-up: **"Can you run 20 minutes without stopping?"** `can_run_20_min` — Yes (normal programming) · No (Beginner 2)
 - Sets the starting running level (`07` §1): 0 → Beginner 1 (walk–run); under 20 min → Beginner 2; 20+ min → normal programming.
 - **Beginners (0 or under 20 min) also see a pre-exercise screening prompt** (e.g. the ESSA screening tool): "If you answer yes to any question, check with your doctor before starting."
 

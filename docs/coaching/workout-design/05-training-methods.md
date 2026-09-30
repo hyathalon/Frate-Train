@@ -16,7 +16,7 @@ Race-pace references (e.g. "15 km pace") are only there to help the athlete pict
 |---|---|---|---|---|---|---|
 | Recovery / absorption run | Z1 | RPE 1–4 · Recovery | 30–60 min continuous | n/a | n/a | Fatigue Management, Aerobic Engine |
 | General aerobic (easy) run | Z2 | RPE 5–6 · Easy | Continuous, shorter than the long run | n/a | n/a | Aerobic Engine |
-| Long run | Z2 (optional Z3 segments) | RPE 6–8 · Steady | Usually 50–90 min, from the athlete's longest run in the last 3 weeks | n/a | n/a | Aerobic Engine, Durability |
+| Long run | Z2 (optional Z3 segments) | RPE 5–6 (6–7 advanced) | Usually 60–90 min (advanced up to 90–120 min), from the athlete's longest run in the last 3 weeks | n/a | n/a | Aerobic Engine, Durability |
 | Tempo / aerobic threshold | upper Z2 – low Z3 | RPE 7–8 · Steady | 5–40 min blocks | Easy jog, about half the work time | 20–40 min | Aerobic Engine, Threshold |
 | Lactate threshold / cruise intervals | Z3 | RPE 8–8.5 · Mod. Hard | 2–5 min reps, or 10–20 min blocks | Short: no longer than the work (work:rest 1:1 to 2:1), standing or easy jog | 10–30 min | Threshold |
 | Critical velocity (above threshold) | Z4 | RPE 8.5–9.5 · Hard | 1–5 min reps | About half to equal the work time | 12–25 min | Threshold, Aerobic Engine |
@@ -38,8 +38,8 @@ All sessions include a warm-up and cool-down at RPE 1–4 (strides or drills can
 - Easy, conversational, a bit quicker than recovery runs. This is most of the weekly volume.
 - Optional strides or 30–60 s surges.
 
-### Long run: Z2, RPE 6–8 · Steady
-- Usually 50–90 min. Start at or just below the athlete's **longest run in the last 3 weeks (minutes)**, then add about 5–10 min per step with a lighter week in each block.
+### Long run: Z2, RPE 5–6 (beginner–intermediate) / 6–7 (advanced)
+- Usually 60–90 min for most athletes, up to 90–120 min for advanced. Start at or just below the athlete's **longest run in the last 3 weeks (minutes)**, then add about 5–10 min per step with a lighter week in each block.
 - Optional race-pace segments at Z3 (RPE 8–8.5) in the specific phase.
 - Give a planned value with a min–max range. The next block is built from what the athlete actually completed.
 - No long run in the final taper.
@@ -91,7 +91,7 @@ Every method above carries over to ergs, bike, elliptical and pool running at th
 | Tempo 79–88% MHR and LT 82–91% MHR overlapped | Tempo RPE 7–8, LT RPE 8–8.5, CV RPE 8.5–9.5: separate bands |
 | LT = 10 km–21.1 km pace | LT = 15 km–half effort; 10 km effort = CV (Z4) |
 | VO2max 2–4 min, recovery 1:1, "88–84% HRR" (typo), Threshold pillar | 2–5 min, standing recovery about half the work time, Aerobic Engine pillar |
-| Long run 74–88% MHR, 26–35 km | Long run RPE 6–8 (Steady), usually 50–90 min, set from the athlete's recent longest run |
+| Long run 74–88% MHR, 26–35 km | Long run RPE 5–6 (6–7 advanced), usually 60–90 min (advanced up to 90–120), set from the athlete's recent longest run |
 | Recovery run <76% MHR, "60–90 sec slower than marathon pace" | Z1, RPE 1–4 |
 | General aerobic "up to 16 km" | Z2, RPE 5–6 (Easy), shorter than the long run |
 | Hill intervals as %VO2max | Hill sprints (Z5) and hill reps (Z3–Z4) as separate methods |
@@ -102,7 +102,7 @@ Every method above carries over to ergs, bike, elliptical and pool running at th
 ## 5. Decisions
 
 Settled:
-1. **Zones:** Z1 Recovery RPE 1–4 · Z2 Easy 5–6 (easy runs) · Z2 Steady 6–8 (long runs) · Z3 8–8.5 · Z4 8.5–9.5 · Z5 9.5–10.
+1. **Zones:** Z1 Recovery RPE 1–4 · Z2 Easy 5–6 (easy runs) · Z2 Steady 6–8 · long runs RPE 5–6, or 6–7 for advanced · Z3 8–8.5 · Z4 8.5–9.5 · Z5 9.5–10.
 2. **Sprint intervals of 30 s or less are running economy** (Economy pillar). Longer than 30 s is speed endurance, a fitness session (Aerobic Engine). Both are now session types in `00` §4.
 3. **Hill reps:** the old "increase 5 to 8 beats per min" wording is removed.
 4. **VO2max is Aerobic Engine**, with standing recovery. A jog recovery makes it threshold work. (The Hyathlon System booklet still lists VO2max intervals under Threshold; update it at the next revision.)
