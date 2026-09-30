@@ -54,6 +54,14 @@ Principles:
 **10. Where do you usually train?** `training_locations` (select all)
 - Gym · Home · Outdoors
 
+**10b. Can you train twice in a day?** `can_double`
+- No · Sometimes · Yes
+
+**10c. When would you like your strength sessions?** `strength_placement`
+- Same day as my hard sessions *(recommended: keeps your easy days easy)*. Strength is a separate session later that day, or straight after the run if you can't train twice.
+- On their own days
+- Helper text: "You can change this any time, or move a session in any week."
+
 ### Screen 4: Your equipment
 **11. What equipment do you have access to and would use for strength training?** `strength_equipment` (select all)
 - Bodyweight only · Dumbbells · Kettlebells · Barbell and plates · Resistance bands · Cable machine · Pin-loaded machines · Smith machine · Pull-up bar · Bench · Sled · Sandbag · Wall ball · Full gym · Other (text)
