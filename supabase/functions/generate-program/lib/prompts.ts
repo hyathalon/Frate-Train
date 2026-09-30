@@ -1,5 +1,5 @@
 import type { AthleteRow } from './auth.ts';
-import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
+import { type Candidates, formatCompromised, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
 import { coreSessionsForStrength, raceWeekStrengthDays, type Timing, weeklyNeeds } from './validate.ts';
 import { weekdayOf } from './time.ts';
 import { intervalIntroWeek, RUNNING_LEVEL_LABEL, runningLevel } from './running.ts';
@@ -33,6 +33,8 @@ export interface ProgramInputs {
   training_age?: TrainingAge | null; // onboarding 3
   interval_experience?: 'yes' | 'no' | null; // onboarding 4b
   can_run_20_min?: 'yes' | 'no' | null; // onboarding Q5 follow-up when the longest run is "not sure"
+  off_feet_includes?: ('simulations' | 'erg' | 'bike')[] | null; // onboarding Q2c (no running)
+  hyathlon_races_count?: '0' | '1_2' | '3_5' | '6_plus' | null; // onboarding Q1d
   runs_per_week?: number | null; // onboarding 4 (5 = 5+)
   recent_result?: { event: string; time: string; date: string | null; avg_run_pace: string | null } | null; // onboarding 6
   variety_preference?: VarietyPreference | null; // onboarding 14
@@ -65,7 +67,7 @@ export const COACHING_RULES = `## Intensity: RPE (zones internal only)
 - Never output fixed paces, splits, watts or loads. Loads are "by feel" (e.g. "load you can push 25 m at RPE 8") or "race standard".
 
 ## Session types
-recovery (RPE 1–4) · easy_steady (5–6 Easy, optional 30–60 s strides/surges) · long (RPE 5–6; 6–7 for advanced; 60–90 min for most, advanced up to 90–120 min max, beginners build from their current longest run; optional 8–8.5 race-effort segments) · medium-long (easy, RPE 5–6; 12–15 km for most, about 60–70% of the long run) · progression (5–6 → 8–8.5) · aerobic_threshold (7–8, upper Steady) · lactate_threshold (8–8.5, often blocks e.g. 20+10 min) · critical_velocity (8.5–9.5) · vo2max (9–10, 2–5 min reps, STANDING/stationary rest ≈ half work — never jog/easy-spin recovery, which makes it threshold; pillar aerobic_engine; focused blocks only, after LT/CV established) · speed (9.5–10, full recovery; stop when mechanics break. Reps of 30 s or less = running economy, pillar economy. Reps of 30–90 s = speed endurance, a fitness session, pillar aerobic_engine) · compromised (run + station, 8–9.5) · station_skill (5–6) · strength_endurance (5–9.5).
+recovery (RPE 1–4) · easy_steady (5–6 Easy, optional 30–60 s strides/surges) · long (RPE 5–6; 6–7 advanced; usually 60–90 min, advanced up to 90–120 min max, optional 8–8.5 race-effort segments) · medium-long (easy, RPE 5–6; 12–15 km for most, about 60–70% of the long run) · progression (5–6 → 8–8.5) · aerobic_threshold (7–8, upper Steady) · lactate_threshold (8–8.5, often blocks e.g. 20+10 min) · critical_velocity (8.5–9.5) · vo2max (9–10, 2–5 min reps, STANDING/stationary rest ≈ half work — never jog/easy-spin recovery, which makes it threshold; pillar aerobic_engine; focused blocks only, after LT/CV established) · speed (9.5–10, full recovery; stop when mechanics break. Reps of 30 s or less = running economy, pillar economy. Reps of 30–90 s = speed endurance, a fitness session, pillar aerobic_engine) · compromised (run + station, 8–9.5) · station_skill (5–6) · strength_endurance (5–9.5).
 Cross-training uses the same types on air bike, BikeErg, elliptical, SkiErg, rower (¾ slide to manage load), pool running (zero-impact threshold option).
 
 ## Decide every session in this order
@@ -102,8 +104,10 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 
 ## Week rules
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
-- Quality sessions: running programs → the interval sessions and the long run; the key session is the main interval session (RPE 8+). Strength-only / no-running programs → the hard strength sessions or Hyathlon race simulations; one is the key session.
+- Quality sessions: running programs → the interval sessions and the long run; the key session is the main interval session (RPE 8+). Strength-only / no-running programs → key can be a hard strength session (may stand alone on its day), an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a Hyathlon race simulation, or a hard AMRAP/EMOM-type workout. Include race simulations / erg / bike sessions only as chosen in athlete.off_feet_includes; in simulations, replace run segments with the athlete's preferred erg or bike.
 - Never quality or key: station_skill (technique work: warm-up, strength day or short add-on), easy, recovery, and core/mobility — except in a taper or post-event week, when core/mobility can be the week's main session.
+- Race week (running programs): key session = short sharpener at least 4–5 days before the race: 10–15 min easy warm-up, 15 min just slower than race effort (~10–20 s/km slower than the athlete's race average run pace if stored, otherwise RPE 8), 10–15 min easy cool-down. Other runs easy.
+- Advanced / high-volume running (up to ~70–100 km/week): Mon aerobic, Tue quality AM + second session PM, Wed medium-long run (easy, 12–15 km for most), Thu quality AM + second session PM, Fri aerobic or recovery, Sat recovery, Sun long run (most 60–90 min; advanced up to 90–120 min max). Strength gets the PM slot on quality days first; easy doubles only where there's no strength that day, only if can_double allows and the athlete wants them. Build weeks steady. Taper ~80% → ~60% → ~30% of usual volume.
 - Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
 - Beginners: strength sits as the second session on quality days (or straight after the run if can_double is no), leaving other training days for runs or conditioning.
 - "Change ONE manipulator" applies to quality sessions (intervals, long run, key strength, race simulations). Easy, recovery, optional and maintain sessions may repeat unchanged.
@@ -167,6 +171,7 @@ export interface CoachProfile {
   priority_pillars: string[];
   limiters: string | null;
   coach_notes: string | null;
+  compromised_level?: 'entry' | 'standard' | 'auto'; // coach override for the compromised sessions
 }
 
 // The athlete's running choice (in <athlete>) decides where running goes.
@@ -175,7 +180,8 @@ const RUNNING_RULES = `Running (follow the athlete's running choice in the athle
 - "Program my running": plan their running with Run parts (run_type key, easy, long or recovery), using the session design rules above for types, RPE, ranges and long-run progression. Every week needs running suited to the phase: a key run, plus an easy or long run where days allow. Start the long run at or just below their longest run in the last 3 weeks, then extend it by at most 10 minutes at a time. A long run may make its session longer than the usual minutes (up to 120 min).
 - "I already have a run plan": don't plan any runs (no Run parts); they run on their own days. Plan around them: no heavy lower-body strength or sled work the day before a hard run (and preferably not two days before). Count their runs in the week's load.
 - "No running": no Run parts. Apply the session types, RPE scale and progression rules to ergs and other cross-training instead (air bike, BikeErg, SkiErg, rower), and to sleds, circuits and the other formats.
-- For every choice, running also appears as run segments in race simulations (at the race's run distance) and as short run segments in compromised parts (at most 25% of that part's time).
+- "Program my running" and "I already have a run plan": running also appears as run segments in race simulations (at the race's run distance), short run segments in compromised parts (at most 25% of that part's time) and compromised runs (CompromisedRun, from the compromised sessions listed).
+- "No running" is off-feet only: no running anywhere. Race simulations and compromised runs only if the athlete chose simulations (off_feet_includes), with every run segment replaced by their preferred erg or bike; erg (SkiErg / row) and bike sessions only if chosen.
 - The niggle rules apply to erg and station work in the same way: swap to a pain-free off-feet or upper-body option with the same purpose and RPE.`;
 
 const FORMAT_RULES = `Session structure:
@@ -257,6 +263,10 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
         `First quality interval session: ${intervalIntroWeek(inputs) ? `program week ${intervalIntroWeek(inputs)} (30 s efforts inside aerobic runs come first; before then the key session is the week's main aerobic run)` : 'not yet: walk–run builds to continuous running first'}`,
       ]
       : []),
+    ...(inputs.running.mode === 'none'
+      ? [`off_feet_includes: ${inputs.off_feet_includes ? inputs.off_feet_includes.join(', ') || 'none of simulations, erg or bike (strength, bodyweight and workouts only)' : 'not asked'}`]
+      : []),
+    `Hyathlon races done: ${({ '0': '0', '1_2': '1–2', '3_5': '3–5', '6_plus': '6+' } as Record<string, string>)[inputs.hyathlon_races_count ?? ''] ?? 'not specified'}`,
     `Runs per week now: ${inputs.runs_per_week == null ? 'not specified' : inputs.runs_per_week >= 5 ? '5+' : inputs.runs_per_week}`,
     `Recent race or time trial: ${inputs.recent_result ? `${inputs.recent_result.event} in ${inputs.recent_result.time}${inputs.recent_result.date ? ` (${inputs.recent_result.date})` : ''}${inputs.recent_result.avg_run_pace ? `, average run pace ${inputs.recent_result.avg_run_pace}` : ''}` : 'none given'}`,
     `Variety: ${VARIETY_LABEL[inputs.variety_preference ?? ''] ?? 'not specified'}`,
@@ -389,7 +399,7 @@ Rules for sessions:
 - Running exercises are marked R; they only go in ${inputs.running.mode === 'programmed' ? 'Run, ' : ''}RaceSim and Compromised parts.${inputs.running.mode === 'programmed' ? ' Run parts set run_type (key, easy, long or recovery).' : ''}
 - Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot, note) instead of sending them empty.
 - Optional sessions have optional true and a short slot key that stays the same across the block's weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
-- Mark exactly one core session a week as the key session, on ${inputs.key_session_day}. ${inputs.running.mode === 'programmed' ? `It is the main interval session: a Run part with run_type key at RPE 8 or more${intervalIntroWeek(inputs) ? `, from program week ${intervalIntroWeek(inputs)}; before that, the week's main aerobic run (run_type key)` : '; while walk–run builds to continuous running, the week\'s main walk–run or aerobic run (run_type key)'}.` : 'It is a hard (build) strength session, a race simulation or a compromised session.'} Never station skill, easy, recovery or core/mobility (core/mobility only in a taper or post-event week); for beginners, a smaller dose of real quality work.
+- Mark exactly one core session a week as the key session, on ${inputs.key_session_day}. ${inputs.running.mode === 'programmed' ? `It is the main interval session: a Run part with run_type key at RPE 8 or more${intervalIntroWeek(inputs) ? `, from program week ${intervalIntroWeek(inputs)}; before that, the week's main aerobic run (run_type key)` : '; while walk–run builds to continuous running, the week\'s main walk–run or aerobic run (run_type key)'}.` : `It is a hard (build) strength session (it may stand alone on its day), an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a race simulation${inputs.running.mode === 'own_plan' ? ', a compromised session' : ''} or a hard AMRAP/EMOM-type workout.`} Never station skill, easy, recovery or core/mobility (core/mobility only in a taper or post-event week); for beginners, a smaller dose of real quality work.
 - Give each week's progression: the lever from the outline and, in one sentence, what changes.
 
 <exercises>
@@ -401,7 +411,13 @@ ${formatExercises(candidates)}
 id | format | focus | part length | slots
 ${formatTemplates(candidates)}
 </templates>
-${raceList}`;
+${raceList}${candidates.compromised.size && args.availableFormats.has('CompromisedRun') ? `
+<compromised_sessions>
+CompromisedRun parts set template_id to one of these (the athlete's level), scale the rounds within the range, and progress one thing at a time (stressor time, density, movement, running volume or recovery). Stations are exercises from the list above that fit the movement patterns shown; loads by feel. Efforts as written (RPE).
+id | name | one round | rounds | stations | purpose
+${formatCompromised(candidates)}
+</compromised_sessions>
+` : ''}`;
 
   const reference = args.referenceWeek
     ? `<week_1>\n${JSON.stringify(args.referenceWeek)}\n</week_1>\nWeek 1 of this block is written. The other weeks are being written at the same time, each from week 1 and the outline, so progress from week 1 by following each week's lever in order (${outline.weeks.filter((w) => w.week > args.referenceWeek!.week && w.week <= endWeek).map((w) => `week ${w.week}: ${w.lever}`).join('; ')}). Keep the same session structure and optional slot keys as week 1, and never repeat a week-1 quality session unchanged (easy, recovery, optional and maintain sessions may repeat). A programmed long run grows by at most 10 minutes a week from week 1's.\n`

@@ -1,4 +1,4 @@
-import { type Candidates, type Exercise, isBodyweightOnly, isErg, isRunning, partMinutes, slotMatches, type Template } from './candidates.ts';
+import { type Candidates, type Exercise, isBike, isBodyweightOnly, isErg, isRowOrSki, isRunning, partMinutes, slotMatches, type Template } from './candidates.ts';
 import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type OutlineWeek, type OwnStrengthSession, type RunningMode, type Session, type SessionPart, type StrengthChoice, type StrengthPlacement } from './schemas.ts';
 
 // Each validator returns plain-English errors. An empty list means valid.
@@ -145,6 +145,8 @@ export interface BlockContext {
   intervalIntroWeek?: number | null; // programmed running: first week with a quality interval session (null: not yet)
   runningBeginner?: boolean; // programmed running, Beginner 1–2: 3 runs + cross-training, never 3 days in a row
   advancedRunner?: boolean; // long runs RPE 6–7 and up to 120 min (others RPE 5–6, up to 90 min)
+  offFeetIncludes?: string[] | null; // running 'none' (onboarding Q2c): 'simulations', 'erg', 'bike'; null = not asked
+  ownRacePace?: boolean; // the athlete has a stored race average run pace: their own paces may appear beside RPE
   longRunPlan?: Map<number, { label: string; minutes: [number, number] }>; // long-run stage per week (lib/longruns.ts)
   crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
@@ -186,7 +188,9 @@ const REPS_RE = /\b\d+\s*reps?\b|\b\d+\s*[x×]\s*\d+(?![\d.])(?!\s*(?:s|sec|secs
 const SETS_REPS_RE = /\b\d+\s*(?:sets?\s*(?:\([^)]*\)\s*)?)?[x×]\s*\d+/i;
 const LOAD_BY_FEEL_RE = /\b(rpe|load|bodyweight|light|moderate|heavy|hard|intent|reps? left|by feel|race standard)\b/i;
 // Coach's rule: intensity by RPE and feel, never fixed units or zones.
-const FORBIDDEN_UNITS_RE = /\b\d+(?:\.\d+)?\s*(?:kg|kgs|lb|lbs|watts?|w)\b|\/\s*km\b|\bmin\/km\b|\bpace\s*\d|\bzone\s*\d/i;
+const FORBIDDEN_UNITS_RE = /\b\d+(?:\.\d+)?\s*(?:kg|kgs|lb|lbs|watts?|w)\b|\bzone\s*\d/i;
+// Paces only as the athlete's own stored values, beside RPE (never generic paces).
+const PACE_RE = /\/\s*km\b|\bmin\/km\b|\bpace\s*\d/i;
 
 function sessionSignature(s: Session): string {
   return JSON.stringify(s.parts.map((p) => [p.format, p.template_id, p.minutes, p.items.map((i) => [i.exercise_id, i.race_session_id, i.dose])]));
@@ -253,7 +257,10 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     checkDays(week, label, ctx, errors);
     const keys = core.filter((s) => s.key_session);
     if (keys.length !== 1) errors.push(`${label}: mark exactly one core session as the key session.`);
-    else if (keys[0].day !== ctx.keySessionDay) errors.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
+    else if (keys[0].day !== ctx.keySessionDay && !(week.week === ctx.finalWeek && ctx.running === 'programmed')) {
+      errors.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
+    }
+    if (week.week === ctx.finalWeek && ctx.running === 'programmed') checkRaceWeekRuns(week, label, errors);
     if (optional.some((s) => s.key_session)) errors.push(`${label}: optional sessions can't be the key session.`);
     if (keys.length === 1) checkKeySession(keys[0], week.week, label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
     if (ctx.runningBeginner) checkBeginnerWeek(week, label, errors);
@@ -324,6 +331,10 @@ function maxRpe(dose: string): number | null {
  * recovery or core/mobility, except core/mobility in a taper or post-event week.
  */
 function checkKeySession(s: Session, weekNo: number, label: string, taperOrPostEvent: boolean, ctx: BlockContext, errors: string[]) {
+  if (ctx.running === 'programmed' && weekNo === ctx.finalWeek) {
+    checkRaceWeekSharpener(s, label, ctx, errors);
+    return;
+  }
   const coreMobility = s.parts.every((p) => p.format === 'Mobility' || p.items.every((it) => {
     const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
     return e?.movement_pattern === 'Core' || e?.movement_pattern === 'Mobility';
@@ -357,9 +368,47 @@ function checkKeySession(s: Session, weekNo: number, label: string, taperOrPostE
     }
     return;
   }
+  // No programmed running: a hard strength session, off-feet intervals at RPE 8+ (erg, bike or
+  // bodyweight), a race simulation, or a hard AMRAP/EMOM-type workout; with their own run plan,
+  // compromised sessions too.
   const hardStrength = s.parts.some((p) => p.format === 'Strength') && s.build_or_maintain === 'build';
-  if (!hardStrength && !s.parts.some((p) => p.format === 'RaceSim' || p.format === 'Compromised')) {
-    errors.push(`${label}: without programmed running, the key session is a hard strength session, a race simulation or a compromised session; "${s.title}" is none of these.`);
+  const offFeetIntervals = s.parts.some((p) => p.format === 'Tabata'
+    || (p.format === 'HIIT' && p.items.some((it) => (maxRpe(it.dose) ?? 0) >= 8 || /\b(max|hard|all[- ]out)\b/i.test(it.dose))));
+  const workout = s.parts.some((p) => ['AMRAP', 'EMOM', 'ForTime'].includes(p.format));
+  const simulation = s.parts.some((p) => p.format === 'RaceSim' || (ctx.running === 'none' && p.format === 'CompromisedRun'));
+  const compromised = ctx.running === 'own_plan' && s.parts.some((p) => p.format === 'Compromised' || p.format === 'CompromisedRun');
+  if (!hardStrength && !offFeetIntervals && !workout && !simulation && !compromised) {
+    errors.push(`${label}: without programmed running, the key session is a hard strength session, an off-feet interval session at RPE 8+, a race simulation${ctx.running === 'own_plan' ? ', a compromised session' : ''} or a hard AMRAP/EMOM-type workout; "${s.title}" is none of these.`);
+  }
+}
+
+/**
+ * Race week (running programs): the key session is a short sharpener at least 4–5 days
+ * before the race: 15 min just slower than race effort (RPE 8) with easy warm-up and cool-down.
+ */
+function checkRaceWeekSharpener(s: Session, label: string, ctx: BlockContext, errors: string[]) {
+  const key = s.parts.filter((p) => p.format === 'Run' && p.run_type === 'key');
+  const race = ctx.raceDay ? DAYS.indexOf(ctx.raceDay as (typeof DAYS)[number]) : -1;
+  if (!key.length) {
+    errors.push(`${label}: race week's key session is a short sharpener run (a Run part with run_type key); "${s.title}" has none.`);
+    return;
+  }
+  const rpe = Math.max(...key.flatMap((p) => p.items.map((it) => maxRpe(it.dose) ?? 0)));
+  if (rpe < 7.5 || rpe > 8.5) errors.push(`${label}: the race-week sharpener is 15 min just slower than race effort (RPE 8); "${s.title}" says RPE ${rpe || 'nothing'}.`);
+  if (key.some((p) => p.minutes > 45)) errors.push(`${label}: the race-week sharpener is short (15 min at RPE 8 with 10–15 min easy either side).`);
+  if (race >= 0 && race - DAYS.indexOf(s.day) < 4) {
+    errors.push(`${label}: the race-week sharpener is at least 4–5 days before the race (${DAYS.slice(0, Math.max(0, race - 3)).join(' or ') || 'no day this week'}); it is on ${s.day}.`);
+  }
+}
+
+/** Race week: apart from the sharpener, runs are easy (easy or recovery; no long run). */
+function checkRaceWeekRuns(week: BlockWeek, label: string, errors: string[]) {
+  for (const s of week.sessions) {
+    for (const p of s.parts) {
+      if (p.format === 'Run' && (p.run_type === 'long' || (p.run_type === 'key' && !s.key_session))) {
+        errors.push(`${label}: "${s.title}": in race week, runs other than the sharpener are easy (no ${p.run_type} run).`);
+      }
+    }
   }
 }
 
@@ -451,7 +500,7 @@ function checkEasyDays(week: BlockWeek, label: string, ctx: BlockContext, streng
 // Weekly mix, own run plan spacing, long runs
 // ---------------------------------------------------------------------------
 
-const HYBRID_FORMATS = ['Station', 'Compromised', 'RaceSim', 'Circuit', 'HIIT', 'Tabata', 'AMRAP', 'EMOM', 'ForTime', 'Aerobic'];
+const HYBRID_FORMATS = ['Station', 'Compromised', 'CompromisedRun', 'RaceSim', 'Circuit', 'HIIT', 'Tabata', 'AMRAP', 'EMOM', 'ForTime', 'Aerobic'];
 export type Need = 'key run' | 'easy or long run' | 'run' | 'strength' | 'hybrid or station';
 
 export function serves(s: Session): Set<Need> {
@@ -781,8 +830,18 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
       if (!ctx.candidates.raceSessions.has(item.race_session_id)) errors.push(`${at}: ${item.race_session_id} is not in the candidate race session list.`);
       if (!['RaceSim', 'Compromised', 'Station'].includes(part.format)) errors.push(`${at}: race sessions only go in RaceSim, Compromised or Station parts.`);
     }
-    if (FORBIDDEN_UNITS_RE.test(item.dose) || (item.cue && FORBIDDEN_UNITS_RE.test(item.cue))) {
-      errors.push(`${at}: write intensity as RPE or feel; never kg, watts, paces or zones ("${item.dose}").`);
+    const text = `${item.dose} ${item.cue ?? ''}`;
+    if (FORBIDDEN_UNITS_RE.test(text) || (PACE_RE.test(text) && !(ctx.ownRacePace && /\bRPE\b/i.test(text)))) {
+      errors.push(`${at}: write intensity as RPE or feel; never kg, watts, paces or zones ("${item.dose}")${ctx.ownRacePace ? '; the athlete\'s own pace may appear only beside the RPE' : ''}.`);
+    }
+    // "No running" is off-feet only: run segments become the athlete's preferred erg or bike.
+    if (exercise && isRunning(exercise) && ctx.running === 'none') {
+      errors.push(`${at}: the athlete chose no running (off-feet only); replace the run segment with their preferred erg or bike.`);
+    }
+    // Off-feet choices (onboarding Q2c): erg and bike sessions only if chosen (simulations may swap runs for either).
+    if (exercise && ctx.running === 'none' && ctx.offFeetIncludes && !['RaceSim', 'CompromisedRun'].includes(part.format)) {
+      if (isBike(exercise) && !ctx.offFeetIncludes.includes('bike')) errors.push(`${at}: the athlete didn't choose bike sessions.`);
+      if (isRowOrSki(exercise) && !ctx.offFeetIncludes.includes('erg')) errors.push(`${at}: the athlete didn't choose erg sessions (SkiErg / row).`);
     }
     // Dose kind by format.
     if (f.dose_kind === 'time' && REPS_RE.test(item.dose)) errors.push(`${at}: ${part.format} is timed, so the dose is time only, no reps ("${item.dose}").`);
@@ -828,7 +887,7 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
         });
       }
     }
-  } else if (part.template_id) {
+  } else if (part.template_id && part.format !== 'CompromisedRun') {
     errors.push(`${where}: ${part.format} parts don't use a template; set template_id to null.`);
   }
 
@@ -889,6 +948,21 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
       if (exercises.every((e) => !e || isRunning(e)) && !part.items.some((it) => it.race_session_id)) {
         errors.push(`${where}: a compromised part pairs running with station work.`);
       }
+      break;
+    }
+    case 'CompromisedRun': {
+      inRange(range(rules.minutes), part.minutes, 'the minutes');
+      const t = part.template_id ? ctx.candidates.compromised.get(part.template_id) : undefined;
+      if (!t) {
+        errors.push(`${where}: a compromised run uses one of the athlete's compromised sessions (template_id ${[...ctx.candidates.compromised.keys()].join(', ') || 'none available'}).`);
+        break;
+      }
+      exercises.forEach((e, k) => {
+        if (!e || isRunning(e) || (ctx.running === 'none' && isErg(e))) return; // runs, or the off-feet swap
+        if (!t.stations.includes(e.movement_pattern)) {
+          errors.push(`${where}, item ${k + 1}: ${t.id} (${t.name}) uses ${t.stations.length ? t.stations.join(', ') : 'running only'}; ${e.id} is ${e.movement_pattern}.`);
+        }
+      });
       break;
     }
     case 'Run':

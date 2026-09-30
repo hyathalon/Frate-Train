@@ -17,7 +17,7 @@ const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE
 const RUN = Date.now();
 type Meta = Pick<Session, 'note' | 'order_in_day' | 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
 const META: Meta = { note: null, order_in_day: 1, session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
-const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, strength_placement: 'own_days', goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
+const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, strength_placement: 'own_days', running: { mode: 'own_plan', own_runs: [{ day: 'Tue', intensity: 'easy' }] }, goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 // --- fake Claude -----------------------------------------------------------
 

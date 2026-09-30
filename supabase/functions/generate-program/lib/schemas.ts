@@ -17,7 +17,7 @@ export const LEVERS = ['start', 'frequency', 'intensity', 'volume', 'deload'] as
 // Part formats; rules and timing live in the session_formats table / plan_format().
 export const FORMATS = [
   'Strength', 'Circuit', 'Tabata', 'HIIT', 'AMRAP', 'EMOM', 'ForTime', 'Plyometric',
-  'Mobility', 'Aerobic', 'RaceSim', 'Compromised', 'Station', 'Run',
+  'Mobility', 'Aerobic', 'RaceSim', 'Compromised', 'CompromisedRun', 'Station', 'Run',
 ] as const;
 export type Format = (typeof FORMATS)[number];
 export const RUN_TYPES = ['key', 'easy', 'long', 'recovery'] as const;

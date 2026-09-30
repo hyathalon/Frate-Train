@@ -73,9 +73,22 @@ export interface SessionFormat {
   dose_kind: 'time' | 'reps' | 'sets_reps_load' | 'foot_contacts';
   score: 'none' | 'rounds_reps' | 'time';
   needs_template: boolean;
-  running: 'none' | 'sim' | 'capped' | 'run';
+  running: 'none' | 'sim' | 'capped' | 'run' | 'uncapped';
   rules: Record<string, unknown>;
   description: string;
+}
+
+/** A compromised running session (08 §A2b entry, §A3 standard). */
+export interface CompromisedTemplate {
+  id: string;
+  level: 'entry' | 'standard';
+  family: string;
+  name: string;
+  main_set: string;
+  rounds: string;
+  stations: string[]; // movement patterns allowed for the stressors ([] = running only)
+  purpose: string;
+  cue: string | null;
 }
 
 export interface Candidates {
@@ -84,6 +97,7 @@ export interface Candidates {
   raceSessions: Map<string, RaceSession>;
   formats: Map<string, SessionFormat>;
   race: RaceOption;
+  compromised: Map<string, CompromisedTemplate>; // the athlete's set only (entry or standard)
 }
 
 const LEVEL_RANK = { beginner: 0, intermediate: 1, advanced: 2 } as const;
@@ -193,9 +207,9 @@ export async function loadCandidates(
   admin: SupabaseClient,
   athlete: AthleteRow,
   race: RaceOption,
-  { includeRaceSessions }: { includeRaceSessions: boolean },
+  { includeRaceSessions, compromisedLevel = 'entry' }: { includeRaceSessions: boolean; compromisedLevel?: 'entry' | 'standard' },
 ): Promise<Candidates> {
-  const [exercisesResult, templatesResult, slotsResult, formatsResult, stationsResult] = await Promise.all([
+  const [exercisesResult, templatesResult, slotsResult, formatsResult, stationsResult, compromisedResult] = await Promise.all([
     admin
       .from('exercises')
       .select('id, name, movement_pattern, body_region, methods, primary_pillar, difficulty, acute_risk, where_setting, equipment_options, tabata_suitable, is_active'),
@@ -203,8 +217,9 @@ export async function loadCandidates(
     admin.from('session_template_slots').select('template_id, slot_order, label, movement_patterns, body_region, hint').order('slot_order'),
     admin.from('session_formats').select('format, label, dose_kind, score, needs_template, running, rules, description'),
     admin.from('station_races').select('station_id').eq('race_code', race.race_code),
+    admin.from('compromised_templates').select('id, level, family, name, main_set, rounds, stations, purpose, cue').order('sort_order'),
   ]);
-  for (const r of [exercisesResult, templatesResult, slotsResult, formatsResult, stationsResult]) {
+  for (const r of [exercisesResult, templatesResult, slotsResult, formatsResult, stationsResult, compromisedResult]) {
     if (r.error) throw new Error(`Could not load the library: ${r.error.message}`);
   }
 
@@ -246,13 +261,21 @@ export async function loadCandidates(
     raceSessions: new Map(raceSessions.map((r) => [r.id, r])),
     formats: new Map((formatsResult.data as SessionFormat[]).map((f) => [f.format, f])),
     race,
+    compromised: new Map((compromisedResult.data as CompromisedTemplate[])
+      .filter((t) => t.level === compromisedLevel)
+      .map((t) => [t.id, t])),
   };
 }
 
 export const isPlyometric = (e: Exercise) => e.movement_pattern === 'Plyometric' || e.methods.includes('Plyometric');
 
 /** Formats this athlete can actually do, given their candidates and running choice. */
-export function availableFormats(c: Candidates, running: RunningMode): Set<string> {
+/**
+ * Formats this athlete can do. "No running" is off-feet only: race simulations only if
+ * they chose them (run segments become their erg or bike), and no compromised running
+ * with real runs. offFeet null = not asked (older programs): no restriction.
+ */
+export function availableFormats(c: Candidates, running: RunningMode, offFeet: string[] | null = null): Set<string> {
   const exercises = [...c.exercises.values()];
   const count = (pred: (e: Exercise) => boolean) => exercises.filter(pred).length;
   const hasTemplate = (method: string) => [...c.templates.values()].some((t) => t.method === method);
@@ -275,8 +298,13 @@ export function availableFormats(c: Candidates, running: RunningMode): Set<strin
         case 'Run':
           return running === 'programmed' && count(isRunning) >= 1;
         case 'RaceSim':
+          if (running === 'none') return (offFeet === null || offFeet.includes('simulations')) && count(isErg) >= 1;
           return count(isRunning) >= 1 || !c.race.run_distance_m;
         case 'Compromised':
+          return running !== 'none' && count(isRunning) >= 1;
+        case 'CompromisedRun':
+          if (c.compromised.size === 0) return false;
+          if (running === 'none') return (offFeet === null || offFeet.includes('simulations')) && count(isErg) >= 1;
           return count(isRunning) >= 1;
         default:
           return true; // AMRAP, EMOM, ForTime, Station
@@ -308,6 +336,20 @@ export function formatTemplates(candidates: Candidates): string {
     })
     .join('\n');
 }
+
+/** Compromised running sessions for the prompt: id | name | main set (one round) | rounds | stations | purpose. */
+export function formatCompromised(candidates: Candidates): string {
+  return [...candidates.compromised.values()]
+    .map((t) => [t.id, t.name, t.main_set, `${t.rounds} rounds`, t.stations.length ? t.stations.join('/') : 'running only', `${t.purpose}${t.cue ? ` "${t.cue}"` : ''}`].join(' | '))
+    .join('\n');
+}
+
+const BIKES = ['Air bike', 'BikeErg', 'Bike'];
+const ROW_SKI = ['Rower', 'SkiErg'];
+const usesAny = (e: Exercise, names: string[]) => e.equipment_options.some((opt) => opt.some((n) => names.includes(n)));
+/** Off-feet choice (onboarding Q2c): bike sessions vs erg (SkiErg / row) sessions. */
+export const isBike = (e: Exercise) => isErg(e) && usesAny(e, BIKES);
+export const isRowOrSki = (e: Exercise) => isErg(e) && usesAny(e, ROW_SKI) && !isBike(e);
 
 export function formatRaceSessions(candidates: Candidates): string {
   return [...candidates.raceSessions.values()]

@@ -147,6 +147,9 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
   return {
     interval_experience: body.interval_experience == null ? null : oneOf(body.interval_experience, ['yes', 'no'] as const, 'no', 'Interval experience: yes or no.'),
     can_run_20_min: body.can_run_20_min == null ? null : oneOf(body.can_run_20_min, ['yes', 'no'] as const, 'no', 'Can you run 20 minutes without stopping: yes or no.'),
+    off_feet_includes: parseOffFeet(body.off_feet_includes),
+    hyathlon_races_count: body.hyathlon_races_count == null ? null
+      : oneOf(body.hyathlon_races_count, ['0', '1_2', '3_5', '6_plus'] as const, '0', 'Hyathlon races done: 0, 1_2, 3_5 or 6_plus.'),
     strength_choice: strengthChoice,
     own_strength: ownStrength,
     training_age: body.training_age == null ? null : oneOf(body.training_age, TRAINING_AGES, 'under_6_months', 'Training age: under_6_months, 6_12_months, 1_3_years or 3_plus_years.'),
@@ -167,6 +170,16 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
       return { name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date, mode: e.mode as 'race' | 'training' };
     }),
   };
+}
+
+/** Onboarding Q2c: what a no-running athlete wants off-feet (any of simulations, erg, bike). */
+function parseOffFeet(value: unknown): ('simulations' | 'erg' | 'bike')[] | null {
+  if (value === undefined || value === null) return null;
+  const allowed = ['simulations', 'erg', 'bike'] as const;
+  if (!Array.isArray(value) || value.some((v) => !allowed.includes(v))) {
+    throw new HttpError(400, 'invalid_input', 'Off-feet choices: any of simulations, erg, bike.');
+  }
+  return allowed.filter((a) => value.includes(a));
 }
 
 function oneOf<T extends string>(value: unknown, allowed: readonly T[], fallback: T, message: string): T {
@@ -236,7 +249,7 @@ async function readReferenceText(admin: SupabaseClient): Promise<string> {
 async function loadCoachProfile(admin: SupabaseClient, athleteId: string): Promise<CoachProfile | null> {
   const { data, error } = await admin
     .from('athlete_coach_profiles')
-    .select('strengths, weaknesses, priority_pillars, limiters, coach_notes')
+    .select('strengths, weaknesses, priority_pillars, limiters, coach_notes, compromised_level')
     .eq('athlete_id', athleteId)
     .maybeSingle();
   if (error) throw new Error(`Could not load the coach profile: ${error.message}`);
@@ -805,6 +818,8 @@ async function blockContext(a: {
     postEventWeeks: a.startDate ? postEventWeeks(inputs, a.startDate) : [],
     intervalIntroWeek: intervalIntroWeek(inputs),
     advancedRunner: a.level === 'Advanced',
+    offFeetIncludes: inputs.running?.mode === 'none' ? inputs.off_feet_includes ?? null : null,
+    ownRacePace: !!inputs.recent_result?.avg_run_pace,
     longRunPlan: runningLevel(inputs) === 'normal'
       ? longRunPlan(inputs.longest_run_min, a.level === 'Advanced', a.outline.weeks, a.totalWeeks)
       : new Map(),
@@ -819,15 +834,34 @@ async function blockContext(a: {
   };
 }
 
+/**
+ * Which compromised sessions: the coach's choice (members), else standard (08 §A3) after
+ * 3+ Hyathlon races or a completed program, else entry level (08 §A2b). A program is
+ * completed when it was confirmed and its race date (its last week, for no-event
+ * programs) has passed.
+ */
+async function compromisedLevelFor(
+  admin: SupabaseClient, athlete: AthleteRow, inputs: ProgramInputs, coach: CoachProfile | null,
+): Promise<'entry' | 'standard'> {
+  if (coach?.compromised_level === 'entry' || coach?.compromised_level === 'standard') return coach.compromised_level;
+  if (inputs.hyathlon_races_count === '3_5' || inputs.hyathlon_races_count === '6_plus') return 'standard';
+  const { count, error } = await admin.from('training_programs').select('id', { count: 'exact', head: true })
+    .eq('athlete_id', athlete.id).not('confirmed_at', 'is', null).lt('race_date', new Date().toISOString().slice(0, 10));
+  if (error) throw new Error(`Could not count completed programs: ${error.message}`);
+  return (count ?? 0) >= 1 ? 'standard' : 'entry';
+}
+
 /** Everything a block or week call needs besides the outline. */
 async function prepareGeneration(admin: SupabaseClient, athlete: AthleteRow, inputs: ProgramInputs, weeks: OutlineWeek[]) {
   const level = LEVEL_NAME[athlete.level];
   const race = await requireRaceOption(admin, inputs.race_option_id);
+  const coachProfile = await loadCoachProfile(admin, athlete.id);
+  const compromisedLevel = await compromisedLevelFor(admin, athlete, inputs, coachProfile);
   const [candidates, frame, tabataTimings, coach, plyo] = await Promise.all([
-    loadCandidates(admin, athlete, race, { includeRaceSessions: weeks.some((w) => w.phase === 'specific' || w.phase === 'taper') }),
+    loadCandidates(admin, athlete, race, { includeRaceSessions: weeks.some((w) => w.phase === 'specific' || w.phase === 'taper'), compromisedLevel }),
     sessionFrame(admin, inputs.minutes_per_session),
     Promise.all([1, 2, 3, 4].map((n) => planFormat(admin, 'Tabata', 4 * n + 2 * (n - 1), level))),
-    loadCoachProfile(admin, athlete.id),
+    Promise.resolve(coachProfile),
     planFormat(admin, 'Plyometric', 10, level),
   ]);
   const running = inputs.running?.mode ?? 'none';
@@ -836,7 +870,8 @@ async function prepareGeneration(admin: SupabaseClient, athlete: AthleteRow, inp
     frame,
     tabataTimings,
     coach,
-    availableFormats: availableFormats(candidates, running),
+    availableFormats: availableFormats(candidates, running, running === 'none' ? inputs.off_feet_includes ?? null : null),
+    compromisedLevel,
     plyoContacts: Array.isArray(plyo.contacts) ? [Number(plyo.contacts[0]), Number(plyo.contacts[1])] as [number, number] : null,
     runExerciseIds: [...candidates.exercises.values()].filter(isRunning).map((e) => e.id),
   };

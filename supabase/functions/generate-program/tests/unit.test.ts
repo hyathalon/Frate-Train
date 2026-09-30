@@ -90,6 +90,7 @@ const formats = new Map<string, SessionFormat>([
   ['Compromised', fmt('Compromised', { dose_kind: 'reps', running: 'capped', rules: { minutes: [10, 60] } })],
   ['RaceSim', fmt('RaceSim', { dose_kind: 'reps', running: 'sim', rules: { minutes: [15, 90] } })],
   ['Run', fmt('Run', { running: 'run', rules: { minutes: [10, 120] } })],
+  ['CompromisedRun', fmt('CompromisedRun', { dose_kind: 'reps', running: 'uncapped', rules: { minutes: [20, 60] } })],
 ]);
 
 const strengthT: Template = {
@@ -124,6 +125,10 @@ const candidates: Candidates = {
   raceSessions: new Map(),
   formats,
   race,
+  compromised: new Map([['CR-S5', {
+    id: 'CR-S5', level: 'standard', family: 'Re-composition', name: 'Fatigue Sandwich', main_set: '500 m race effort · station · 500 m race effort',
+    rounds: '6', stations: ['Med ball / throw', 'Lunge / single-leg'], purpose: 'p', cue: null,
+  }]]),
 };
 
 // Beginner: 2 Tabata blocks with 120 s between = 10 min.
@@ -190,7 +195,7 @@ const ctx: BlockContext = {
   strengthPlacement: 'own_days', raceDay: 'Sat', keySessionDay: 'Wed',
   minutesPerSession: 45, frame: { warmup_min: 10, cooldown_min: 5 }, candidates, timings,
   settings: { minutesTolerance: 5, deloadMin: 0.6, deloadMax: 0.7, deloadSessionMinRatio: 0.5, runShareMax: 0.25 },
-  availableFormats: ALL_FORMATS, running: 'none', ownRuns: [], longestRunMin: null, previousLongRunMin: null, finalWeek: 12,
+  availableFormats: ALL_FORMATS, running: 'own_plan', ownRuns: [], longestRunMin: null, previousLongRunMin: null, finalWeek: 12,
 };
 
 const errorsFor = (mutate: (b: Block) => void) => {
@@ -445,6 +450,14 @@ Deno.test('strength sessions follow the athlete\'s choice; extras on easy days o
   assert.match(validateBlock(b2, { ...ctx, strengthPref: 6 }).join(' '), /Strength part on Mon, a recovery day/);
 });
 
+Deno.test('parseInputs: off-feet choices (Q2c) and Hyathlon races done (Q1d)', () => {
+  assert.deepEqual(parseInputs({ ...baseInputs, off_feet_includes: ['bike', 'simulations'] }).off_feet_includes, ['simulations', 'bike']);
+  assert.equal(parseInputs(baseInputs).off_feet_includes, null);
+  assert.throws(() => parseInputs({ ...baseInputs, off_feet_includes: ['swim'] }), /Off-feet choices/);
+  assert.equal(parseInputs({ ...baseInputs, hyathlon_races_count: '3_5' }).hyathlon_races_count, '3_5');
+  assert.throws(() => parseInputs({ ...baseInputs, hyathlon_races_count: 'lots' }), /Hyathlon races done/);
+});
+
 Deno.test('parseInputs: limiters and strength sessions a week (onboarding 3b, 10d)', () => {
   assert.equal(parseInputs(baseInputs).strength_sessions_pref, 2);
   assert.equal(parseInputs({ ...baseInputs, limiters: ['strength_endurance'] }).strength_sessions_pref, 3);
@@ -517,9 +530,14 @@ Deno.test('key session: a real quality session', () => {
   assert.match(errorsFor((b) => { b.weeks[1].sessions[1].session_type = 'station_skill'; }), /the key session "Compromised \+ Tabata" is station skill; the key session is a quality session/);
   assert.match(errorsFor((b) => { b.weeks[1].sessions[1].session_type = 'easy_steady'; }), /is easy steady/);
   // No running programmed: a hard strength session, race simulation or compromised session.
+  // Steady erg work isn't a key session…
   const erg = block();
-  erg.weeks[1].sessions[1].parts = structuredClone(erg.weeks[1].sessions[2].parts); // bike intervals as the key session
-  assert.match(week2(validateBlock(erg, ctx)), /without programmed running, the key session is a hard strength session, a race simulation or a compromised session/);
+  erg.weeks[1].sessions[1].parts = [{ format: 'Aerobic', template_id: null, run_type: null, minutes: 30, items: [item('BIKE', 'steady, RPE 6-7')] }];
+  assert.match(week2(validateBlock(erg, ctx)), /without programmed running, the key session is a hard strength session, an off-feet interval session at RPE 8\+, a race simulation, a compromised session or a hard AMRAP\/EMOM-type workout/);
+  // …but off-feet intervals at RPE 8+ are (no running at all: off-feet only).
+  const intervals = block();
+  intervals.weeks[1].sessions[1].parts = structuredClone(intervals.weeks[1].sessions[2].parts);
+  assert.doesNotMatch(week2(validateBlock(intervals, ctx)), /key session/);
   // A hard strength session can be the key session, alone on its day.
   const strengthKey = block();
   strengthKey.weeks[1].sessions[0].key_session = true;
@@ -632,6 +650,45 @@ Deno.test('taper volume: ~80% then ~60% of usual, counting back from race week',
   b.weeks[2].progression.lever = 'deload';
   const errs = validateBlock(b, { ...ctx, outlineWeeks: outlineWeeks.map((w) => (w.week === 3 ? { ...w, lever: 'deload' as const } : w)), finalWeek: 4 });
   assert.match(errs.join(' '), /Week 3: this taper week should be about 60% of usual volume \(week 2's core minutes\); it is 100%/);
+});
+
+Deno.test('no running is off-feet only; off-feet choices; compromised runs use the athlete\'s sessions', () => {
+  const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
+  const none: BlockContext = { ...ctx, running: 'none', ownRuns: [] };
+  // The fixture's compromised parts have runs: not for an off-feet athlete.
+  assert.match(week2(validateBlock(block(), none)), /chose no running \(off-feet only\); replace the run segment with their preferred erg or bike/);
+  // Bike sessions only if chosen.
+  assert.match(week2(validateBlock(block(), { ...none, offFeetIncludes: ['erg'] })), /didn't choose bike sessions/);
+  // CompromisedRun: one of the athlete's compromised sessions, stations from its movement patterns.
+  const cr = block();
+  cr.weeks[1].sessions[1].parts[0] = { format: 'CompromisedRun', template_id: 'CR-S5', run_type: null, minutes: 20,
+    items: [item('RUN', '500 m race effort, RPE 8-8.5'), item('WB', '30 s wall balls, load by feel'), item('RUN', '500 m race effort, RPE 8-8.5')] };
+  assert.doesNotMatch(week2(validateBlock(cr, ctx)), /compromised run|CR-S5|unknown format/);
+  cr.weeks[1].sessions[1].parts[0].items[1].exercise_id = 'SQ';
+  assert.match(week2(validateBlock(cr, ctx)), /CR-S5 \(Fatigue Sandwich\) uses Med ball \/ throw, Lunge \/ single-leg; SQ is Squat/);
+  cr.weeks[1].sessions[1].parts[0].template_id = 'CR-E1';
+  assert.match(week2(validateBlock(cr, ctx)), /uses one of the athlete's compromised sessions \(template_id CR-S5\)/);
+});
+
+Deno.test('race week (running programs): the key session is a short sharpener 4–5 days out; other runs easy', () => {
+  const run = (type: string, minutes: number, dose: string) => ({ format: 'Run' as const, template_id: null, run_type: type as 'key', minutes, items: [item('RUN', dose)] });
+  const programmed: BlockContext = { ...ctx, running: 'programmed', finalWeek: 2, raceDay: 'Sat', outlineWeeks: BLOCK_OUTLINE_WEEKS.map((w) => ({ ...w, strength_sessions: w.week === 2 ? 0 : w.strength_sessions })) };
+  const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
+  const b = block();
+  const w = b.weeks[1];
+  w.sessions = w.sessions.filter((s) => s.day !== 'Mon'); // no strength in this race week
+  const key = w.sessions.find((s) => s.key_session)!;
+  key.parts = [run('key', 15, '15 min just slower than race effort, RPE 8')];
+  key.day = 'Mon';
+  assert.doesNotMatch(week2(validateBlock(b, programmed)), /sharpener|key session must be on/);
+  key.day = 'Wed';
+  assert.match(week2(validateBlock(b, programmed)), /at least 4–5 days before the race \(Mon or Tue\); it is on Wed/);
+  key.day = 'Mon';
+  key.parts = [run('key', 15, '15 min @ RPE 9')];
+  assert.match(week2(validateBlock(b, programmed)), /15 min just slower than race effort \(RPE 8\)/);
+  key.parts = [run('key', 15, '15 min just slower than race effort, RPE 8')];
+  w.sessions.find((s) => s.day === 'Fri')!.parts = [run('long', 60, '60 min @ RPE 5-6 Easy')];
+  assert.match(week2(validateBlock(b, programmed)), /in race week, runs other than the sharpener are easy \(no long run\)/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

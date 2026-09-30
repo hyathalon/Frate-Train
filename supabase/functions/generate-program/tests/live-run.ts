@@ -71,7 +71,7 @@ const profiles: Profile[] = [
     inputs: { race_date: RACE_12, training_days: ['Mon', 'Wed', 'Sat'], key_session_day: 'Wed', minutes_per_session: 40,
       goal: 'Finish my first Hyathlon race feeling strong', strengths: ['Consistency'], weaknesses: ['Running', 'Upper-body strength'],
       running: { mode: 'none' }, can_double: 'no', strength_placement: 'with_hard_sessions', limiters: ['aerobic_fitness'],
-      training_age: 'under_6_months', variety_preference: 'balance', dislikes: 'burpees' },
+      training_age: 'under_6_months', variety_preference: 'balance', dislikes: 'burpees', off_feet_includes: [], hyathlon_races_count: '0' },
   },
   {
     key: 'experienced-member-programmed',
@@ -99,7 +99,8 @@ const profiles: Profile[] = [
       goal: 'Hyathlon race – Open, sharpen for race day, with a 2-week taper (weeks 3 and 4)', strengths: ['Rowing'], weaknesses: ['Compromised running'],
       longest_run_min: 50, cross_training_preferences: ['Rower', 'SkiErg'], running: { mode: 'programmed' },
       can_double: 'sometimes', strength_placement: 'with_hard_sessions', limiters: ['running'], training_age: '1_3_years', runs_per_week: 3,
-      interval_experience: 'yes' },
+      interval_experience: 'yes', hyathlon_races_count: '1_2',
+      recent_result: { event: 'Hyathlon race – Open', time: '1:24:10', date: '2026-05-10', avg_run_pace: '5:05 /km' } },
     taperWeeks: [3, 4],
   },
 ];
