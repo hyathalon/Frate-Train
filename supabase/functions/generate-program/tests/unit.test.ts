@@ -534,8 +534,12 @@ Deno.test('key session: a real quality session', () => {
 Deno.test('starting running level and the first interval week (07 §1, §4)', () => {
   const r = (longest: number | null, exp?: 'yes' | 'no', mode: 'programmed' | 'none' = 'programmed') =>
     ({ running: { mode, own_runs: [] }, longest_run_min: longest, interval_experience: exp ?? null });
-  assert.deepEqual([runningLevel(r(0)), runningLevel(r(15)), runningLevel(r(20)), runningLevel(r(null)), runningLevel(r(30, 'yes', 'none'))],
-    ['beginner_1', 'beginner_2', 'normal', 'normal', null]);
+  assert.deepEqual([runningLevel(r(0)), runningLevel(r(15)), runningLevel(r(20)), runningLevel(r(30, 'yes', 'none'))],
+    ['beginner_1', 'beginner_2', 'normal', null]);
+  // "Not sure": the follow-up "Can you run 20 minutes without stopping?" decides.
+  assert.equal(runningLevel({ ...r(null), can_run_20_min: 'yes' }), 'normal');
+  assert.equal(runningLevel({ ...r(null), can_run_20_min: 'no' }), 'beginner_2');
+  assert.equal(runningLevel(r(null)), 'beginner_2');
   assert.equal(intervalIntroWeek(r(45, 'yes')), 2);
   assert.equal(intervalIntroWeek(r(45, 'no')), 3);
   assert.equal(intervalIntroWeek(r(45)), 3); // not said: treated as no

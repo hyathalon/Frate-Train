@@ -11,12 +11,13 @@ export const BRIDGE_WEEKS = 4;
 /**
  * From the longest run in the last 3 weeks (onboarding Q5), for programmed running:
  * 0 → Beginner 1 (walk–run), under 20 min → Beginner 2, 20+ → normal programming.
- * "Not sure" (no answer) → normal programming, starting conservatively.
+ * "Not sure" → the follow-up "Can you run 20 minutes without stopping?":
+ * yes → normal programming, no (or no answer) → Beginner 2.
  */
-export function runningLevel(inputs: Pick<ProgramInputs, 'running' | 'longest_run_min'>): RunningLevel | null {
+export function runningLevel(inputs: Pick<ProgramInputs, 'running' | 'longest_run_min' | 'can_run_20_min'>): RunningLevel | null {
   if (inputs.running?.mode !== 'programmed') return null;
   const m = inputs.longest_run_min;
-  if (m === null || m === undefined) return 'normal';
+  if (m === null || m === undefined) return inputs.can_run_20_min === 'yes' ? 'normal' : 'beginner_2';
   if (m === 0) return 'beginner_1';
   return m < 20 ? 'beginner_2' : 'normal';
 }
@@ -27,7 +28,7 @@ export function runningLevel(inputs: Pick<ProgramInputs, 'running' | 'longest_ru
  * the sequence after the bridge. Beginner 1 builds to continuous running first,
  * so no interval week is planned yet (null).
  */
-export function intervalIntroWeek(inputs: Pick<ProgramInputs, 'running' | 'longest_run_min' | 'interval_experience'>): number | null {
+export function intervalIntroWeek(inputs: Pick<ProgramInputs, 'running' | 'longest_run_min' | 'can_run_20_min' | 'interval_experience'>): number | null {
   const level = runningLevel(inputs);
   if (level === null || level === 'beginner_1') return null;
   const week = inputs.interval_experience === 'yes' ? 2 : 3;

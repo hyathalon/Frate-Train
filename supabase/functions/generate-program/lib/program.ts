@@ -145,6 +145,7 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
   const lr = body.last_race as Record<string, unknown> | null | undefined;
   return {
     interval_experience: body.interval_experience == null ? null : oneOf(body.interval_experience, ['yes', 'no'] as const, 'no', 'Interval experience: yes or no.'),
+    can_run_20_min: body.can_run_20_min == null ? null : oneOf(body.can_run_20_min, ['yes', 'no'] as const, 'no', 'Can you run 20 minutes without stopping: yes or no.'),
     strength_choice: strengthChoice,
     own_strength: ownStrength,
     training_age: body.training_age == null ? null : oneOf(body.training_age, TRAINING_AGES, 'under_6_months', 'Training age: under_6_months, 6_12_months, 1_3_years or 3_plus_years.'),

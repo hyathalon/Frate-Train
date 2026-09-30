@@ -31,6 +31,7 @@ export interface ProgramInputs {
   own_strength?: OwnStrengthSession[]; // strength_choice 'own'
   training_age?: TrainingAge | null; // onboarding 3
   interval_experience?: 'yes' | 'no' | null; // onboarding 4b
+  can_run_20_min?: 'yes' | 'no' | null; // onboarding Q5 follow-up when the longest run is "not sure"
   runs_per_week?: number | null; // onboarding 4 (5 = 5+)
   recent_result?: { event: string; time: string; date: string | null; avg_run_pace: string | null } | null; // onboarding 6
   variety_preference?: VarietyPreference | null; // onboarding 14
