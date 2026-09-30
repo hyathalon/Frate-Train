@@ -108,3 +108,45 @@ The products use a 2–6 RPE scale. **The app never shows these numbers**; it us
 ## 7. Notes for the app build
 - Walk–run, the bridge to 20 min and the return-to-run stages are **fixed progressions**. They can be stored as templates and stepped through (repeat or move up based on the check-in and logs) rather than generated from scratch each time. That's cheaper and more reliable.
 - The weekly check-in's "repeat this week" is a normal outcome for beginners, not a failure.
+
+## 8. Template progressions (week by week)
+
+Efforts in the app's scale (§6). Every session starts with the §3 warm-up and ends with an easy walk cool-down. Days are defaults; the athlete can move them (keep the easy day after the long session, never 3 training days in a row).
+
+### 8.1 Beginner 1: 12-week walk–run (to a 5 km)
+Walks RPE 5–6 · Easy. "Easy run" RPE 5–6. "Steady run" RPE 6–8 · Steady. Tempo "hard jog" RPE 8–8.5. Fartlek hard efforts RPE 8.5–9.5, easy parts walking.
+
+| Wk | Mon: cross-training | Tue | Thu | Sat |
+|---|---|---|---|---|
+| 1 | 15 min walk or XT | Walk: 5–10 WU, 15 min walk, 5 CD | Hilly walk: 5–10 WU, 15 min, 5 CD | Walk–run: 5 WU, 2 × (60 s easy run / 60 s walk), 4 × (30 s easy run / 30 s walk), 5 walk |
+| 2 | 18 min | Walk 18 min | Hilly walk 18 min | Walk–run: 4 × (60 s / 60 s walk), 6 × (30 s / 30 s walk) |
+| 3 | 20 min | Walk 20 min | Hilly walk 20 min | Walk–run: 6 × (60 s / 30 s walk), 8 × (30 s / 30 s walk) |
+| 4 (lighter) | 18 min | Walk 18 min | Hilly walk 18 min | Walk–run: 4 × (60 s / 60 s walk), 6 × (30 s / 30 s walk) |
+| 5 | 20 min | Walk: 15 min walk + 3 min easy jog | Hilly walk 20 min | Walk–run: 4 × (60 s steady / 60 s walk), 4 × (60 s steady / 30 s walk) |
+| 6 | 25 min | Walk: 18 min walk + 2 × (3 min easy jog / 60 s walk) | Hilly walk 25 min | Walk–run: 4 × (60 s steady / 60 s walk), 6 × (60 s steady / 30 s walk) |
+| 7 | 15 min | Fartlek: 14 min walk (easy) / run (hard) | Walk–run: 8 × (60 s steady / 30 s walk), 4 × (30 s steady / 30 s walk) | Long run: 2 × (5 min easy run + 5 min walk) |
+| 8 | 20 min | Tempo: 3 × 5 min hard jog / 2 min standing | Walk 25 min | Long run: 3 × (7 min easy run + 4 min walk) |
+| 9 | 20 min | Fartlek: 16 min walk / run | Walk–run: 10 × (60 s steady / 30 s walk) | Long run: 2 × (10 min easy run + 4 min walk) |
+| 10 | 25 min | Tempo: 4 × 5 min hard jog / 2 min standing | Walk 20 min | Long run: 2 × (12 min easy run + 3 min walk) |
+| 11 | 15 min | Fartlek: 18 min walk / run | Walk–run: 12 × (60 s steady / 30 s walk) | Long run: 2 × (15 min easy run + 2 min walk) |
+| 12 (event) | 20 min | Tempo: 2 × 5 min hard jog / 2 min standing | Walk 15 min | **Event** (e.g. parkrun 5 km) |
+
+After week 12 (or when the athlete can run 20 min continuously): the interval-introduction sequence (§4) and normal programming.
+
+### 8.2 Bridge: 4 weeks to 20 min continuous
+For athletes with a longer goal who can't yet run 20 min continuously. "Moderate run" RPE 6 (top of Easy); "easy run" and "easy jog" RPE 5–6.
+
+| Wk | Tue | Thu | Sat | Sun: cross-training |
+|---|---|---|---|---|
+| 1 | 5 min walk, 4 min moderate run, 5 min walk | 25 min walk with a 5 min easy jog in it | 5 min walk, 10 min easy run, 5 min walk | 15 min walk, cycle, swim, yoga or Pilates |
+| 2 | 5 walk, 8 min moderate run, 5 walk | 20 min walk with a 7 min easy jog | 5 walk, 14 min easy run, 5 walk | 15 min |
+| 3 | 5 walk, 12 min moderate run, 5 walk | 30 min walk with a 9 min easy jog | 5 walk, 17 min easy run, 5 walk | 20 min |
+| 4 | 5 walk, 16 min moderate run, 5 walk | 35 min walk with an 11 min easy jog | 5 walk, 20 min easy run, 5 walk | 20 min |
+
+Mon, Wed, Fri rest. Then the goal program starts, with the interval-introduction sequence (§4).
+
+### 8.3 Stepping through a template
+- All sessions of the week done, no pain during or the day after (awareness is okay) → next week.
+- Sessions missed or felt too hard → **repeat the week** (a normal outcome).
+- Symptoms return → go back a week; if they persist, "check with your medical professional".
+- Return to run uses the §5 stages the same way (member-only, after consent).
