@@ -931,6 +931,7 @@ export type Database = {
           id: string
           is_default: boolean
           label: string
+          note: string | null
           race_code: string
           run_distance_m: number | null
           sort_order: number
@@ -940,6 +941,7 @@ export type Database = {
           id: string
           is_default?: boolean
           label: string
+          note?: string | null
           race_code: string
           run_distance_m?: number | null
           sort_order: number
@@ -949,6 +951,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           label?: string
+          note?: string | null
           race_code?: string
           run_distance_m?: number | null
           sort_order?: number

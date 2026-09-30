@@ -48,7 +48,7 @@ export function parseInputs(raw: unknown): ProgramInputs {
   if (!isValidDate(body.race_date)) {
     throw new HttpError(400, 'invalid_input', 'Choose your race date.');
   }
-  const raceOption = typeof body.race_option_id === 'string' && body.race_option_id ? body.race_option_id : 'hyrox-open';
+  const raceOption = typeof body.race_option_id === 'string' && body.race_option_id ? body.race_option_id : 'hyathlon-open';
 
   const days = body.training_days;
   if (!Array.isArray(days) || days.length < 1 || days.length > 7 || days.some((d) => !(DAYS as readonly unknown[]).includes(d))

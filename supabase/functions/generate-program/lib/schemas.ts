@@ -25,6 +25,12 @@ export const RUN_TYPES = ['key', 'easy', 'long', 'recovery'] as const;
 export const RUNNING_MODES = ['programmed', 'own_plan', 'none'] as const;
 export type RunningMode = (typeof RUNNING_MODES)[number];
 export type RunType = (typeof RUN_TYPES)[number];
+// Borrowed from docs/coaching/session-schema.json (design reference).
+export const SESSION_TYPES = [
+  'recovery', 'easy_steady', 'long', 'progression', 'aerobic_threshold', 'lactate_threshold', 'critical_velocity',
+  'vo2max', 'speed', 'compromised', 'station_skill', 'strength_endurance',
+] as const;
+export const PROGRESSION_TYPES = ['extend', 'qualify', 'benchmark'] as const;
 
 export interface OutlineWeek {
   week: number;
@@ -118,6 +124,10 @@ export interface Session {
   title: string;
   key_session: boolean;
   pillar: (typeof PILLARS)[number];
+  session_type: (typeof SESSION_TYPES)[number];
+  build_or_maintain: 'build' | 'maintain';
+  progression: { type: (typeof PROGRESSION_TYPES)[number]; change: string };
+  alternatives: { modality: string; note: string | null }[]; // cross-training alternatives, preferred first
   optional: boolean;
   slot: string | null;
   parts: SessionPart[];
@@ -183,12 +193,33 @@ export const BLOCK_SCHEMA = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['day', 'title', 'key_session', 'pillar', 'optional', 'parts'],
+              required: ['day', 'title', 'key_session', 'pillar', 'session_type', 'build_or_maintain', 'progression', 'optional', 'parts'],
               properties: {
                 day: { type: 'string', enum: [...DAYS] },
                 title: { type: 'string' },
                 key_session: { type: 'boolean' },
                 pillar: { type: 'string', enum: [...PILLARS] },
+                session_type: { type: 'string', enum: [...SESSION_TYPES] },
+                build_or_maintain: { type: 'string', enum: ['build', 'maintain'] },
+                progression: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['type', 'change'],
+                  properties: {
+                    type: { type: 'string', enum: [...PROGRESSION_TYPES] },
+                    change: { type: 'string', description: 'What changed versus the last similar session, in a few words.' },
+                  },
+                },
+                alternatives: {
+                  type: 'array',
+                  description: 'Cross-training alternatives from the athlete\'s equipment, preferred first.',
+                  items: {
+                    type: 'object',
+                    additionalProperties: false,
+                    required: ['modality'],
+                    properties: { modality: { type: 'string' }, note: { type: 'string' } },
+                  },
+                },
                 optional: { type: 'boolean' },
                 slot: { type: 'string' },
                 parts: {
@@ -220,6 +251,8 @@ export function normalizeBlock(block: Block): Block {
   for (const week of block.weeks ?? []) {
     for (const session of week.sessions ?? []) {
       session.slot ??= null;
+      session.alternatives ??= [];
+      for (const alt of session.alternatives) alt.note ??= null;
       for (const part of session.parts ?? []) {
         part.template_id ??= null;
         part.run_type ??= null;

@@ -10,12 +10,15 @@ import { loadCandidates, loadRaceOption, partMinutes, slotMatches } from '../lib
 import type { CallClaude, ClaudeCallInput, ClaudeCallResult } from '../lib/claude.ts';
 import { createClient } from '../lib/deps.ts';
 import { confirm, type Deps, preview, weeklyCheckin } from '../lib/program.ts';
-import type { Block, Outline } from '../lib/schemas.ts';
+import type { Block, Outline, Session } from '../lib/schemas.ts';
 import { localDate } from '../lib/time.ts';
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SECRET_KEY')!, { auth: { persistSession: false } });
 const RUN = Date.now();
-const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish Hyrox Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
+type Meta = Pick<Session, 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
+const META: Meta = { session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
+const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
+const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish a Hyathlon race – Open', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 // --- fake Claude -----------------------------------------------------------
 
@@ -64,7 +67,7 @@ const item = (id: string, dose: string, over: Record<string, unknown> = {}) => (
 
 /** A valid block 1 (45-min sessions, Mon/Wed/Fri + optional Sat) from the athlete's real candidate lists. */
 async function validBlock(athlete: AthleteRow): Promise<Block> {
-  const race = (await loadRaceOption(admin, 'hyrox-open'))!;
+  const race = (await loadRaceOption(admin, 'hyathlon-open'))!;
   const c = await loadCandidates(admin, athlete, race, { includeRaceSessions: false });
   const all = [...c.exercises.values()];
   const erg = all.find((e) => e.movement_pattern === 'Erg')!;
@@ -76,16 +79,16 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
     t.slots.map((slot, i) => item(all.find((x) => slotMatches(slot, x))!.id, dose(i)));
   const week = (n: number, deload = false) => {
     const sessions = [
-      { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null,
+      { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
         parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `3 × ${6 + n}, moderate load, RPE 7`) }] },
-      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null,
+      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
         parts: [
           { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },
           { format: 'HIIT', template_id: null, minutes: 10, items: [item(erg.id, `hard, RPE 8, week ${n}`)] },
         ] },
-      { day: 'Fri', title: 'Steady erg', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null,
+      { day: 'Fri', title: 'Steady erg', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null, ...ERG_META,
         parts: [{ format: 'Aerobic', template_id: null, minutes: 30, items: [item(erg.id, `steady, RPE 6-7, build ${n}`)] }] },
-      { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised',
+      { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
         parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item(run.id, '400 m run, RPE 8', { run_minutes: 6 }), item(station.id, `${10 + n} wall balls`)] }] },
     ];
     if (deload) sessions.splice(2, 1); // drop Friday; keep strength and the key session

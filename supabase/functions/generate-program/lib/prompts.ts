@@ -82,7 +82,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
 - Add at most ONE new stimulus per block; mark it optional: true.
-- Phases: base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
+- Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
 
 ## Output rules
 - Only exercise_ids from exercise_shortlist.
@@ -94,7 +94,10 @@ const COACHING_RULES_MAPPING = `How the coaching rules map to this request:
 - exercise_shortlist = the <exercises> list (plus <templates> and <race_sessions>); use only those ids.
 - checkin, history and athlete_edits are included when available; when missing, write a conservative benchmark.
 - Give sets as a planned number with a range in the dose, e.g. "3 sets (2–4) × 8 min @ RPE 8–8.5 · Mod. Hard / 2 min easy"; give long runs as planned minutes with a range, e.g. "60 min (50–70) @ RPE 6–8 · Steady".
-- List cross-training alternatives from the athlete's equipment in the cue, preferred first.
+- List cross-training alternatives in the session's alternatives field: modalities from the athlete's equipment, preferred first.
+- Give each session its session_type, build_or_maintain, and progression (extend, qualify or benchmark, and in a few words what changed versus the last similar session; benchmark when there is no history).
+- Weekly modification: apply the body-report and history rules only when that information is provided. If body reports or logged history are missing, make no change for them.
+- Athlete-facing text never names event brands; say "Hyathlon race" or "race".
 - The output shape is this request's JSON schema (weeks, sessions, parts, items), not the one the rules document mentions.`;
 
 export interface CoachProfile {
@@ -130,7 +133,7 @@ Progression (frequency, intensity, volume — one lever per week):
 - Every week progresses load, sets, reps or density; never repeat a session unchanged. Deload weeks are about 60–70% of the previous week.`;
 
 export function systemPrompt(referenceText: string): string {
-  return `You are an expert Hyrox and hybrid-fitness coach planning training with The Hyathlon System, the methodology of Hyathlon Performance.
+  return `You are an expert hybrid-race and running coach planning training with The Hyathlon System, the methodology of Hyathlon Performance.
 
 The reference material below (The Hyathlon System Booklet and the Master Coaching Handbook) is the primary basis for every decision, including the pillars. Use general coaching knowledge only where it is silent.
 
@@ -166,7 +169,7 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
   const weaknesses = coach?.weaknesses.length ? coach.weaknesses : inputs.weaknesses;
   const lines = [
     `Level: ${athlete.level}`,
-    `Athlete type: ${athlete.athlete_type ?? 'hyrox'}`,
+    `Athlete type: ${athlete.athlete_type ?? 'hyathlon'}`,
     `Trains at: ${athlete.training_locations.length ? athlete.training_locations.join(', ') : 'not specified'}`,
     `Equipment: ${athlete.equipment?.length ? athlete.equipment.join(', ') : 'bodyweight only'}`,
     `Training days: ${inputs.training_days.join(', ')} (${inputs.training_days.length} days; sessions only on these days)`,
@@ -190,7 +193,7 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
 }
 
 function raceFacts(race: RaceOption): string {
-  return `${race.label}${race.run_distance_m ? `, ${race.run_distance_m} m run segments` : ''}:\n${race.segments.map((s) => `- ${s}`).join('\n')}`;
+  return `${race.label}${race.run_distance_m ? `, ${race.run_distance_m} m run segments` : ''}${race.note ? ` (${race.note})` : ''}:\n${race.segments.map((s) => `- ${s}`).join('\n')}`;
 }
 
 export function outlinePrompt(

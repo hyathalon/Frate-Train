@@ -63,6 +63,7 @@ export interface RaceOption {
   format: string;
   label: string;
   run_distance_m: number | null;
+  note: string | null;
   segments: string[];
 }
 
@@ -173,7 +174,7 @@ export function usableTemplates(templates: Template[], exercises: Exercise[], at
 export async function loadRaceOption(admin: SupabaseClient, raceOptionId: string): Promise<RaceOption | null> {
   const { data: option, error } = await admin
     .from('race_format_options')
-    .select('id, race_code, format, label, run_distance_m')
+    .select('id, race_code, format, label, run_distance_m, note')
     .eq('id', raceOptionId)
     .maybeSingle();
   if (error) throw new Error(`Could not load the race format: ${error.message}`);

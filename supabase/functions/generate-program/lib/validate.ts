@@ -268,6 +268,12 @@ function validateSession(s: Session, where: string, deload: boolean, ctx: BlockC
   if (s.optional && !s.slot) errors.push(`${where}: optional sessions need a slot key.`);
   if (!s.optional && s.slot) errors.push(`${where}: core sessions have slot null.`);
   if (s.parts.length < 1 || s.parts.length > 3) errors.push(`${where}: a session has 1 to 3 parts.`);
+  if (!s.progression.change.trim()) errors.push(`${where}: say in a few words what changed versus the last similar session (progression.change).`);
+  const usesErg = s.parts.some((p) => p.items.some((it) => {
+    const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
+    return e && isErg(e);
+  }));
+  if (usesErg && s.alternatives.length === 0) errors.push(`${where}: cross-training sessions list alternatives from the athlete's equipment.`);
 
   const total = ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
   const tol = ctx.settings.minutesTolerance;

@@ -63,7 +63,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
 - Add at most ONE new stimulus per block; mark it optional: true.
-- Phases: base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
+- Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
 
 ## Output rules
 - Only exercise_ids from exercise_shortlist.

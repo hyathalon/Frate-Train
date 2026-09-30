@@ -51,7 +51,7 @@ const ex = (id: string, over: Partial<Exercise> = {}): Exercise => ({
 
 const athlete = (over: Partial<AthleteRow> = {}): AthleteRow => ({
   id: 'a', user_id: 'u', name: 'Test', tier: 'app', level: 'beginner', equipment: [], training_locations: [],
-  timezone: 'Australia/Sydney', coach_user_id: null, athlete_type: 'hyrox', ...over,
+  timezone: 'Australia/Sydney', coach_user_id: null, athlete_type: 'hyathlon', ...over,
 });
 
 Deno.test('risk and difficulty rules by level', () => {
@@ -103,7 +103,7 @@ const circuitT: Template = {
   ],
 };
 
-const race: RaceOption = { id: 'hyrox-open', race_code: 'H', format: 'Open', label: 'Hyrox Open', run_distance_m: 1000, segments: [] };
+const race: RaceOption = { id: 'hyathlon-open', race_code: 'H', format: 'Open', label: 'Hyathlon race – Open', run_distance_m: 1000, note: null, segments: [] };
 
 const candidates: Candidates = {
   exercises: new Map([
@@ -134,22 +134,26 @@ const item = (id: string, dose: string, over: Record<string, unknown> = {}) => (
   exercise_id: id, race_session_id: null, dose, cue: null, block: null, foot_contacts: null, run_minutes: null, run_distance_m: null, ...over,
 });
 
+type Meta = Pick<Session, 'session_type' | 'build_or_maintain' | 'progression' | 'alternatives'>;
+const META: Meta = { session_type: 'strength_endurance', build_or_maintain: 'build', progression: { type: 'extend', change: 'one more rep' }, alternatives: [] };
+const ERG_META: Meta = { ...META, session_type: 'aerobic_threshold', alternatives: [{ modality: 'Rower', note: null }] };
+
 // 45-minute sessions: 10 min warm-up + 30 min of parts + 5 min cool-down.
 function week(n: number, reps: number, deload = false) {
   const sessions: Session[] = [
-    { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null,
+    { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
       parts: [{ format: 'Strength', template_id: 'STR-45', run_type: null, minutes: 30, items: [item('SQ', `3 × ${reps}, moderate load, RPE 7`), item('PU', `3 × ${reps}, bodyweight`)] }] },
-    { day: 'Wed', title: 'Circuit + Tabata', key_session: true, pillar: 'Threshold', optional: false, slot: null,
+    { day: 'Wed', title: 'Circuit + Tabata', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
       parts: [
         { format: 'Circuit', template_id: 'CIR-30', run_type: null, minutes: 20, items: [item('SQ', `RPE ${reps - 1}`), item('CORE', 'steady, RPE 7')] },
         { format: 'Tabata', template_id: null, run_type: null, minutes: 10, items: [item('SQ', 'max effort', { block: 1 }), item('PU', 'max effort', { block: 2 }), item('CORE', `max effort, week ${n}`, { block: 2 })] },
       ] },
-    { day: 'Fri', title: 'Bike', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null,
+    { day: 'Fri', title: 'Bike', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null, ...ERG_META,
       parts: [
         { format: 'HIIT', template_id: null, run_type: null, minutes: 15, items: [item('BIKE', `hard, RPE ${reps}`)] },
         { format: 'Aerobic', template_id: null, run_type: null, minutes: 15, items: [item('BIKE', 'steady, RPE 6-7')] },
       ] },
-    { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised',
+    { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
       parts: [{ format: 'Compromised', template_id: null, run_type: null, minutes: 30, items: [item('RUN', '400 m run, RPE 8', { run_minutes: 6 }), item('WB', `${reps * 2} wall balls`)] }] },
   ];
   if (deload) sessions.splice(0, 1); // drop Monday: 2 core sessions instead of 3
@@ -235,7 +239,7 @@ Deno.test('running: only in compromised (capped) and race simulations', () => {
   assert.match(errorsFor((b) => { b.weeks[0].sessions[3].parts[0].items[0].run_minutes = 10; }), /running is 10 of 30 min; the cap is 25%/);
   assert.match(errorsFor((b) => {
     b.weeks[0].sessions[3].parts[0] = { format: 'RaceSim', template_id: null, run_type: null, minutes: 30, items: [item('RUN', '1 run', { run_distance_m: 400 }), item('WB', '100 wall balls')] };
-  }), /run segments in a Hyrox Open simulation are 1000 m/);
+  }), /run segments in a Hyathlon race – Open simulation are 1000 m/);
 });
 
 Deno.test('regex: "3 x 20s surges" in a timed dose is not reps', () => {
@@ -285,12 +289,19 @@ Deno.test('own run plan: no heavy lower-body or sled work the day before a hard 
   assert.deepEqual(validateBlock(block(), { ...own, ownRuns: [{ day: 'Tue', intensity: 'easy' }] }), []);
 });
 
+Deno.test('session fields: progression change and cross-training alternatives', () => {
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].progression.change = ' '; }), /progression\.change/);
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[2].alternatives = []; }), /list alternatives/);
+  assert.doesNotMatch(errorsFor((b) => { b.weeks[1].sessions[0].alternatives = []; }), /alternatives/);
+});
+
 Deno.test('normalizeBlock fills fields Claude left out', () => {
   const raw = { summary: 's', weeks: [{ week: 1, focus: 'f', progression: { lever: 'start', change: 'c' }, sessions: [
     { day: 'Mon', title: 't', key_session: true, pillar: 'Durability', optional: false, parts: [{ format: 'AMRAP', minutes: 10, items: [{ exercise_id: 'SQ', dose: '10 reps' }] }] },
   ] }] } as unknown as Block;
   const n = normalizeBlock(raw);
   const it = n.weeks[0].sessions[0].parts[0].items[0];
+  assert.deepEqual(n.weeks[0].sessions[0].alternatives, []);
   assert.deepEqual([n.weeks[0].sessions[0].slot, n.weeks[0].sessions[0].parts[0].template_id, n.weeks[0].sessions[0].parts[0].run_type, it.race_session_id, it.cue, it.block], [null, null, null, null, null, null]);
 });
 
@@ -316,7 +327,7 @@ Deno.test('parseInputs: running choice', () => {
 Deno.test('parseInputs: training days, key day, minutes and the optional coach inputs', () => {
   const ok = parseInputs({ ...baseInputs, longest_run_min: 60, cross_training_preferences: ['Air bike', 'Rower'] });
   assert.deepEqual(ok.training_days, ['Mon', 'Wed', 'Sat']); // week order
-  assert.equal(ok.race_option_id, 'hyrox-open');
+  assert.equal(ok.race_option_id, 'hyathlon-open');
   assert.equal(ok.goal, 'Sub 90');
   assert.equal(ok.longest_run_min, 60);
   const code = (raw: unknown) => {

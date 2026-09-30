@@ -57,7 +57,7 @@ async function cleanup() {
   for (const id of created.users) await admin.auth.admin.deleteUser(id);
 }
 
-const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish Hyrox Open under 90 minutes', strengths: ['Running'], weaknesses: ['Wall balls'] };
+const inputs = { race_date: '2027-01-23', training_days: ['Mon', 'Wed', 'Fri', 'Sat'], key_session_day: 'Wed', minutes_per_session: 45, goal: 'Finish a Hyathlon race – Open under 90 minutes', strengths: ['Running'], weaknesses: ['Wall balls'] };
 
 Deno.test({
   name: 'generate-program without an Anthropic key: auth, roles, inputs and limits',
@@ -201,8 +201,8 @@ Deno.test({
     console.log(`  system prompt (both reference documents): ${systemChars.toLocaleString()} chars`);
 
     for (const [label, over] of profiles) {
-      const athlete = { id: 'x', user_id: null, name: 'x', tier: 'app', timezone: 'Australia/Sydney', coach_user_id: null, athlete_type: 'hyrox', equipment: [], training_locations: [], ...over } as AthleteRow;
-      const c = await loadCandidates(admin, athlete, (await loadRaceOption(admin, 'hyrox-open'))!, { includeRaceSessions: true });
+      const athlete = { id: 'x', user_id: null, name: 'x', tier: 'app', timezone: 'Australia/Sydney', coach_user_id: null, athlete_type: 'hyathlon', equipment: [], training_locations: [], ...over } as AthleteRow;
+      const c = await loadCandidates(admin, athlete, (await loadRaceOption(admin, 'hyathlon-open'))!, { includeRaceSessions: true });
       for (const id of c.exercises.keys()) {
         assert.ok(ALLOWED_RISK[athlete.level].includes(risk.get(id)!.acute_risk), `${label}: ${id} breaks the risk rule`);
       }
