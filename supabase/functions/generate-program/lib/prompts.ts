@@ -2,6 +2,7 @@ import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
 import { coreSessionsForStrength, raceWeekStrengthDays, type Timing, weeklyNeeds } from './validate.ts';
 import { weekdayOf } from './time.ts';
+import { intervalIntroWeek, RUNNING_LEVEL_LABEL, runningLevel } from './running.ts';
 import type {
   BlockWeek, CanDouble, EventType, Limiter, Outline, OutlineWeek, OwnStrengthSession, RunningMode, StrengthChoice, StrengthPlacement, TrainingAge,
   VarietyPreference,
@@ -29,6 +30,7 @@ export interface ProgramInputs {
   strength_choice?: StrengthChoice; // onboarding 10a (default program)
   own_strength?: OwnStrengthSession[]; // strength_choice 'own'
   training_age?: TrainingAge | null; // onboarding 3
+  interval_experience?: 'yes' | 'no' | null; // onboarding 4b
   runs_per_week?: number | null; // onboarding 4 (5 = 5+)
   recent_result?: { event: string; time: string; date: string | null; avg_run_pace: string | null } | null; // onboarding 6
   variety_preference?: VarietyPreference | null; // onboarding 14
@@ -103,6 +105,12 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
 - Beginners: strength sits as the second session on quality days (or straight after the run if can_double is no), leaving other training days for runs or conditioning.
 - "Change ONE manipulator" applies to quality sessions (intervals, long run, key strength, race simulations). Easy, recovery, optional and maintain sessions may repeat unchanged.
+- Starting running level (athlete.running_level, from the longest recent run): Beginner 1 (0 min) → walk–run; Beginner 2 (under 20 min) → aerobic runs with walk breaks, and a race goal starts with a ~4-week bridge to 20 min continuous; 20+ min → normal programming.
+- Running beginners (Beginner 1–2): 3 runs a week (main, absorption, long) + 1 cross-training; never 3 training days in a row; the absorption run or cross-training goes the day after the long run.
+- 30 s efforts inside an aerobic run come before the first interval session.
+- interval_experience = yes → week 1 aerobic runs with 30 s efforts; week 2 adds ONE quality interval session.
+- interval_experience = no → week 1 aerobic runs only; week 2 aerobic with 30 s efforts; week 3 adds ONE quality interval session.
+- Walk–run beginners build to continuous running first, then this sequence starts.
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
 - Add at most ONE new stimulus per block, except for experienced athletes (3+ years consistent training, no current injury), who can take more than one; mark new additions optional: true.
@@ -239,6 +247,13 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
       ? [`Their own strength/classes (fixed; count in load): ${(inputs.own_strength ?? []).map((o) => `${o.title} on ${o.days.join('/')} (${o.intensity})${o.details ? `: ${o.details}` : ''}`).join('; ') || 'not given'}`]
       : [`strength_sessions_pref: ${inputs.strength_sessions_pref ?? 2}`]),
     `Training age: ${TRAINING_AGE_LABEL[inputs.training_age ?? ''] ?? 'not specified'}`,
+    ...(inputs.running.mode === 'programmed'
+      ? [
+        `running_level: ${RUNNING_LEVEL_LABEL[runningLevel(inputs)!]}`,
+        `interval_experience: ${inputs.interval_experience ?? 'not specified (treat as no)'}`,
+        `First quality interval session: ${intervalIntroWeek(inputs) ? `program week ${intervalIntroWeek(inputs)} (30 s efforts inside aerobic runs come first; before then the key session is the week's main aerobic run)` : 'not yet: walk–run builds to continuous running first'}`,
+      ]
+      : []),
     `Runs per week now: ${inputs.runs_per_week == null ? 'not specified' : inputs.runs_per_week >= 5 ? '5+' : inputs.runs_per_week}`,
     `Recent race or time trial: ${inputs.recent_result ? `${inputs.recent_result.event} in ${inputs.recent_result.time}${inputs.recent_result.date ? ` (${inputs.recent_result.date})` : ''}${inputs.recent_result.avg_run_pace ? `, average run pace ${inputs.recent_result.avg_run_pace}` : ''}` : 'none given'}`,
     `Variety: ${VARIETY_LABEL[inputs.variety_preference ?? ''] ?? 'not specified'}`,
@@ -368,7 +383,7 @@ Rules for sessions:
 - Running exercises are marked R; they only go in ${inputs.running.mode === 'programmed' ? 'Run, ' : ''}RaceSim and Compromised parts.${inputs.running.mode === 'programmed' ? ' Run parts set run_type (key, easy, long or recovery).' : ''}
 - Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot, note) instead of sending them empty.
 - Optional sessions have optional true and a short slot key that stays the same across the block's weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
-- Mark exactly one core session a week as the key session, on ${inputs.key_session_day}. ${inputs.running.mode === 'programmed' ? 'It is the main interval session: a Run part with run_type key at RPE 8 or more.' : 'It is a hard (build) strength session, a race simulation or a compromised session.'} Never station skill, easy, recovery or core/mobility (core/mobility only in a taper or post-event week); for beginners, a smaller dose of real quality work.
+- Mark exactly one core session a week as the key session, on ${inputs.key_session_day}. ${inputs.running.mode === 'programmed' ? `It is the main interval session: a Run part with run_type key at RPE 8 or more${intervalIntroWeek(inputs) ? `, from program week ${intervalIntroWeek(inputs)}; before that, the week's main aerobic run (run_type key)` : '; while walk–run builds to continuous running, the week\'s main walk–run or aerobic run (run_type key)'}.` : 'It is a hard (build) strength session, a race simulation or a compromised session.'} Never station skill, easy, recovery or core/mobility (core/mobility only in a taper or post-event week); for beginners, a smaller dose of real quality work.
 - Give each week's progression: the lever from the outline and, in one sentence, what changes.
 
 <exercises>

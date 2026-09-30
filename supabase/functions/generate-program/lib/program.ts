@@ -6,6 +6,7 @@ import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockContent, blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
 import { trimDeload } from './deload.ts';
+import { intervalIntroWeek, runningLevel } from './running.ts';
 import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_CHOICES, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE, TRAINING_AGES, VARIETY_PREFERENCES, EVENT_TYPES } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow, weekdayOf } from './time.ts';
@@ -142,6 +143,7 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
   const rr = body.recent_result as Record<string, unknown> | null | undefined;
   const lr = body.last_race as Record<string, unknown> | null | undefined;
   return {
+    interval_experience: body.interval_experience == null ? null : oneOf(body.interval_experience, ['yes', 'no'] as const, 'no', 'Interval experience: yes or no.'),
     strength_choice: strengthChoice,
     own_strength: ownStrength,
     training_age: body.training_age == null ? null : oneOf(body.training_age, TRAINING_AGES, 'under_6_months', 'Training age: under_6_months, 6_12_months, 1_3_years or 3_plus_years.'),
@@ -789,6 +791,8 @@ async function blockContext(a: {
     ownStrength: inputs.own_strength ?? [],
     raceDay: a.raceDay,
     postEventWeeks: a.startDate ? postEventWeeks(inputs, a.startDate) : [],
+    intervalIntroWeek: intervalIntroWeek(inputs),
+    runningBeginner: ['beginner_1', 'beginner_2'].includes(runningLevel(inputs) ?? ''),
     keySessionDay: inputs.key_session_day,
     minutesPerSession: inputs.minutes_per_session,
     frame: a.prep.frame,

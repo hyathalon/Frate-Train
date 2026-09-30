@@ -142,6 +142,8 @@ export interface BlockContext {
   ownStrength?: OwnStrengthSession[]; // strength_choice 'own': the athlete's own strength/classes
   raceDay: string | null; // weekday of the race (final week)
   postEventWeeks?: number[]; // weeks straight after a raced event
+  intervalIntroWeek?: number | null; // programmed running: first week with a quality interval session (null: not yet)
+  runningBeginner?: boolean; // programmed running, Beginner 1–2: 3 runs + cross-training, never 3 days in a row
   crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
   minutesPerSession: number;
@@ -235,7 +237,8 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (keys.length !== 1) errors.push(`${label}: mark exactly one core session as the key session.`);
     else if (keys[0].day !== ctx.keySessionDay) errors.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
     if (optional.some((s) => s.key_session)) errors.push(`${label}: optional sessions can't be the key session.`);
-    if (keys.length === 1) checkKeySession(keys[0], label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
+    if (keys.length === 1) checkKeySession(keys[0], week.week, label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
+    if (ctx.runningBeginner) checkBeginnerWeek(week, label, errors);
 
     // Progression: one lever, matching the outline.
     if (plan && week.progression.lever !== plan.lever) {
@@ -293,13 +296,24 @@ function maxRpe(dose: string): number | null {
  * a race simulation or a compromised session. Never station skill, easy,
  * recovery or core/mobility, except core/mobility in a taper or post-event week.
  */
-function checkKeySession(s: Session, label: string, taperOrPostEvent: boolean, ctx: BlockContext, errors: string[]) {
+function checkKeySession(s: Session, weekNo: number, label: string, taperOrPostEvent: boolean, ctx: BlockContext, errors: string[]) {
   const coreMobility = s.parts.every((p) => p.format === 'Mobility' || p.items.every((it) => {
     const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
     return e?.movement_pattern === 'Core' || e?.movement_pattern === 'Mobility';
   }));
   if (coreMobility) {
     if (!taperOrPostEvent) errors.push(`${label}: the key session "${s.title}" is core/mobility work; that is only the week's main session in a taper or post-event week.`);
+    return;
+  }
+  // Programmed running before the first interval session (30 s efforts come first): the key
+  // session is the week's main aerobic run, which may be an easy/steady run.
+  const beforeIntervals = ctx.running === 'programmed' && (ctx.intervalIntroWeek === null || (ctx.intervalIntroWeek !== undefined && weekNo < ctx.intervalIntroWeek));
+  if (beforeIntervals) {
+    if (s.session_type === 'station_skill' || s.session_type === 'recovery') {
+      errors.push(`${label}: the key session "${s.title}" is ${s.session_type.replace('_', ' ')}; before the first interval session it is the week's main aerobic run.`);
+    } else if (!s.parts.some((p) => p.format === 'Run' && p.run_type !== 'recovery')) {
+      errors.push(`${label}: before the first interval session, the key session is the week's main aerobic run (a Run part); "${s.title}" has none.`);
+    }
     return;
   }
   if (NEVER_KEY_TYPES.includes(s.session_type)) {
@@ -319,6 +333,27 @@ function checkKeySession(s: Session, label: string, taperOrPostEvent: boolean, c
   const hardStrength = s.parts.some((p) => p.format === 'Strength') && s.build_or_maintain === 'build';
   if (!hardStrength && !s.parts.some((p) => p.format === 'RaceSim' || p.format === 'Compromised')) {
     errors.push(`${label}: without programmed running, the key session is a hard strength session, a race simulation or a compromised session; "${s.title}" is none of these.`);
+  }
+}
+
+/**
+ * Running beginners: never 3 training days in a row, and the day after the long run
+ * is the absorption run or cross-training (easy), if anything.
+ */
+function checkBeginnerWeek(week: BlockWeek, label: string, errors: string[]) {
+  const trained = DAYS.map((d) => week.sessions.some((s) => s.day === d));
+  for (let i = 0; i + 2 < DAYS.length; i++) {
+    if (trained[i] && trained[i + 1] && trained[i + 2]) {
+      errors.push(`${label}: running beginners never train 3 days in a row (${DAYS[i]}–${DAYS[i + 2]}).`);
+      break;
+    }
+  }
+  const long = week.sessions.find((s) => s.parts.some((p) => p.format === 'Run' && p.run_type === 'long'));
+  const next = long ? DAYS[DAYS.indexOf(long.day) + 1] : undefined;
+  for (const s of week.sessions.filter((x) => next && x.day === next)) {
+    if (!isEasySession(s) && !isRecoverySession(s)) {
+      errors.push(`${label}: the day after the long run (${next}) is the absorption run or cross-training, easy; "${s.title}" is ${s.session_type.replace('_', ' ')}.`);
+    }
   }
 }
 

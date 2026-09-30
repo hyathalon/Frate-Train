@@ -9,6 +9,7 @@ import { COACHING_RULES } from '../lib/prompts.ts';
 import { type Block, type BlockWeek, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
 import { trimDeload } from '../lib/deload.ts';
+import { intervalIntroWeek, runningLevel } from '../lib/running.ts';
 import { type BlockContext, strengthTarget, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
 
 // ---------------------------------------------------------------------------
@@ -503,6 +504,49 @@ Deno.test('key session: a real quality session', () => {
   core.weeks[1].sessions[1].parts = [{ format: 'Tabata', template_id: null, run_type: null, minutes: 30, items: [item('CORE', 'max effort', { block: 1 })] }];
   assert.match(week2(validateBlock(core, ctx)), /is core\/mobility work; that is only the week's main session in a taper or post-event week/);
   assert.doesNotMatch(week2(validateBlock(core, { ...ctx, postEventWeeks: [2] })), /core\/mobility/);
+});
+
+Deno.test('starting running level and the first interval week (07 §1, §4)', () => {
+  const r = (longest: number | null, exp?: 'yes' | 'no', mode: 'programmed' | 'none' = 'programmed') =>
+    ({ running: { mode, own_runs: [] }, longest_run_min: longest, interval_experience: exp ?? null });
+  assert.deepEqual([runningLevel(r(0)), runningLevel(r(15)), runningLevel(r(20)), runningLevel(r(null)), runningLevel(r(30, 'yes', 'none'))],
+    ['beginner_1', 'beginner_2', 'normal', 'normal', null]);
+  assert.equal(intervalIntroWeek(r(45, 'yes')), 2);
+  assert.equal(intervalIntroWeek(r(45, 'no')), 3);
+  assert.equal(intervalIntroWeek(r(45)), 3); // not said: treated as no
+  assert.equal(intervalIntroWeek(r(15, 'yes')), 6); // after the 4-week bridge
+  assert.equal(intervalIntroWeek(r(0, 'yes')), null); // walk–run first
+  assert.equal(parseInputs({ ...baseInputs, interval_experience: 'yes' }).interval_experience, 'yes');
+  assert.throws(() => parseInputs({ ...baseInputs, interval_experience: 'maybe' }), /Interval experience/);
+});
+
+Deno.test('before the first interval session the key session is the main aerobic run; running beginners', () => {
+  const run = (type: string, minutes: number, dose: string) =>
+    ({ format: 'Run' as const, template_id: null, run_type: type as 'key', minutes, items: [item('RUN', dose)] });
+  const programmed: BlockContext = { ...ctx, running: 'programmed', keySessionDay: 'Fri' };
+  const aerobicKey = block();
+  for (const w of aerobicKey.weeks) {
+    const fri = w.sessions.find((x) => x.day === 'Fri');
+    if (!fri) continue;
+    fri.parts = [run('key', 30, `30 min @ RPE 6-8 Steady with 5 × 30 s efforts, week ${w.week}`)];
+    fri.session_type = 'easy_steady';
+    fri.key_session = true;
+    for (const x of w.sessions) if (x !== fri) x.key_session = false;
+  }
+  const week = (errs: string[], n: number) => errs.filter((e) => e.startsWith(`Week ${n}`)).join(' | ');
+  // Intervals start in week 3: weeks 1–2 may have an aerobic key run; week 3 needs RPE 8+.
+  const errs = validateBlock(aerobicKey, { ...programmed, intervalIntroWeek: 3 });
+  assert.doesNotMatch(week(errs, 1) + week(errs, 2), /key session/);
+  assert.match(week(errs, 3), /key session "Bike" is easy steady|main interval session at RPE 8 or more/);
+  // Walk–run beginners: no interval week yet.
+  assert.doesNotMatch(validateBlock(aerobicKey, { ...programmed, intervalIntroWeek: null }).join(' '), /key session/);
+  // Running beginners: never 3 days in a row; the day after the long run is easy.
+  const b3 = block();
+  b3.weeks[1].sessions[2].day = 'Tue'; // Mon, Tue, Wed
+  assert.match(week(validateBlock(b3, { ...ctx, runningBeginner: true, trainingDays: ['Mon', 'Tue', 'Wed', 'Sat'] }), 2), /never train 3 days in a row \(Mon–Wed\)/);
+  const lr = block();
+  lr.weeks[1].sessions[2].parts = [run('long', 30, '30 min @ RPE 6-8 Steady, week 2')]; // Friday long run, Saturday compromised after it
+  assert.match(week(validateBlock(lr, { ...programmed, runningBeginner: true }), 2), /the day after the long run \(Sat\) is the absorption run or cross-training/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

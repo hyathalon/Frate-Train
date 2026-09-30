@@ -66,6 +66,12 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
 - Beginners: strength sits as the second session on quality days (or straight after the run if can_double is no), leaving other training days for runs or conditioning.
 - "Change ONE manipulator" applies to quality sessions (intervals, long run, key strength, race simulations). Easy, recovery, optional and maintain sessions may repeat unchanged.
+- Starting running level (athlete.running_level, from the longest recent run): Beginner 1 (0 min) → walk–run; Beginner 2 (under 20 min) → aerobic runs with walk breaks, and a race goal starts with a ~4-week bridge to 20 min continuous; 20+ min → normal programming.
+- Running beginners (Beginner 1–2): 3 runs a week (main, absorption, long) + 1 cross-training; never 3 training days in a row; the absorption run or cross-training goes the day after the long run.
+- 30 s efforts inside an aerobic run come before the first interval session.
+- interval_experience = yes → week 1 aerobic runs with 30 s efforts; week 2 adds ONE quality interval session.
+- interval_experience = no → week 1 aerobic runs only; week 2 aerobic with 30 s efforts; week 3 adds ONE quality interval session.
+- Walk–run beginners build to continuous running first, then this sequence starts.
 - Recovery (RPE 1–4) or rest after key sessions; fill remaining volume with RPE 5–6 (Easy).
 - No heavy lower-body/lunge/sled work within 24–48 h before a key run. No "go to the well" run within 48 h of a hard station or strength day. Work around the strength coach's sessions; don't duplicate them.
 - Add at most ONE new stimulus per block, except for experienced athletes (3+ years consistent training, no current injury), who can take more than one; mark new additions optional: true.
