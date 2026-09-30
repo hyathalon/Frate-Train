@@ -20,12 +20,18 @@ export type DeloadContext = Pick<
 >;
 
 /** Trims a deload week in place. Returns a short description of what changed, or null. */
-export function trimDeload(week: BlockWeek, previous: BlockWeek, ctx: DeloadContext): string | null {
-  if (week.progression.lever !== 'deload') return null;
+export function trimDeload(
+  week: BlockWeek,
+  previous: BlockWeek,
+  ctx: DeloadContext,
+  target?: { min: number; max: number }, // taper weeks: a share of usual volume, with previous = the usual week
+): string | null {
+  if (week.progression.lever !== 'deload' || week.week === ctx.finalWeek) return null;
   const before = coreMinutes(previous, ctx);
   if (before <= 0) return null;
   const ratio = () => coreMinutes(week, ctx) / before;
-  const { deloadMin, deloadMax } = ctx.settings;
+  const deloadMin = target?.min ?? ctx.settings.deloadMin;
+  const deloadMax = target?.max ?? ctx.settings.deloadMax;
   const final = week.week === ctx.finalWeek;
   const sessionMin = Math.floor(ctx.minutesPerSession * ctx.settings.deloadSessionMinRatio);
   const core = week.sessions.filter((s) => !s.optional);

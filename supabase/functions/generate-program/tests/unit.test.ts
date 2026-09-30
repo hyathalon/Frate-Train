@@ -9,9 +9,10 @@ import { COACHING_RULES } from '../lib/prompts.ts';
 import { type Block, type BlockWeek, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
 import { trimDeload } from '../lib/deload.ts';
+import { longRunPlan } from '../lib/longruns.ts';
 import { placeRaceWeekStrength } from '../lib/fixups.ts';
 import { intervalIntroWeek, runningLevel } from '../lib/running.ts';
-import { type BlockContext, strengthTarget, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
+import { type BlockContext, strengthTarget, taperTarget, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
 
 // ---------------------------------------------------------------------------
 // time
@@ -592,6 +593,45 @@ Deno.test('race week: strength moves to at least 5 days before the race, in code
   const thu = block().weeks[1];
   thu.sessions[0].day = 'Wed';
   assert.equal(placeRaceWeekStrength(thu, { finalWeek: 2, raceDay: 'Thu', trainingDays: ctx.trainingDays }), null);
+});
+
+Deno.test('long-run plan: bands to 80 min, then LR 1–7b one step a week', () => {
+  const weeks = [1, 2, 3, 4, 5, 6].map((w) => ({ week: w, phase: w === 6 ? 'taper' as const : 'build' as const, deload: w === 4, lever: w === 1 ? 'start' as const : w === 4 ? 'deload' as const : 'volume' as const }));
+  const plan = longRunPlan(62, false, weeks, 7);
+  assert.deepEqual([...plan.values()].map((t) => t.label), ['Band 60–70', 'Band 70–80', 'LR 1', 'LR 1 (lighter)', 'LR 2', 'Taper']);
+  // Non-advanced runners stop at LR 4 (90 min); advanced continue to LR 5–7b.
+  const long = Array.from({ length: 10 }, (_, i) => ({ week: i + 1, phase: 'build' as const, deload: false, lever: i === 0 ? 'start' as const : 'volume' as const }));
+  assert.equal([...longRunPlan(85, false, long, 20).values()].at(-1)!.label, 'LR 4');
+  assert.equal([...longRunPlan(85, true, long, 20).values()].at(-1)!.label, 'LR 7b');
+  // Short longest runs (or none): no stage plan; the +10 min rule and beginner progressions apply.
+  assert.equal(longRunPlan(30, false, weeks, 7).size, 0);
+  assert.equal(longRunPlan(null, false, weeks, 7).size, 0);
+});
+
+Deno.test('long runs: minutes per stage and cap; base effort by level', () => {
+  const run = (minutes: number, dose: string) => ({ format: 'Run' as const, template_id: null, run_type: 'long' as 'key', minutes, items: [item('RUN', dose)] });
+  const programmed: BlockContext = { ...ctx, running: 'programmed' };
+  const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
+  const withLong = (minutes: number, dose: string) => { const b = block(); b.weeks[1].sessions[3].parts = [run(minutes, dose)]; return b; };
+  // RPE 6–8 Steady is no longer a long-run base effort for beginner–intermediate runners.
+  assert.match(week2(validateBlock(withLong(30, '30 min @ RPE 6-8 Steady'), programmed)), /long run's base effort is RPE 5–6 · Easy/);
+  assert.doesNotMatch(week2(validateBlock(withLong(30, '30 min @ RPE 5-6 Easy, 4 × 5 min at RPE 8-8.5'), programmed)), /base effort|segments go up/);
+  assert.doesNotMatch(week2(validateBlock(withLong(30, '30 min @ RPE 6-7 Steady'), { ...programmed, advancedRunner: true })), /base effort/);
+  assert.match(week2(validateBlock(withLong(30, '30 min easy'), programmed)), /give the long run's effort as RPE/);
+  // Over 90 min is for advanced runners; the week's stage sets the minutes.
+  assert.match(week2(validateBlock(withLong(100, '100 min @ RPE 5-6 Easy'), programmed)), /at most 90 min \(90–120 min is for advanced runners\)/);
+  const plan = new Map([[2, { label: 'LR 4', minutes: [85, 90] as [number, number] }]]);
+  assert.match(week2(validateBlock(withLong(60, '60 min @ RPE 5-6 Easy'), { ...programmed, longRunPlan: plan })), /this week's long run is LR 4, 85–90 min; it is 60 min/);
+});
+
+Deno.test('taper volume: ~80% then ~60% of usual, counting back from race week', () => {
+  assert.deepEqual([taperTarget(10, 12), taperTarget(11, 12)], [0.8, 0.6]);
+  const b = block();
+  const outlineWeeks = BLOCK_OUTLINE_WEEKS.map((w) => ({ ...w, phase: w.week === 3 ? 'taper' as const : w.phase }));
+  // Week 3 as the week before race week (finalWeek 4): target ~60% of usual (week 2, the last normal week). Unchanged it's 100%.
+  b.weeks[2].progression.lever = 'deload';
+  const errs = validateBlock(b, { ...ctx, outlineWeeks: outlineWeeks.map((w) => (w.week === 3 ? { ...w, lever: 'deload' as const } : w)), finalWeek: 4 });
+  assert.match(errs.join(' '), /Week 3: this taper week should be about 60% of usual volume \(week 2's core minutes\); it is 100%/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

@@ -8,10 +8,11 @@ import { blockContent, blockPrompt, type CoachProfile, outlinePrompt, type Progr
 import { trimDeload } from './deload.ts';
 import { placeRaceWeekStrength } from './fixups.ts';
 import { intervalIntroWeek, runningLevel } from './running.ts';
+import { longRunPlan } from './longruns.ts';
 import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_CHOICES, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE, TRAINING_AGES, VARIETY_PREFERENCES, EVENT_TYPES } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow, weekdayOf } from './time.ts';
-import { type BlockContext, type BlockSettings, deloadOptionalStrength, raceWeekStrengthDays, sessionFrame as validatorSessionFrame, strengthTarget, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
+import { type BlockContext, type BlockSettings, deloadOptionalStrength, raceWeekStrengthDays, sessionFrame as validatorSessionFrame, strengthTarget, taperTarget, usualWeek, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
 
 export interface Deps {
   admin: SupabaseClient;
@@ -676,9 +677,15 @@ async function generateBlockWeeks(a: {
       timeoutMs: effort === 'high' ? BLOCK_TIMEOUT_MS.high : BLOCK_TIMEOUT_MS.other,
       repairTimeoutMs: REPAIR_TIMEOUT_MS, deadline, countsAs: null, paidWith: null, attempts: WEEK_ATTEMPTS, ...more,
     });
-  const trim = (week: BlockWeek, previous: BlockWeek | undefined, c: BlockContext) => {
+  const trim = (week: BlockWeek, previous: BlockWeek | undefined, c: BlockContext, all?: BlockWeek[]) => {
     placeRaceWeekStrength(week, c);
-    if (previous) trimDeload(week, previous, c);
+    const taper = c.outlineWeeks.find((w) => w.week === week.week)?.phase === 'taper' && week.week !== c.finalWeek;
+    if (taper && all) {
+      // Taper: a share of usual volume (the last normal week), not of the week before.
+      const usual = usualWeek(all, all.indexOf(week), a.previousWeek, c.outlineWeeks);
+      const t = taperTarget(week.week, c.finalWeek);
+      if (usual) trimDeload(week, usual, c, { min: t - 0.1, max: t + 0.1 });
+    } else if (previous) trimDeload(week, previous, c);
   };
   const fail = (error: string | null) => ({ block: null, error, countEventId: null, frame });
 
@@ -711,7 +718,7 @@ async function generateBlockWeeks(a: {
   // Assemble: trim deloads against their real previous week, then the cross-week checks.
   const check = async () => {
     const c = await ctx(startWeek, endWeek, { previousWeek: a.previousWeek }, block);
-    block.weeks.forEach((w, i) => trim(w, i > 0 ? block.weeks[i - 1] : a.previousWeek, c));
+    block.weeks.forEach((w, i) => trim(w, i > 0 ? block.weeks[i - 1] : a.previousWeek, c, block.weeks));
     return validateBlock(block, await ctx(startWeek, endWeek, { previousWeek: a.previousWeek }, block));
   };
   let errors = await check();
@@ -797,6 +804,10 @@ async function blockContext(a: {
     raceDay: a.raceDay,
     postEventWeeks: a.startDate ? postEventWeeks(inputs, a.startDate) : [],
     intervalIntroWeek: intervalIntroWeek(inputs),
+    advancedRunner: a.level === 'Advanced',
+    longRunPlan: runningLevel(inputs) === 'normal'
+      ? longRunPlan(inputs.longest_run_min, a.level === 'Advanced', a.outline.weeks, a.totalWeeks)
+      : new Map(),
     runningBeginner: ['beginner_1', 'beginner_2'].includes(runningLevel(inputs) ?? ''),
     keySessionDay: inputs.key_session_day,
     minutesPerSession: inputs.minutes_per_session,

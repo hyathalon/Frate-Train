@@ -3,6 +3,7 @@ import { type Candidates, formatExercises, formatFormats, formatRaceSessions, fo
 import { coreSessionsForStrength, raceWeekStrengthDays, type Timing, weeklyNeeds } from './validate.ts';
 import { weekdayOf } from './time.ts';
 import { intervalIntroWeek, RUNNING_LEVEL_LABEL, runningLevel } from './running.ts';
+import { longRunEffort, longRunPlan } from './longruns.ts';
 import type {
   BlockWeek, CanDouble, EventType, Limiter, Outline, OutlineWeek, OwnStrengthSession, RunningMode, StrengthChoice, StrengthPlacement, TrainingAge,
   VarietyPreference,
@@ -55,16 +56,16 @@ export const COACHING_RULES = `## Intensity: RPE (zones internal only)
 |---|---|---|---|
 | Z1 | Recovery | 1–4 | recovery, warm-ups, cool-downs only |
 | Z2 | Easy | 5–6 | easy runs |
-| Z2 | Steady | 6–8 | long runs; steady–marathon |
+| Z2 | Steady | 6–8 | steady aerobic; steady–marathon |
 | Z3 | Mod. Hard | 8–8.5 | 15 km–half; typical hybrid-race run effort |
 | Z4 | Hard | 8.5–9.5 | 10 km–5 km |
 | Z5 | Very Hard | 9.5–10 | 3 km and faster |
 - Athlete-facing text uses RPE + feel word ("RPE 5–6 · Easy"), never "Zone 1/Zone 2".
-- Z1 (RPE 1–4) is ONLY for recovery sessions (e.g. the day after a medium–hard session or race), warm-ups and cool-downs. Easy runs are RPE 5–6 · Easy. Long runs are RPE 6–8 · Steady.
+- Z1 (RPE 1–4) is ONLY for recovery sessions (e.g. the day after a medium–hard session or race), warm-ups and cool-downs. Easy runs are RPE 5–6 · Easy. Long runs are RPE 5–6 · Easy for beginner–intermediate runners and RPE 6–7 for advanced.
 - Never output fixed paces, splits, watts or loads. Loads are "by feel" (e.g. "load you can push 25 m at RPE 8") or "race standard".
 
 ## Session types
-recovery (RPE 1–4) · easy_steady (5–6 Easy, optional 30–60 s strides/surges) · long (6–8 Steady, usually 50–90 min, optional 8–8.5 segments) · progression (5–6 → 8–8.5) · aerobic_threshold (7–8, upper Steady) · lactate_threshold (8–8.5, often blocks e.g. 20+10 min) · critical_velocity (8.5–9.5) · vo2max (9–10, 2–5 min reps, STANDING/stationary rest ≈ half work — never jog/easy-spin recovery, which makes it threshold; pillar aerobic_engine; focused blocks only, after LT/CV established) · speed (9.5–10, full recovery; stop when mechanics break. Reps of 30 s or less = running economy, pillar economy. Reps of 30–90 s = speed endurance, a fitness session, pillar aerobic_engine) · compromised (run + station, 8–9.5) · station_skill (5–6) · strength_endurance (5–9.5).
+recovery (RPE 1–4) · easy_steady (5–6 Easy, optional 30–60 s strides/surges) · long (RPE 5–6; 6–7 for advanced; 60–90 min for most, advanced up to 90–120 min max, beginners build from their current longest run; optional 8–8.5 race-effort segments) · medium-long (easy, RPE 5–6; 12–15 km for most, about 60–70% of the long run) · progression (5–6 → 8–8.5) · aerobic_threshold (7–8, upper Steady) · lactate_threshold (8–8.5, often blocks e.g. 20+10 min) · critical_velocity (8.5–9.5) · vo2max (9–10, 2–5 min reps, STANDING/stationary rest ≈ half work — never jog/easy-spin recovery, which makes it threshold; pillar aerobic_engine; focused blocks only, after LT/CV established) · speed (9.5–10, full recovery; stop when mechanics break. Reps of 30 s or less = running economy, pillar economy. Reps of 30–90 s = speed endurance, a fitness session, pillar aerobic_engine) · compromised (run + station, 8–9.5) · station_skill (5–6) · strength_endurance (5–9.5).
 Cross-training uses the same types on air bike, BikeErg, elliptical, SkiErg, rower (¾ slide to manage load), pool running (zero-impact threshold option).
 
 ## Decide every session in this order
@@ -119,7 +120,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Race recovery before quality run sessions return: marathon or longer → 3 weeks (easy running and off-feet only); half marathon or Hyathlon race → 1 week; 10 km or shorter → straight back into normal sessions. "Race it" events: lighter day or two before. "Run it as training" events replace that day's session.
 - Travel weeks: only the equipment the athlete says they'll have; no equipment → bodyweight maintenance.
 - CrossFit-style WODs are hard sessions: same consolidation rule as strength.
-- Phases (base → build → specific → taper): base = Easy (5–6) volume + Steady (6–8) long run, LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume, keep some intensity, no long run in final week.
+- Phases (base → build → specific → taper): base = Easy (5–6) volume + long run (5–6; 6–7 advanced), LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume to ~80%, then ~60%, then ~30% of usual in race week (plus the race), keep some intensity, no long run in final week.
 
 ## Strength work
 - Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
@@ -150,7 +151,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 const COACHING_RULES_MAPPING = `How the coaching rules map to this request:
 - exercise_shortlist = the <exercises> list (plus <templates> and <race_sessions>); use only those ids.
 - checkin, history and athlete_edits are included when available; when missing, write a conservative benchmark.
-- Give conditioning sets as a planned number with a range in the dose, e.g. "3 sets (2–4) × 8 min @ RPE 8–8.5 · Mod. Hard / 2 min easy"; give long runs as planned minutes with a range, e.g. "60 min (50–70) @ RPE 6–8 · Steady".
+- Give conditioning sets as a planned number with a range in the dose, e.g. "3 sets (2–4) × 8 min @ RPE 8–8.5 · Mod. Hard / 2 min easy"; give long runs as planned minutes with a range, e.g. "60 min (50–70) @ RPE 5–6 · Easy" (RPE 6–7 for advanced runners).
 - Sessions done on an erg list the athlete's other ergs or cross-training options in the session's alternatives field, preferred first. Leave it empty when they have no other option.
 - Give each session its session_type, build_or_maintain, and progression (extend, qualify or benchmark, and in a few words what changed versus the last similar session; benchmark when there is no history).
 - athlete.can_double and athlete.strength_placement are in <athlete>. A double day has two separate sessions on the same day: order_in_day 1 (first, e.g. AM quality run) and 2 (second, e.g. PM strength). Strength is always its own session, never a part inside a run session. can_double "no" still means strength goes straight after the day's run or hard session as its own session (order_in_day 2): that is the expected placement, not a second training session. "sometimes": use double days sparingly. "yes": running doubles are allowed too.
@@ -252,6 +253,7 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
       ? [
         `running_level: ${RUNNING_LEVEL_LABEL[runningLevel(inputs)!]}`,
         `interval_experience: ${inputs.interval_experience ?? 'not specified (treat as no)'}`,
+        `Long-run effort: ${longRunEffort(athlete.level === 'advanced')}; long runs up to ${athlete.level === 'advanced' ? 120 : 90} min`,
         `First quality interval session: ${intervalIntroWeek(inputs) ? `program week ${intervalIntroWeek(inputs)} (30 s efforts inside aerobic runs come first; before then the key session is the week's main aerobic run)` : 'not yet: walk–run builds to continuous running first'}`,
       ]
       : []),
@@ -350,6 +352,9 @@ export function blockPrompt(args: {
     ? `\n<race_sessions>\nid | station | name | dose | type | pillar | load\n${formatRaceSessions(candidates)}\n</race_sessions>\n`
     : '';
   const finalWeek = outline.weeks.length;
+  const longRuns = inputs.running.mode === 'programmed' && runningLevel(inputs) === 'normal'
+    ? longRunPlan(inputs.longest_run_min, athlete.level === 'advanced', outline.weeks, finalWeek)
+    : new Map();
 
   const shared = `You are writing this athlete's program one week at a time, following the season outline.
 
@@ -408,7 +413,8 @@ ${raceList}`;
   const weekly = `${reference}${previous}${adjustment}<targets>
 ${weeks.map((w) => {
     const needs = weeklyNeeds(inputs.running.mode, w.core_sessions, w.strength_sessions ?? 0);
-    return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions (${w.strength_sessions ?? 0} of them strength), up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== finalWeek ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
+    const lr = longRuns.get(w.week);
+    return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}${lr ? `; long run ${lr.label}, ${lr.minutes[0]}–${lr.minutes[1]} min: ${lr.structure}` : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions (${w.strength_sessions ?? 0} of them strength), up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== finalWeek ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
   }).join('\n')}
 </targets>
 

@@ -144,6 +144,8 @@ export interface BlockContext {
   postEventWeeks?: number[]; // weeks straight after a raced event
   intervalIntroWeek?: number | null; // programmed running: first week with a quality interval session (null: not yet)
   runningBeginner?: boolean; // programmed running, Beginner 1–2: 3 runs + cross-training, never 3 days in a row
+  advancedRunner?: boolean; // long runs RPE 6–7 and up to 120 min (others RPE 5–6, up to 90 min)
+  longRunPlan?: Map<number, { label: string; minutes: [number, number] }>; // long-run stage per week (lib/longruns.ts)
   crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
   minutesPerSession: number;
@@ -161,6 +163,22 @@ export interface BlockContext {
 }
 
 const DEFAULT_LEEWAY = 0.05;
+const TAPER_LEEWAY = 0.1;
+
+/** Taper volume as a share of usual, by weeks to race week: ~60% the week before, ~80% before that (race week ~30%, not checked). */
+export function taperTarget(week: number, finalWeek: number): number {
+  return finalWeek - week <= 1 ? 0.6 : 0.8;
+}
+
+/** The last normal (not deload or taper) week before position i, in this block or the one before. */
+export function usualWeek(weeks: BlockWeek[], i: number, previousWeek: BlockWeek | undefined, outline: Outline['weeks']): BlockWeek | undefined {
+  const normal = (w: BlockWeek) => {
+    const o = outline.find((x) => x.week === w.week);
+    return w.progression.lever !== 'deload' && o?.phase !== 'taper' && !o?.deload;
+  };
+  for (let j = i - 1; j >= 0; j--) if (normal(weeks[j])) return weeks[j];
+  return previousWeek && previousWeek.progression.lever !== 'deload' ? previousWeek : undefined;
+}
 const LONG_RUN_SESSION_MAX = 120;
 
 // "10 reps", "3 x 10", "3 × 10" – but not "4 x 20 m" or "5 x 2 min".
@@ -248,7 +266,15 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (cross && previous && week.progression.lever === 'frequency' && week.sessions.length <= previous.sessions.length) {
       errors.push(`${label}: a frequency week must add a session (as optional first); it has ${week.sessions.length}, the week before had ${previous.sessions.length}.`);
     }
-    if (cross && previous && week.progression.lever === 'deload' && week.week !== ctx.finalWeek) { // race week: no size rule
+    const taper = plan?.phase === 'taper' && week.week !== ctx.finalWeek;
+    const usual = taper ? usualWeek(block.weeks, i, ctx.previousWeek, ctx.outlineWeeks) : undefined;
+    if (cross && taper && usual) {
+      // Taper: ~80%, then ~60% of usual volume (the last normal week), counting back from race week.
+      const [target, ratio] = [taperTarget(week.week, ctx.finalWeek), coreMinutes(week, ctx) / Math.max(1, coreMinutes(usual, ctx))];
+      if (Math.abs(ratio - target) > TAPER_LEEWAY) {
+        errors.push(`${label}: this taper week should be about ${Math.round(target * 100)}% of usual volume (week ${usual.week}'s core minutes); it is ${Math.round(ratio * 100)}%.`);
+      }
+    } else if (cross && previous && week.progression.lever === 'deload' && week.week !== ctx.finalWeek) { // race week: no size rule
       const ratio = coreMinutes(week, ctx) / Math.max(1, coreMinutes(previous, ctx));
       const lo = ctx.settings.deloadMin - DEFAULT_LEEWAY, hi = ctx.settings.deloadMax + DEFAULT_LEEWAY;
       if (ratio < lo || ratio > hi) {
@@ -273,6 +299,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     checkStrengthWeek(week, label, ctx, strengthCount, optionalStrength, plan?.phase === 'taper' || !!plan?.deload || final, errors);
   });
   if (ctx.running === 'programmed' && ctx.crossWeek !== false) checkLongRuns(block, ctx, errors);
+  if (ctx.running === 'programmed') checkLongRunTargets(block, ctx, errors);
   return errors;
 }
 
@@ -528,6 +555,39 @@ function checkInterference(week: BlockWeek, label: string, ctx: BlockContext, er
       if (!kind) continue;
       flagged.add(s);
       errors.push(`${label}: "${s.title}" on ${s.day}${gap === 2 ? ' (second session)' : ''} has ${kind} work ${gap === 1 ? 'the day before' : 'two days before'} ${t.what}; make it upper body + core instead of moving it.`);
+    }
+  }
+}
+
+/**
+ * Long runs: minutes within the week's stage (lib/longruns.ts) and at most 90 min
+ * (120 for advanced runners); base effort RPE 5–6 (6–7 advanced), with race-effort
+ * segments up to RPE 8.5 (9 for advanced: slightly faster than race effort).
+ */
+function checkLongRunTargets(block: Block, ctx: BlockContext, errors: string[]) {
+  const max = ctx.advancedRunner ? 120 : 90;
+  const base: [number, number] = ctx.advancedRunner ? [5, 7] : [5, 6];
+  const top = ctx.advancedRunner ? 9 : 8.5;
+  for (const week of block.weeks) {
+    const target = ctx.longRunPlan?.get(week.week);
+    for (const s of week.sessions) {
+      for (const p of s.parts.filter((x) => x.format === 'Run' && x.run_type === 'long')) {
+        const where = `Week ${week.week}, "${s.title}"`;
+        if (p.minutes > max) errors.push(`${where}: the long run is ${p.minutes} min; at most ${max} min${ctx.advancedRunner ? '' : ' (90–120 min is for advanced runners)'}.`);
+        if (target && (p.minutes < target.minutes[0] - 5 || p.minutes > target.minutes[1] + 5)) {
+          errors.push(`${where}: this week's long run is ${target.label}, ${target.minutes[0]}–${target.minutes[1]} min; it is ${p.minutes} min.`);
+        }
+        const ranges = p.items.flatMap((it) => [...it.dose.matchAll(RPE_RE)].map((m) => [Number(m[1]), Number(m[2] ?? m[1])] as [number, number]));
+        if (!ranges.length) {
+          errors.push(`${where}: give the long run's effort as RPE (${ctx.advancedRunner ? 'RPE 6–7' : 'RPE 5–6 · Easy'}).`);
+          continue;
+        }
+        const [lo, hi] = ranges[0];
+        if (lo < base[0] || hi > base[1]) {
+          errors.push(`${where}: the long run's base effort is ${ctx.advancedRunner ? 'RPE 6–7 for advanced runners' : 'RPE 5–6 · Easy'}; it says RPE ${lo === hi ? lo : `${lo}–${hi}`}.`);
+        }
+        if (ranges.some(([, h]) => h > top)) errors.push(`${where}: long-run segments go up to RPE ${top}.`);
+      }
     }
   }
 }
