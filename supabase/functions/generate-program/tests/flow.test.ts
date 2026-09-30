@@ -81,7 +81,7 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
     const sessions = [
       { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null, ...META,
         parts: [{ format: 'Strength', template_id: strength.id, minutes: 30, items: fill(strength, () => `3 × ${6 + n}, moderate load, RPE 7`) }] },
-      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...META,
+      { day: 'Wed', title: 'Circuit + intervals', key_session: true, pillar: 'Threshold', optional: false, slot: null, ...ERG_META,
         parts: [
           { format: 'Circuit', template_id: circuit.id, minutes: 20, items: fill(circuit, () => `RPE ${6 + (n % 3)}, steady`) },
           { format: 'HIIT', template_id: null, minutes: 10, items: [item(erg.id, `hard, RPE 8, week ${n}`)] },
