@@ -26,7 +26,10 @@ function fakeClaude(answers: Answer[]) {
   const calls: ClaudeCallInput[] = [];
   const fn: CallClaude = <T>(input: ClaudeCallInput) => {
     calls.push(structuredClone(input));
-    const next = answers.shift();
+    // Week calls run in parallel, so answer the week the prompt asks for when one is queued.
+    const asked = /Write week (\d+)\./.exec(JSON.stringify(input.messages[0].content))?.[1];
+    const i = asked ? answers.findIndex((a) => (a.data as Block | null)?.weeks?.length === 1 && (a.data as Block).weeks[0].week === Number(asked)) : -1;
+    const next = i >= 0 ? answers.splice(i, 1)[0] : answers.shift();
     if (!next) throw new Error('fake Claude ran out of answers');
     return Promise.resolve({
       data: next.data as T,
@@ -308,6 +311,19 @@ Deno.test({
         assert.deepEqual(p!.inputs.training_days, ['Mon', 'Wed', 'Sat']);
         const { data: c } = await admin.from('weekly_checkins').select('status, last_error').eq('program_id', id).eq('week', 1).single();
         assert.equal(c!.status, 'adjusted', c!.last_error ?? '');
+      });
+
+      await t.step('pause switch: no Claude call, nothing counted', async () => {
+        const e = await makeAthlete('paused');
+        await admin.from('app_settings').update({ value: 1 }).eq('key', 'generation_paused');
+        try {
+          const fake = fakeClaude([{ data: outline(16) }]);
+          await assert.rejects(preview(makeDeps(fake.fn, background), e.caller, { inputs }), /couldn't build the preview/);
+          assert.equal(fake.calls.length, 0);
+          assert.equal((await events(e.athlete.id)).length, 0);
+        } finally {
+          await admin.from('app_settings').update({ value: 0 }).eq('key', 'generation_paused');
+        }
       });
 
       await t.step('spend alert: raised once when today passes the threshold', async () => {
