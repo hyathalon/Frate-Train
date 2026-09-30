@@ -4,6 +4,11 @@ import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type Ou
 // Each validator returns plain-English errors. An empty list means valid.
 // The same messages go back to Claude in the one automatic repair attempt.
 
+/** Taper weeks (including race week) by program length. */
+export function taperWeeks(totalWeeks: number): number {
+  return totalWeeks >= 12 ? 3 : 2;
+}
+
 export interface OutlineContext {
   totalWeeks: number;
   daysAvailable: number;
@@ -89,8 +94,13 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
     }
   });
 
-  const last = weeks[weeks.length - 1];
-  if (last && last.phase !== 'taper') errors.push('The final (race) week must be in the taper phase.');
+  // Taper length by program length: 12+ weeks → 3; otherwise 2 (6–11 weeks, and race week + 1 up to 5 weeks).
+  const taper = taperWeeks(ctx.totalWeeks);
+  weeks.forEach((w) => {
+    const inTaper = w.week > ctx.totalWeeks - taper;
+    if (inTaper && w.phase !== 'taper') errors.push(`Week ${w.week} is in the ${taper}-week taper (a ${ctx.totalWeeks}-week program), so its phase is taper.`);
+    if (!inTaper && w.phase === 'taper') errors.push(`Week ${w.week} is before the ${taper}-week taper (a ${ctx.totalWeeks}-week program), so it isn't taper yet.`);
+  });
 
   // Phases must cover weeks 1..N without gaps or overlaps, and match each week's phase.
   const sorted = [...phases].sort((a, b) => a.start_week - b.start_week);
@@ -264,6 +274,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (optional.some((s) => s.key_session)) errors.push(`${label}: optional sessions can't be the key session.`);
     if (keys.length === 1) checkKeySession(keys[0], week.week, label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
     if (ctx.runningBeginner) checkBeginnerWeek(week, label, errors);
+    checkStationSkillDays(week, label, errors);
 
     // Progression: one lever, matching the outline.
     if (plan && week.progression.lever !== plan.lever) {
@@ -416,6 +427,44 @@ function checkRaceWeekRuns(week: BlockWeek, label: string, errors: string[]) {
  * Running beginners: never 3 training days in a row, and the day after the long run
  * is the absorption run or cross-training (easy), if anything.
  */
+/** Station skill is warm-up, strength-day or short add-on work: never a day's only main session. */
+function checkStationSkillDays(week: BlockWeek, label: string, errors: string[]) {
+  for (const day of DAYS) {
+    const sessions = week.sessions.filter((s) => s.day === day);
+    if (sessions.length && sessions.every((s) => s.session_type === 'station_skill')) {
+      errors.push(`${label}: "${sessions[0].title}" is station skill work on its own on ${day}; station skill is warm-up, strength-day or short add-on work, never a day's only main session.`);
+    }
+  }
+}
+
+// Words in titles that name equipment: the session must use it.
+const TITLE_EQUIPMENT: { word: RegExp; equipment: string[] }[] = [
+  { word: /\bski\s*-?erg\b/i, equipment: ['SkiErg'] },
+  { word: /\b(rower|rowing|row\s*erg)\b/i, equipment: ['Rower'] },
+  { word: /\bbike\s*-?erg\b/i, equipment: ['BikeErg'] },
+  { word: /\b(air\s*bike|assault\s*bike|echo\s*bike)\b/i, equipment: ['Air bike'] },
+  { word: /\bsled\b/i, equipment: ['Sled'] },
+  { word: /\bbarbell\b/i, equipment: ['Barbell'] },
+  { word: /\bkettlebell\b/i, equipment: ['Kettlebell', 'Kettlebell or dumbbell'] },
+  { word: /\bdumbbell\b/i, equipment: ['Dumbbell', 'Kettlebell or dumbbell'] },
+  { word: /\bwall\s*-?balls?\b/i, equipment: ['Wall ball'] },
+  { word: /\bsandbag\b/i, equipment: ['Sandbag'] },
+  { word: /\btreadmill\b/i, equipment: ['Treadmill'] },
+  { word: /\b(swim|swimming|pool)\b/i, equipment: ['Pool (swimming)', 'Pool (aqua running)'] },
+];
+
+/** A session title names only exercises and equipment actually in the session. */
+function checkTitle(s: Session, where: string, ctx: BlockContext, errors: string[]) {
+  const exercises = s.parts.flatMap((p) => p.items).map((it) => (it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined))
+    .filter((e): e is Exercise => !!e);
+  for (const t of TITLE_EQUIPMENT) {
+    if (!t.word.test(s.title)) continue;
+    const used = exercises.some((e) => t.word.test(e.name) || e.equipment_options.some((opt) => opt.some((n) => t.equipment.includes(n))));
+    const race = s.parts.some((p) => p.items.some((it) => it.race_session_id)); // race sessions name their own stations
+    if (!used && !race) errors.push(`${where}: the title names ${s.title.match(t.word)![0]}, but no exercise in the session uses it; title the session by what it contains.`);
+  }
+}
+
 function checkBeginnerWeek(week: BlockWeek, label: string, errors: string[]) {
   const trained = DAYS.map((d) => week.sessions.some((s) => s.day === d));
   for (let i = 0; i + 2 < DAYS.length; i++) {
@@ -762,6 +811,7 @@ function validateSession(s: Session, where: string, deload: boolean, final: bool
   if (s.optional && !s.slot) errors.push(`${where}: optional sessions need a slot key.`);
   if (!s.optional && s.slot) errors.push(`${where}: core sessions have slot null.`);
   if (s.parts.length < 1 || s.parts.length > 3) errors.push(`${where}: a session has 1 to 3 parts.`);
+  checkTitle(s, where, ctx, errors);
   if (!s.progression.change.trim()) errors.push(`${where}: say in a few words what changed versus the last similar session (progression.change).`);
   // Cross-training = an Aerobic or HIIT part done wholly on ergs. Alternatives are
   // only required when the athlete has another erg to switch to.

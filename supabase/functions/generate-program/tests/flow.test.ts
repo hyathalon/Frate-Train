@@ -48,16 +48,19 @@ function makeDeps(callClaude: CallClaude, background: Promise<unknown>[]): Deps 
 }
 
 function outline(totalWeeks: number): Outline {
-  const deload = (w: number) => w % 4 === 0 && w < totalWeeks;
+  const taperLength = totalWeeks >= 12 ? 3 : 2; // taper length by program length
+  const taper = (w: number) => w > totalWeeks - taperLength;
+  const deload = (w: number) => w % 4 === 0 && !taper(w);
   return {
     summary: 'Test season',
     phases: [
-      { name: 'Build', kind: 'build', start_week: 1, end_week: totalWeeks - 1, purpose: 'p' },
-      { name: 'Taper', kind: 'taper', start_week: totalWeeks, end_week: totalWeeks, purpose: 'p' },
+      { name: 'Build', kind: 'build', start_week: 1, end_week: totalWeeks - taperLength, purpose: 'p' },
+      { name: 'Taper', kind: 'taper', start_week: totalWeeks - taperLength + 1, end_week: totalWeeks, purpose: 'p' },
     ],
     weeks: Array.from({ length: totalWeeks }, (_, i) => ({
-      week: i + 1, phase: i + 1 === totalWeeks ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: deload(i + 1),
-      lever: i === 0 ? 'start' : deload(i + 1) || i + 1 === totalWeeks ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3, strength_sessions: deload(i + 1) || i + 1 === totalWeeks ? 1 : 2, optional_sessions: deload(i + 1) ? 2 : 1,
+      week: i + 1, phase: taper(i + 1) ? 'taper' : 'build', focus: 'f', load: 'Moderate', deload: deload(i + 1),
+      lever: i === 0 ? 'start' : deload(i + 1) || taper(i + 1) ? 'deload' : 'volume', core_sessions: deload(i + 1) ? 2 : 3,
+      strength_sessions: deload(i + 1) || taper(i + 1) ? 1 : 2, optional_sessions: deload(i + 1) ? 2 : 1,
       key_session: 'Circuit + intervals', key_sessions: ['k'], pillars: ['Aerobic Engine'],
     })),
   } as Outline;
@@ -135,8 +138,9 @@ Deno.test({
   sanitizeResources: false,
   async fn(t) {
     const today = localDate(new Date(), 'Australia/Sydney');
+    // A real spend alert today would mask the spend-alert step, so only that step is skipped.
     const { data: existingSpend } = await admin.from('coach_alerts').select('id').eq('kind', 'spend').eq('alert_date', today);
-    assert.equal(existingSpend!.length, 0, 'a real spend alert exists today; not running the spend test');
+    const realSpendAlert = existingSpend!.length > 0;
     try {
       const a = await makeAthlete('a');
       const background: Promise<unknown>[] = [];
@@ -326,7 +330,7 @@ Deno.test({
         }
       });
 
-      await t.step('spend alert: raised once when today passes the threshold', async () => {
+      await t.step({ name: 'spend alert: raised once when today passes the threshold', ignore: realSpendAlert, fn: async () => {
         const c = await makeAthlete('c');
         // 2 million output tokens on Haiku = $10 of fake spend.
         const fake = fakeClaude([{ data: outline(16), usage: { output_tokens: 2_000_000 } }, { data: outline(16), usage: { output_tokens: 2_000_000 } }]);
@@ -335,9 +339,10 @@ Deno.test({
         const { data: alerts } = await admin.from('coach_alerts').select('message').eq('kind', 'spend').eq('alert_date', today);
         assert.equal(alerts!.length, 1);
         assert.match(alerts![0].message, /passed \$10\.00/);
-      });
+      } });
     } finally {
-      await admin.from('coach_alerts').delete().eq('kind', 'spend').eq('alert_date', today);
+      // Only the test's own spend alert; never a real one.
+      if (!realSpendAlert) await admin.from('coach_alerts').delete().eq('kind', 'spend').eq('alert_date', today);
       await admin.from('coach_alerts').delete().in('athlete_id', created.athletes);
       await admin.from('weekly_checkins').delete().in('submitted_by', created.users);
       await admin.from('generation_events').delete().in('athlete_id', created.athletes);

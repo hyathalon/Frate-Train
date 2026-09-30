@@ -63,6 +63,8 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
 - Quality sessions: running programs → the interval sessions and the long run; the key session is the main interval session (RPE 8+). Strength-only / no-running programs → key can be a hard strength session (may stand alone on its day), an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a Hyathlon race simulation, or a hard AMRAP/EMOM-type workout. Include race simulations / erg / bike sessions only as chosen in athlete.off_feet_includes; in simulations, replace run segments with the athlete's preferred erg or bike.
 - Never quality or key: station_skill (technique work: warm-up, strength day or short add-on), easy, recovery, and core/mobility — except in a taper or post-event week, when core/mobility can be the week's main session.
+- Station skill is never a day's only main session (it is warm-up, strength-day or short add-on work).
+- Taper length by program length: 12+ weeks → 3-week taper (~80% → ~60% → ~30%); 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week.
 - Race week (running programs): key session = short sharpener at least 4–5 days before the race: 10–15 min easy warm-up, 15 min just slower than race effort (~10–20 s/km slower than the athlete's race average run pace if stored, otherwise RPE 8), 10–15 min easy cool-down. Other runs easy.
 - Advanced / high-volume running (up to ~70–100 km/week): Mon aerobic, Tue quality AM + second session PM, Wed medium-long run (easy, 12–15 km for most), Thu quality AM + second session PM, Fri aerobic or recovery, Sat recovery, Sun long run (most 60–90 min; advanced up to 90–120 min max). Strength gets the PM slot on quality days first; easy doubles only where there's no strength that day, only if can_double allows and the athlete wants them. Build weeks steady. Taper ~80% → ~60% → ~30% of usual volume.
 - Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
@@ -106,5 +108,6 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 ## Output rules
 - Only exercise_ids from exercise_shortlist.
 - Keep text fields short (max ~20 words). General "Hyathlon" language, no event brand names.
+- Session titles name only exercises and equipment actually in the session.
 - Injury notes: considerations only, never medical advice.
 - Before returning, check: one manipulator per session; RPE labels; RPE 1–4 only in recovery sessions, warm-ups and cool-downs; body reports 3/10 or less = no change, 4/10+ or Pain = off-feet; niggle return built back gradually; missed sessions not stacked; locked sessions untouched; alternatives listed; sets ranges given; spacing and interference rules; check-in applied; sessions/week = target; strength = 2/week default, working sets only, one lever progressed, placed per strength_placement.

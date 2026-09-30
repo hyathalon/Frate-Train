@@ -1,6 +1,6 @@
 import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatCompromised, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
-import { coreSessionsForStrength, raceWeekStrengthDays, type Timing, weeklyNeeds } from './validate.ts';
+import { coreSessionsForStrength, raceWeekStrengthDays, taperWeeks, type Timing, weeklyNeeds } from './validate.ts';
 import { weekdayOf } from './time.ts';
 import { intervalIntroWeek, RUNNING_LEVEL_LABEL, runningLevel } from './running.ts';
 import { longRunEffort, longRunPlan } from './longruns.ts';
@@ -106,6 +106,8 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
 - Quality sessions: running programs → the interval sessions and the long run; the key session is the main interval session (RPE 8+). Strength-only / no-running programs → key can be a hard strength session (may stand alone on its day), an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a Hyathlon race simulation, or a hard AMRAP/EMOM-type workout. Include race simulations / erg / bike sessions only as chosen in athlete.off_feet_includes; in simulations, replace run segments with the athlete's preferred erg or bike.
 - Never quality or key: station_skill (technique work: warm-up, strength day or short add-on), easy, recovery, and core/mobility — except in a taper or post-event week, when core/mobility can be the week's main session.
+- Station skill is never a day's only main session (it is warm-up, strength-day or short add-on work).
+- Taper length by program length: 12+ weeks → 3-week taper (~80% → ~60% → ~30%); 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week.
 - Race week (running programs): key session = short sharpener at least 4–5 days before the race: 10–15 min easy warm-up, 15 min just slower than race effort (~10–20 s/km slower than the athlete's race average run pace if stored, otherwise RPE 8), 10–15 min easy cool-down. Other runs easy.
 - Advanced / high-volume running (up to ~70–100 km/week): Mon aerobic, Tue quality AM + second session PM, Wed medium-long run (easy, 12–15 km for most), Thu quality AM + second session PM, Fri aerobic or recovery, Sat recovery, Sun long run (most 60–90 min; advanced up to 90–120 min max). Strength gets the PM slot on quality days first; easy doubles only where there's no strength that day, only if can_double allows and the athlete wants them. Build weeks steady. Taper ~80% → ~60% → ~30% of usual volume.
 - Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
@@ -149,6 +151,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 ## Output rules
 - Only exercise_ids from exercise_shortlist.
 - Keep text fields short (max ~20 words). General "Hyathlon" language, no event brand names.
+- Session titles name only exercises and equipment actually in the session.
 - Injury notes: considerations only, never medical advice.
 - Before returning, check: one manipulator per session; RPE labels; RPE 1–4 only in recovery sessions, warm-ups and cool-downs; body reports 3/10 or less = no change, 4/10+ or Pain = off-feet; niggle return built back gradually; missed sessions not stacked; locked sessions untouched; alternatives listed; sets ranges given; spacing and interference rules; check-in applied; sessions/week = target; strength = 2/week default, working sets only, one lever progressed, placed per strength_placement.`;
 
@@ -322,7 +325,7 @@ Total weeks: ${window.totalWeeks} (week ${window.totalWeeks} is race week)
 </program>
 
 Outline every week from 1 to ${window.totalWeeks}:
-- Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final 1 to 2 weeks and includes race week.
+- Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final ${taperWeeks(window.totalWeeks)} weeks including race week (programs of 12+ weeks: 3; shorter: 2, i.e. race week + 1 week).
 - For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload and taper weeks including race week "deload", otherwise frequency, intensity or volume), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
 - Core sessions per week are never more than ${days * 2} (the athlete trains ${days} days, up to 2 sessions a day; see can_double). Optional sessions go on the same days.
 ${(inputs.strength_choice ?? 'program') !== 'program' ? `- strength_sessions is 0 every week: the athlete ${inputs.strength_choice === 'own' ? 'does their own strength or classes (fixed sessions that count in load; plan around them)' : 'wants no strength sessions'}.` : `- strength_sessions per week (counted inside core_sessions): the athlete chose ${inputs.strength_sessions_pref ?? 2}, usually as the second session on hard days. Normal weeks (not deload, taper or race week): core_sessions at least ${coreSessionsForStrength(inputs.running.mode, days, inputs.strength_sessions_pref ?? 2, athlete.level === 'beginner')} (${athlete.level === 'beginner' ? `a run or conditioning session on each of the ${days} training days` : weeklyNeeds(inputs.running.mode, 99, 0).join(', ') || 'no other needs'}, plus ${inputs.strength_sessions_pref ?? 2} strength), and strength_sessions = the smaller of ${inputs.strength_sessions_pref ?? 2} and core_sessions minus ${weeklyNeeds(inputs.running.mode, 99, 0).length}. Deload weeks: strength_sessions 1, plus 1 optional strength session (count it in optional_sessions), both at maintain. Taper weeks: 1 (maintain). Race week (week ${window.totalWeeks}): ${raceWeekStrengthDays(inputs.race_date ? weekdayOf(inputs.race_date) : null).length ? '1 short maintain session, at least 5 days before the race' : '0 (the race is too early in the week for one at least 5 days before it)'}.`}
@@ -399,6 +402,7 @@ Rules for sessions:
 - Running exercises are marked R; they only go in ${inputs.running.mode === 'programmed' ? 'Run, ' : ''}RaceSim and Compromised parts.${inputs.running.mode === 'programmed' ? ' Run parts set run_type (key, easy, long or recovery).' : ''}
 - Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot, note) instead of sending them empty.
 - Optional sessions have optional true and a short slot key that stays the same across the block's weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
+- Title each session by what it contains: name only exercises and equipment actually in it. Station skill is never a day's only main session.
 - Mark exactly one core session a week as the key session, on ${inputs.key_session_day}. ${inputs.running.mode === 'programmed' ? `It is the main interval session: a Run part with run_type key at RPE 8 or more${intervalIntroWeek(inputs) ? `, from program week ${intervalIntroWeek(inputs)}; before that, the week's main aerobic run (run_type key)` : '; while walk–run builds to continuous running, the week\'s main walk–run or aerobic run (run_type key)'}.` : `It is a hard (build) strength session (it may stand alone on its day), an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a race simulation${inputs.running.mode === 'own_plan' ? ', a compromised session' : ''} or a hard AMRAP/EMOM-type workout.`} Never station skill, easy, recovery or core/mobility (core/mobility only in a taper or post-event week); for beginners, a smaller dose of real quality work.
 - Give each week's progression: the lever from the outline and, in one sentence, what changes.
 

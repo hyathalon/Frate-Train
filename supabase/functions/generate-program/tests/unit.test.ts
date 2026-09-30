@@ -12,7 +12,7 @@ import { trimDeload } from '../lib/deload.ts';
 import { longRunPlan } from '../lib/longruns.ts';
 import { placeRaceWeekStrength } from '../lib/fixups.ts';
 import { intervalIntroWeek, runningLevel } from '../lib/running.ts';
-import { type BlockContext, strengthTarget, taperTarget, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
+import { type BlockContext, strengthTarget, taperTarget, taperWeeks, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
 
 // ---------------------------------------------------------------------------
 // time
@@ -176,10 +176,11 @@ function block(): Block {
 function outline(): Outline {
   return {
     summary: 's',
-    phases: [{ name: 'Base', kind: 'base', start_week: 1, end_week: 3, purpose: 'p' }, { name: 'Taper', kind: 'taper', start_week: 4, end_week: 4, purpose: 'p' }],
+    // A 4-week program: a 2-week taper (race week + 1 week).
+    phases: [{ name: 'Base', kind: 'base', start_week: 1, end_week: 2, purpose: 'p' }, { name: 'Taper', kind: 'taper', start_week: 3, end_week: 4, purpose: 'p' }],
     weeks: [1, 2, 3, 4].map((w) => ({
-      week: w, phase: w === 4 ? 'taper' : 'base', focus: 'f', load: 'Moderate', deload: w === 4,
-      lever: w === 1 ? 'start' : w === 4 ? 'deload' : 'volume', core_sessions: w === 4 ? 2 : 3, strength_sessions: 1, optional_sessions: 1,
+      week: w, phase: w >= 3 ? 'taper' : 'base', focus: 'f', load: 'Moderate', deload: w === 4,
+      lever: w === 1 ? 'start' : w >= 3 ? 'deload' : 'volume', core_sessions: w === 4 ? 2 : 3, strength_sessions: 1, optional_sessions: 1,
       key_session: 'Circuit + Tabata', key_sessions: ['k'], pillars: ['Aerobic Engine'],
     })),
   } as Outline;
@@ -187,7 +188,7 @@ function outline(): Outline {
 
 // The block is weeks 1–4 of a 12-week program (no taper or race week in it). The
 // deload week (4) drops Monday's strength session, so it has none.
-const BLOCK_OUTLINE_WEEKS = outline().weeks.map((w) => ({ ...w, phase: 'base' as const, strength_sessions: w.week === 4 ? 0 : 1 }));
+const BLOCK_OUTLINE_WEEKS = outline().weeks.map((w) => ({ ...w, phase: 'base' as const, lever: w.week === 3 ? 'volume' as const : w.lever, strength_sessions: w.week === 4 ? 0 : 1 }));
 const OUTLINE_CTX = { running: 'none' as const, strengthPref: 1, raceDay: 'Sat' };
 
 const ctx: BlockContext = {
@@ -271,7 +272,7 @@ Deno.test('beginners: strength as the second session on quality days, other days
   assert.match(week2(validateBlock(block(), beginner)), /strength goes on hard days first|for beginners, strength is the second session on a quality day/);
   // Outline: a run or conditioning session on every training day, plus the strength sessions.
   const o = outline();
-  for (const w of o.weeks) w.strength_sessions = w.week === 4 ? 1 : 2;
+  for (const w of o.weeks) w.strength_sessions = w.week >= 3 ? 1 : 2;
   assert.match(validateOutline(o, { totalWeeks: 4, daysAvailable: 3, running: 'none', strengthPref: 2, raceDay: 'Sat', beginner: true }).join(' '),
     /plan at least 5 core sessions .*beginners: a run or conditioning session on every training day/);
 });
@@ -506,7 +507,7 @@ Deno.test('strength placement: with_hard_sessions, own_days, short second sessio
 Deno.test('outline strength_sessions: the choice in normal weeks, 1 + 1 optional in deloads, 0 for own or none', () => {
   const o = outline();
   const oc = { totalWeeks: 4, daysAvailable: 4, running: 'none' as const, strengthPref: 2, raceDay: 'Sat' };
-  for (const w of o.weeks) w.strength_sessions = w.week === 4 ? 1 : 2; // 3 core: hybrid + 2 strength
+  for (const w of o.weeks) w.strength_sessions = w.week >= 3 ? 1 : 2; // 3 core: hybrid + 2 strength
   assert.deepEqual(validateOutline(o, oc), []);
   o.weeks[1].strength_sessions = 1;
   assert.match(validateOutline(o, oc).join(' '), /Week 2: strength_sessions must be 2/);
@@ -689,6 +690,28 @@ Deno.test('race week (running programs): the key session is a short sharpener 4�
   key.parts = [run('key', 15, '15 min just slower than race effort, RPE 8')];
   w.sessions.find((s) => s.day === 'Fri')!.parts = [run('long', 60, '60 min @ RPE 5-6 Easy')];
   assert.match(week2(validateBlock(b, programmed)), /in race week, runs other than the sharpener are easy \(no long run\)/);
+});
+
+Deno.test('taper length by program length; station skill never alone; titles name what is in the session', () => {
+  assert.deepEqual([taperWeeks(16), taperWeeks(12), taperWeeks(11), taperWeeks(6), taperWeeks(4)], [3, 3, 2, 2, 2]);
+  // A 12-week program whose taper is only race week: weeks 10–11 must be taper too.
+  const twelve = { summary: 's', phases: [{ name: 'Base', kind: 'base', start_week: 1, end_week: 11, purpose: 'p' }, { name: 'Taper', kind: 'taper', start_week: 12, end_week: 12, purpose: 'p' }],
+    weeks: Array.from({ length: 12 }, (_, i) => ({ week: i + 1, phase: i === 11 ? 'taper' : 'base', focus: 'f', load: 'Moderate', deload: false,
+      lever: i === 0 ? 'start' : i === 11 ? 'deload' : 'volume', core_sessions: 3, strength_sessions: 1, optional_sessions: 1, key_session: 'k', key_sessions: ['k'], pillars: ['Aerobic Engine'] })) } as Outline;
+  const errs = validateOutline(twelve, { totalWeeks: 12, daysAvailable: 4, ...OUTLINE_CTX }).join(' ');
+  assert.match(errs, /Week 10 is in the 3-week taper \(a 12-week program\), so its phase is taper/);
+  assert.match(errs, /Week 11 is in the 3-week taper/);
+  // Station skill on its own on a day.
+  const week2 = (e: string[]) => e.filter((x) => x.startsWith('Week 2')).join(' | ');
+  const skill = block();
+  skill.weeks[1].sessions[2].session_type = 'station_skill';
+  assert.match(week2(validateBlock(skill, ctx)), /"Bike" is station skill work on its own on Fri; .*never a day's only main session/);
+  // Titles: "SkiErg" in the title, but the session uses the air bike.
+  const t = block();
+  t.weeks[1].sessions[2].title = 'SkiErg Repeats';
+  assert.match(week2(validateBlock(t, ctx)), /the title names SkiErg, but no exercise in the session uses it/);
+  t.weeks[1].sessions[2].title = 'Air Bike Repeats';
+  assert.doesNotMatch(week2(validateBlock(t, ctx)), /the title names/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {
