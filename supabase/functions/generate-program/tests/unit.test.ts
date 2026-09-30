@@ -1,11 +1,11 @@
 // Unit tests (no network): deno test tests/unit.test.ts
 import assert from 'node:assert/strict';
 import type { AthleteRow } from '../lib/auth.ts';
-import { type Candidates, type Exercise, filterExercises, type RaceOption, type SessionFormat, type Template } from '../lib/candidates.ts';
+import { availableFormats, type Candidates, type Exercise, filterExercises, type RaceOption, type SessionFormat, type Template } from '../lib/candidates.ts';
 import { HttpError } from '../lib/http.ts';
 import { type AppAllowance, assertCanConfirm, assertCanPreview, type CoachAllowance } from '../lib/limits.ts';
 import { parseInputs } from '../lib/program.ts';
-import type { Block, Outline, Session } from '../lib/schemas.ts';
+import { type Block, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
 import { type BlockContext, type Timing, timingKey, validateBlock, validateOutline } from '../lib/validate.ts';
 
@@ -84,6 +84,7 @@ const formats = new Map<string, SessionFormat>([
   ['Plyometric', fmt('Plyometric', { dose_kind: 'foot_contacts', rules: { minutes: [6, 20] } })],
   ['Compromised', fmt('Compromised', { dose_kind: 'reps', running: 'capped', rules: { minutes: [10, 60] } })],
   ['RaceSim', fmt('RaceSim', { dose_kind: 'reps', running: 'sim', rules: { minutes: [15, 90] } })],
+  ['Run', fmt('Run', { running: 'run', rules: { minutes: [10, 120] } })],
 ]);
 
 const strengthT: Template = {
@@ -126,6 +127,8 @@ const timings = new Map<string, Timing>([
   [timingKey('Plyometric', 10), { minutes: 10, drills: [2, 5], contacts: [60, 80] }],
 ]);
 
+const ALL_FORMATS = new Set(formats.keys());
+
 const item = (id: string, dose: string, over: Record<string, unknown> = {}) => ({
   exercise_id: id, race_session_id: null, dose, cue: null, block: null, foot_contacts: null, run_minutes: null, run_distance_m: null, ...over,
 });
@@ -134,19 +137,19 @@ const item = (id: string, dose: string, over: Record<string, unknown> = {}) => (
 function week(n: number, reps: number, deload = false) {
   const sessions: Session[] = [
     { day: 'Mon', title: 'Strength', key_session: false, pillar: 'Durability', optional: false, slot: null,
-      parts: [{ format: 'Strength', template_id: 'STR-45', minutes: 30, items: [item('SQ', `3 × ${reps}, moderate load, RPE 7`), item('PU', `3 × ${reps}, bodyweight`)] }] },
+      parts: [{ format: 'Strength', template_id: 'STR-45', run_type: null, minutes: 30, items: [item('SQ', `3 × ${reps}, moderate load, RPE 7`), item('PU', `3 × ${reps}, bodyweight`)] }] },
     { day: 'Wed', title: 'Circuit + Tabata', key_session: true, pillar: 'Threshold', optional: false, slot: null,
       parts: [
-        { format: 'Circuit', template_id: 'CIR-30', minutes: 20, items: [item('SQ', `RPE ${reps - 1}`), item('CORE', 'steady, RPE 7')] },
-        { format: 'Tabata', template_id: null, minutes: 10, items: [item('SQ', 'max effort', { block: 1 }), item('PU', 'max effort', { block: 2 }), item('CORE', `max effort, week ${n}`, { block: 2 })] },
+        { format: 'Circuit', template_id: 'CIR-30', run_type: null, minutes: 20, items: [item('SQ', `RPE ${reps - 1}`), item('CORE', 'steady, RPE 7')] },
+        { format: 'Tabata', template_id: null, run_type: null, minutes: 10, items: [item('SQ', 'max effort', { block: 1 }), item('PU', 'max effort', { block: 2 }), item('CORE', `max effort, week ${n}`, { block: 2 })] },
       ] },
     { day: 'Fri', title: 'Bike', key_session: false, pillar: 'Aerobic Engine', optional: false, slot: null,
       parts: [
-        { format: 'HIIT', template_id: null, minutes: 15, items: [item('BIKE', `hard, RPE ${reps}`)] },
-        { format: 'Aerobic', template_id: null, minutes: 15, items: [item('BIKE', 'steady, RPE 6-7')] },
+        { format: 'HIIT', template_id: null, run_type: null, minutes: 15, items: [item('BIKE', `hard, RPE ${reps}`)] },
+        { format: 'Aerobic', template_id: null, run_type: null, minutes: 15, items: [item('BIKE', 'steady, RPE 6-7')] },
       ] },
     { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised',
-      parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item('RUN', '400 m run, RPE 8', { run_minutes: 6 }), item('WB', `${reps * 2} wall balls`)] }] },
+      parts: [{ format: 'Compromised', template_id: null, run_type: null, minutes: 30, items: [item('RUN', '400 m run, RPE 8', { run_minutes: 6 }), item('WB', `${reps * 2} wall balls`)] }] },
   ];
   if (deload) sessions.splice(0, 1); // drop Monday: 2 core sessions instead of 3
   return { week: n, focus: 'f', progression: { lever: n === 1 ? 'start' : deload ? 'deload' : 'volume', change: 'c' }, sessions } as Block['weeks'][number];
@@ -172,6 +175,7 @@ const ctx: BlockContext = {
   startWeek: 1, endWeek: 4, outlineWeeks: outline().weeks, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat'], keySessionDay: 'Wed',
   minutesPerSession: 45, frame: { warmup_min: 10, cooldown_min: 5 }, candidates, timings,
   settings: { minutesTolerance: 5, deloadMin: 0.6, deloadMax: 0.7, deloadSessionMinRatio: 0.5, runShareMax: 0.25 },
+  availableFormats: ALL_FORMATS, running: 'none', ownRuns: [], longestRunMin: null, previousLongRunMin: null, finalWeek: 4,
 };
 
 const errorsFor = (mutate: (b: Block) => void) => {
@@ -229,12 +233,68 @@ Deno.test('running: only in compromised (capped) and race simulations', () => {
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts[1].items[0].exercise_id = 'RUN'; }), /no running in Aerobic parts/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[3].parts[0].items[0].run_minutes = 10; }), /running is 10 of 30 min; the cap is 25%/);
   assert.match(errorsFor((b) => {
-    b.weeks[0].sessions[3].parts[0] = { format: 'RaceSim', template_id: null, minutes: 30, items: [item('RUN', '1 run', { run_distance_m: 400 }), item('WB', '100 wall balls')] };
+    b.weeks[0].sessions[3].parts[0] = { format: 'RaceSim', template_id: null, run_type: null, minutes: 30, items: [item('RUN', '1 run', { run_distance_m: 400 }), item('WB', '100 wall balls')] };
   }), /run segments in a Hyrox Open simulation are 1000 m/);
 });
 
+Deno.test('regex: "3 x 20s surges" in a timed dose is not reps', () => {
+  assert.equal(errorsFor((b) => { b.weeks[0].sessions[2].parts[1].items[0].dose = '15 min @ RPE 6-7 Steady, add 3 x 20s brisk surges'; }), '');
+});
+
+Deno.test('only formats available to the athlete', () => {
+  assert.match(validateBlock(block(), { ...ctx, availableFormats: new Set([...ALL_FORMATS].filter((f) => f !== 'Tabata')) }).join(' '), /Tabata isn't available for this athlete/);
+  const noErgs = { ...candidates, exercises: new Map([...candidates.exercises].filter(([id]) => id !== 'BIKE')) };
+  assert.equal(availableFormats(noErgs, 'none').has('Aerobic'), false);
+  assert.equal(availableFormats(candidates, 'none').has('Run'), false);
+  assert.equal(availableFormats(candidates, 'programmed').has('Run'), true);
+});
+
+Deno.test('weekly mix: no running = at least one strength and one conditioning session', () => {
+  // Week 2 without Monday's strength session.
+  assert.match(errorsFor((b) => { b.weeks[1].sessions[0].parts = [{ format: 'AMRAP', template_id: null, run_type: null, minutes: 30, items: [item('SQ', '10 reps'), item('PU', '10 reps'), item('CORE', '10 reps')] }]; }),
+    /needs, each in a different core session: strength, hybrid or station/);
+});
+
+Deno.test('programmed running: key run, easy/long run, run types and long-run caps', () => {
+  const run = (type: string, minutes: number, dose = `${minutes} min @ RPE 6-7 Steady`) =>
+    ({ format: 'Run' as const, template_id: null, run_type: type as 'key', minutes, items: [item('RUN', dose)] });
+  const programmed: BlockContext = { ...ctx, running: 'programmed' };
+  // 3 core sessions: needs a key run, strength, hybrid. Friday becomes the key run.
+  const withKeyRun = (b: Block) => { for (const w of b.weeks) if (w.sessions[2]?.day === 'Fri') w.sessions[2].parts = [run('key', 30, `3 × 8 min @ RPE 8-8.5 / 2 min easy, week ${w.week}`)]; };
+  const good = block();
+  withKeyRun(good);
+  assert.deepEqual(validateBlock(good, programmed), []);
+  assert.match(validateBlock(block(), programmed).join(' '), /key run/);
+  const noType = block();
+  withKeyRun(noType);
+  noType.weeks[0].sessions[2].parts[0].run_type = null;
+  assert.match(validateBlock(noType, programmed).join(' '), /Run parts need run_type/);
+  // First long run: at most longest recent run + 5.
+  const long = block();
+  withKeyRun(long);
+  long.weeks[0].sessions[3].parts = [run('long', 60)];
+  assert.match(validateBlock(long, { ...programmed, longestRunMin: 45 }).join(' '), /at most 50 min \(longest run in the last 3 weeks \+ 5\)/);
+  // No running choice: Run parts aren't allowed.
+  assert.match(validateBlock(good, ctx).join(' '), /no Run parts; the athlete didn't choose "Program my running"/);
+});
+
+Deno.test('own run plan: no heavy lower-body or sled work the day before a hard run', () => {
+  const own: BlockContext = { ...ctx, running: 'own_plan', ownRuns: [{ day: 'Tue', intensity: 'hard' }, { day: 'Thu', intensity: 'easy' }] };
+  assert.match(validateBlock(block(), own).join(' '), /"Strength" on Mon has heavy lower-body or sled work the day before the athlete's hard run on Tue/);
+  assert.deepEqual(validateBlock(block(), { ...own, ownRuns: [{ day: 'Tue', intensity: 'easy' }] }), []);
+});
+
+Deno.test('normalizeBlock fills fields Claude left out', () => {
+  const raw = { summary: 's', weeks: [{ week: 1, focus: 'f', progression: { lever: 'start', change: 'c' }, sessions: [
+    { day: 'Mon', title: 't', key_session: true, pillar: 'Durability', optional: false, parts: [{ format: 'AMRAP', minutes: 10, items: [{ exercise_id: 'SQ', dose: '10 reps' }] }] },
+  ] }] } as unknown as Block;
+  const n = normalizeBlock(raw);
+  const it = n.weeks[0].sessions[0].parts[0].items[0];
+  assert.deepEqual([n.weeks[0].sessions[0].slot, n.weeks[0].sessions[0].parts[0].template_id, n.weeks[0].sessions[0].parts[0].run_type, it.race_session_id, it.cue, it.block], [null, null, null, null, null, null]);
+});
+
 Deno.test('plyometrics go first, within foot-contact limits', () => {
-  const plyo = { format: 'Plyometric' as const, template_id: null, minutes: 10, items: [item('HOP', '4 × 10, full recovery', { foot_contacts: 40 }), item('HOP', 'x', { foot_contacts: 30 })] };
+  const plyo = { format: 'Plyometric' as const, template_id: null, run_type: null, minutes: 10, items: [item('HOP', '4 × 10, full recovery', { foot_contacts: 40 }), item('HOP', 'x', { foot_contacts: 30 })] };
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts = [{ ...b.weeks[0].sessions[2].parts[0], minutes: 20 }, plyo]; }), /plyometrics go first/);
   assert.match(errorsFor((b) => { b.weeks[0].sessions[2].parts = [{ ...plyo, items: [item('HOP', 'a', { foot_contacts: 100 })] }, { ...b.weeks[0].sessions[2].parts[0], minutes: 20 }]; }), /total foot contacts must be 60–80; it is 100/);
 });
@@ -244,6 +304,13 @@ Deno.test('plyometrics go first, within foot-contact limits', () => {
 // ---------------------------------------------------------------------------
 
 const baseInputs = { race_date: '2027-01-20', training_days: ['Sat', 'Mon', 'Wed'], key_session_day: 'Wed', minutes_per_session: 45, goal: '  Sub 90  ' };
+
+Deno.test('parseInputs: running choice', () => {
+  assert.deepEqual(parseInputs(baseInputs).running, { mode: 'none', own_runs: [] });
+  assert.deepEqual(parseInputs({ ...baseInputs, running: { mode: 'own_plan', own_runs: [{ day: 'Thu', intensity: 'easy' }, { day: 'Tue', intensity: 'hard' }] } }).running.own_runs, [{ day: 'Tue', intensity: 'hard' }, { day: 'Thu', intensity: 'easy' }]);
+  assert.throws(() => parseInputs({ ...baseInputs, running: { mode: 'own_plan', own_runs: [] } }), /which days you run/);
+  assert.throws(() => parseInputs({ ...baseInputs, running: { mode: 'sometimes' } }), /Choose your running/);
+});
 
 Deno.test('parseInputs: training days, key day, minutes and the optional coach inputs', () => {
   const ok = parseInputs({ ...baseInputs, longest_run_min: 60, cross_training_preferences: ['Air bike', 'Rower'] });

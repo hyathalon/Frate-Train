@@ -17,11 +17,14 @@ export const LEVERS = ['start', 'frequency', 'intensity', 'volume', 'deload'] as
 // Part formats; rules and timing live in the session_formats table / plan_format().
 export const FORMATS = [
   'Strength', 'Circuit', 'Tabata', 'HIIT', 'AMRAP', 'EMOM', 'ForTime', 'Plyometric',
-  'Mobility', 'Aerobic', 'RaceSim', 'Compromised', 'Station',
+  'Mobility', 'Aerobic', 'RaceSim', 'Compromised', 'Station', 'Run',
 ] as const;
 export type Format = (typeof FORMATS)[number];
-
-const nullable = (schema: Record<string, unknown>) => ({ anyOf: [schema, { type: 'null' }] });
+export const RUN_TYPES = ['key', 'easy', 'long', 'recovery'] as const;
+// The athlete's running choice: we program it, they have their own plan, or none.
+export const RUNNING_MODES = ['programmed', 'own_plan', 'none'] as const;
+export type RunningMode = (typeof RUNNING_MODES)[number];
+export type RunType = (typeof RUN_TYPES)[number];
 
 export interface OutlineWeek {
   week: number;
@@ -88,6 +91,8 @@ export const OUTLINE_SCHEMA = {
   },
 } as const;
 
+// Optional fields are left out of Claude's answer when empty (fewer output
+// tokens); normalizeBlock() fills them with null before validation.
 export interface SessionItem {
   exercise_id: string | null;
   race_session_id: string | null;
@@ -102,6 +107,7 @@ export interface SessionItem {
 export interface SessionPart {
   format: Format;
   template_id: string | null;
+  run_type: RunType | null; // Run parts only
   minutes: number;
   items: SessionItem[];
   timing?: Record<string, unknown>; // added server-side from plan_format
@@ -130,19 +136,21 @@ export interface Block {
   weeks: BlockWeek[];
 }
 
+// Only dose is required; give exactly one of exercise_id / race_session_id and
+// the other fields only when they apply.
 const ITEM_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['exercise_id', 'race_session_id', 'dose', 'cue', 'block', 'foot_contacts', 'run_minutes', 'run_distance_m'],
+  required: ['dose'],
   properties: {
-    exercise_id: nullable({ type: 'string' }),
-    race_session_id: nullable({ type: 'string' }),
+    exercise_id: { type: 'string' },
+    race_session_id: { type: 'string' },
     dose: { type: 'string' },
-    cue: nullable({ type: 'string' }),
-    block: nullable({ type: 'integer' }),
-    foot_contacts: nullable({ type: 'integer' }),
-    run_minutes: nullable({ type: 'number' }),
-    run_distance_m: nullable({ type: 'integer' }),
+    cue: { type: 'string' },
+    block: { type: 'integer' },
+    foot_contacts: { type: 'integer' },
+    run_minutes: { type: 'number' },
+    run_distance_m: { type: 'integer' },
   },
 };
 
@@ -175,23 +183,24 @@ export const BLOCK_SCHEMA = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['day', 'title', 'key_session', 'pillar', 'optional', 'slot', 'parts'],
+              required: ['day', 'title', 'key_session', 'pillar', 'optional', 'parts'],
               properties: {
                 day: { type: 'string', enum: [...DAYS] },
                 title: { type: 'string' },
                 key_session: { type: 'boolean' },
                 pillar: { type: 'string', enum: [...PILLARS] },
                 optional: { type: 'boolean' },
-                slot: nullable({ type: 'string' }),
+                slot: { type: 'string' },
                 parts: {
                   type: 'array',
                   items: {
                     type: 'object',
                     additionalProperties: false,
-                    required: ['format', 'template_id', 'minutes', 'items'],
+                    required: ['format', 'minutes', 'items'],
                     properties: {
                       format: { type: 'string', enum: [...FORMATS] },
-                      template_id: nullable({ type: 'string' }),
+                      template_id: { type: 'string' },
+                      run_type: { type: 'string', enum: [...RUN_TYPES] },
                       minutes: { type: 'number' },
                       items: { type: 'array', items: ITEM_SCHEMA },
                     },
@@ -205,3 +214,26 @@ export const BLOCK_SCHEMA = {
     },
   },
 } as const;
+
+/** Fills the optional fields Claude left out with null, so validation and storage see one shape. */
+export function normalizeBlock(block: Block): Block {
+  for (const week of block.weeks ?? []) {
+    for (const session of week.sessions ?? []) {
+      session.slot ??= null;
+      for (const part of session.parts ?? []) {
+        part.template_id ??= null;
+        part.run_type ??= null;
+        for (const item of part.items ?? []) {
+          item.exercise_id ??= null;
+          item.race_session_id ??= null;
+          item.cue ??= null;
+          item.block ??= null;
+          item.foot_contacts ??= null;
+          item.run_minutes ??= null;
+          item.run_distance_m ??= null;
+        }
+      }
+    }
+  }
+  return block;
+}

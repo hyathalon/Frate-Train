@@ -88,7 +88,7 @@ async function validBlock(athlete: AthleteRow): Promise<Block> {
       { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised',
         parts: [{ format: 'Compromised', template_id: null, minutes: 30, items: [item(run.id, '400 m run, RPE 8', { run_minutes: 6 }), item(station.id, `${10 + n} wall balls`)] }] },
     ];
-    if (deload) sessions.splice(0, 1);
+    if (deload) sessions.splice(2, 1); // drop Friday; keep strength and the key session
     return { week: n, focus: 'f', progression: { lever: n === 1 ? 'start' : deload ? 'deload' : 'volume', change: 'c' }, sessions };
   };
   return { summary: 'Weeks 1-4', weeks: [week(1), week(2), week(3), week(4, true)] } as unknown as Block;
@@ -277,20 +277,20 @@ Deno.test({
           (e: { message: string }) => /key session/.test(e.message),
         );
         const adjusted = (await validBlock(d.athlete)).weeks[0];
-        // Three days now: Wed, Fri and Sat, all core (Saturday's session is no longer optional).
-        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Mon');
+        // Three days now: Mon, Wed and Sat, all core (Saturday's session is no longer optional).
+        adjusted.sessions = adjusted.sessions.filter((s) => s.day !== 'Fri');
         const sat = adjusted.sessions.find((s) => s.day === 'Sat')!;
         sat.optional = false;
         sat.slot = null;
         const deps2 = makeDeps(fakeClaude([{ data: { summary: 's', weeks: [adjusted] } }]).fn, background);
         const r = await weeklyCheckin(deps2, d.caller, {
           program_id: id, week: 1, energy: 'good', sleep: 'good',
-          availability: { training_days: ['Wed', 'Fri', 'Sat'], applies: 'ongoing' },
+          availability: { training_days: ['Mon', 'Wed', 'Sat'], applies: 'ongoing' },
         });
         assert.deepEqual(r.reasons, ['availability changed']);
         await Promise.all(background.splice(0));
         const { data: p } = await admin.from('training_programs').select('inputs').eq('id', id).single();
-        assert.deepEqual(p!.inputs.training_days, ['Wed', 'Fri', 'Sat']);
+        assert.deepEqual(p!.inputs.training_days, ['Mon', 'Wed', 'Sat']);
         const { data: c } = await admin.from('weekly_checkins').select('status, last_error').eq('program_id', id).eq('week', 1).single();
         assert.equal(c!.status, 'adjusted', c!.last_error ?? '');
       });

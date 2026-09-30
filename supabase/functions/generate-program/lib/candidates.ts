@@ -1,5 +1,6 @@
 import type { AthleteRow } from './auth.ts';
 import type { SupabaseClient } from './deps.ts';
+import type { RunningMode } from './schemas.ts';
 
 // Database-first: sessions may only use exercises, templates and race sessions
 // from these lists, filtered for the athlete. Risk rules apply to every format.
@@ -71,7 +72,7 @@ export interface SessionFormat {
   dose_kind: 'time' | 'reps' | 'sets_reps_load' | 'foot_contacts';
   score: 'none' | 'rounds_reps' | 'time';
   needs_template: boolean;
-  running: 'none' | 'sim' | 'capped';
+  running: 'none' | 'sim' | 'capped' | 'run';
   rules: Record<string, unknown>;
   description: string;
 }
@@ -126,10 +127,19 @@ function locationOk(whereSetting: string, locations: string[]): boolean {
   }
 }
 
+// Equipment the athlete owns overrides the exercise's location tag (e.g. every
+// erg is tagged "Gym", but an athlete with an air bike at home can use it).
+function ownsEquipmentFor(exercise: Exercise, owned: Set<string>): boolean {
+  return (exercise.equipment_options ?? []).some(
+    (option) => option.length > 0 && option.every((item) => owned.has(item)) && option.some((item) => !ALWAYS_AVAILABLE.includes(item)),
+  );
+}
+
 export function filterExercises(exercises: Exercise[], athlete: AthleteRow): Exercise[] {
   const rank = LEVEL_RANK[athlete.level];
   const risks = ALLOWED_RISK[athlete.level];
-  const have = new Set([...(athlete.equipment ?? []), ...ALWAYS_AVAILABLE]);
+  const owned = new Set(athlete.equipment ?? []);
+  const have = new Set([...owned, ...ALWAYS_AVAILABLE]);
   const locations = athlete.training_locations ?? [];
   return exercises.filter(
     (e) =>
@@ -137,7 +147,7 @@ export function filterExercises(exercises: Exercise[], athlete: AthleteRow): Exe
       risks.includes(e.acute_risk) &&
       DIFFICULTY_RANK[e.difficulty] <= rank &&
       equipmentOk(e, have) &&
-      locationOk(e.where_setting, locations),
+      (locationOk(e.where_setting, locations) || ownsEquipmentFor(e, owned)),
   );
 }
 
@@ -238,6 +248,44 @@ export async function loadCandidates(
   };
 }
 
+export const isPlyometric = (e: Exercise) => e.movement_pattern === 'Plyometric' || e.methods.includes('Plyometric');
+
+/** Formats this athlete can actually do, given their candidates and running choice. */
+export function availableFormats(c: Candidates, running: RunningMode): Set<string> {
+  const exercises = [...c.exercises.values()];
+  const count = (pred: (e: Exercise) => boolean) => exercises.filter(pred).length;
+  const hasTemplate = (method: string) => [...c.templates.values()].some((t) => t.method === method);
+  const available = new Set<string>();
+  for (const format of c.formats.keys()) {
+    const ok = (() => {
+      switch (format) {
+        case 'Strength':
+        case 'Circuit':
+        case 'Mobility':
+          return hasTemplate(format);
+        case 'Tabata':
+          return count((e) => e.tabata_suitable) >= 1;
+        case 'HIIT':
+          return count((e) => isErg(e) || (isBodyweightOnly(e) && !isRunning(e))) >= 1;
+        case 'Aerobic':
+          return count(isErg) >= 1;
+        case 'Plyometric':
+          return count(isPlyometric) >= 2;
+        case 'Run':
+          return running === 'programmed' && count(isRunning) >= 1;
+        case 'RaceSim':
+          return count(isRunning) >= 1 || !c.race.run_distance_m;
+        case 'Compromised':
+          return count(isRunning) >= 1;
+        default:
+          return true; // AMRAP, EMOM, ForTime, Station
+      }
+    })();
+    if (ok) available.add(format);
+  }
+  return available;
+}
+
 // Compact one-line-per-row lists for the prompt.
 
 export function formatExercises(candidates: Candidates): string {
@@ -266,8 +314,9 @@ export function formatRaceSessions(candidates: Candidates): string {
     .join('\n');
 }
 
-export function formatFormats(candidates: Candidates): string {
+export function formatFormats(candidates: Candidates, only?: Set<string>): string {
   return [...candidates.formats.values()]
+    .filter((f) => !only || only.has(f.format))
     .map((f) => `${f.format} (${f.label}): ${f.description} Dose: ${f.dose_kind.replace(/_/g, ' ')}.${f.needs_template ? ' Needs a template.' : ''}`)
     .join('\n');
 }

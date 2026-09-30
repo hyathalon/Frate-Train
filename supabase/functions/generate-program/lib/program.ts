@@ -1,11 +1,11 @@
 import { type AthleteRow, type Caller, resolveAthlete } from './auth.ts';
-import { LEVEL_NAME, loadCandidates, loadRaceOption, type RaceOption } from './candidates.ts';
+import { availableFormats, isRunning, LEVEL_NAME, loadCandidates, loadRaceOption, type RaceOption } from './candidates.ts';
 import type { CallClaude, ClaudeCallResult } from './claude.ts';
 import type { Anthropic, SupabaseClient } from './deps.ts';
 import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
-import { type Block, BLOCK_SCHEMA, type BlockWeek, DAYS, type Outline, OUTLINE_SCHEMA, type OutlineWeek } from './schemas.ts';
+import { type Block, BLOCK_SCHEMA, type BlockWeek, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, RUNNING_MODES, type RunningMode } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow } from './time.ts';
 import { type BlockSettings, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
@@ -27,6 +27,8 @@ const PREVIEW_TIMEOUT_MS = 90_000;
 // gets more time; its repair runs at medium.
 const BLOCK_TIMEOUT_MS = { high: 210_000, other: 150_000 };
 const REPAIR_TIMEOUT_MS = 150_000;
+// Background work must finish inside the 400 s limit; skip a repair that wouldn't.
+const BACKGROUND_BUDGET_MS = 385_000;
 const STALE_GENERATION_MS = 7 * 60_000;
 
 // ---------------------------------------------------------------------------
@@ -83,7 +85,31 @@ export function parseInputs(raw: unknown): ProgramInputs {
     weaknesses: stringList(body.weaknesses, 'Weaknesses'),
     longest_run_min: longestRun,
     cross_training_preferences: stringList(body.cross_training_preferences, 'Cross-training preferences', 8),
+    running: parseRunning(body.running),
   };
+}
+
+function parseRunning(raw: unknown): ProgramInputs['running'] {
+  const body = (raw ?? {}) as Record<string, unknown>;
+  const mode = (body.mode ?? 'none') as RunningMode;
+  if (!RUNNING_MODES.includes(mode)) {
+    throw new HttpError(400, 'invalid_input', 'Choose your running: program my running, I already have a run plan, or no running.');
+  }
+  if (mode !== 'own_plan') return { mode, own_runs: [] };
+  const runs = body.own_runs;
+  if (!Array.isArray(runs) || runs.length < 1 || runs.length > 7) {
+    throw new HttpError(400, 'invalid_input', 'Tell us which days you run, and whether each run is hard or easy.');
+  }
+  const seen = new Set<string>();
+  const ownRuns = runs.map((r) => {
+    const run = (r ?? {}) as Record<string, unknown>;
+    if (!(DAYS as readonly unknown[]).includes(run.day) || seen.has(run.day as string) || (run.intensity !== 'hard' && run.intensity !== 'easy')) {
+      throw new HttpError(400, 'invalid_input', 'Each run needs a day (Mon to Sun, once each) and whether it is hard or easy.');
+    }
+    seen.add(run.day as string);
+    return { day: run.day as string, intensity: run.intensity as 'hard' | 'easy' };
+  });
+  return { mode, own_runs: DAYS.flatMap((d) => ownRuns.filter((r) => r.day === d)) };
 }
 
 /** Cross-training preferences must use the exercise library's equipment names. */
@@ -198,6 +224,7 @@ async function generateWithRepair<T>(args: {
   effort?: 'low' | 'medium' | 'high' | null;
   timeoutMs: number;
   repairTimeoutMs?: number;
+  deadline?: number; // Date.now() value by which all attempts must be done
   countsAs: string | null;
   paidWith: string | null;
 }): Promise<{ data: T | null; error: string | null }> {
@@ -228,8 +255,12 @@ async function generateWithRepair<T>(args: {
     });
     await checkSpendAlert(deps, args.settings);
     if (ok) return { data: result.data, error: null };
-    // Only a valid-but-rule-breaking answer is worth a repair turn.
+    // Only a valid-but-rule-breaking answer is worth a repair turn, and only if it can finish in time.
     if (!result.data || errors.length === 0) break;
+    if (args.deadline && Date.now() + (args.repairTimeoutMs ?? args.timeoutMs) > args.deadline) {
+      lastError = `${lastError} (no time left for a repair)`;
+      break;
+    }
     messages.push({ role: 'assistant', content: result.text }, { role: 'user', content: repairPrompt(errors) });
   }
   return { data: null, error: lastError };
@@ -429,12 +460,14 @@ async function generateFirstBlock(
   endWeek: number,
   paidWith: 'monthly' | 'credit' | null,
 ) {
+  const started = Date.now();
   const { admin } = deps;
   const outline = program.outline;
   const inputs = program.inputs;
   const level = LEVEL_NAME[athlete.level];
   const blockWeeks = outline.weeks.filter((w) => w.week >= 1 && w.week <= endWeek);
-  const { candidates, frame, tabataTimings, coach } = await prepareGeneration(admin, athlete, inputs, blockWeeks);
+  const prep = await prepareGeneration(admin, athlete, inputs, blockWeeks);
+  const { candidates, frame, tabataTimings, coach } = prep;
   const model = await modelFor(admin, 'confirmation_block');
   const effort = athlete.tier === 'member' ? model.effortMember : model.effortOther;
 
@@ -444,10 +477,19 @@ async function generateFirstBlock(
     event: { userId: caller.userId, athleteId: athlete.id, programId: program.id, blockNo: 1, callType: 'confirmation_block' },
     model,
     system: systemPrompt(await readReferenceText(admin)),
-    prompt: blockPrompt({ athlete, inputs, coach, outline, startWeek: 1, endWeek, candidates, frame, tabataTimings }),
+    prompt: blockPrompt({
+      athlete, inputs, coach, outline, startWeek: 1, endWeek, candidates, frame, tabataTimings,
+      availableFormats: prep.availableFormats, plyoContacts: prep.plyoContacts, runExerciseIds: prep.runExerciseIds,
+    }),
     schema: BLOCK_SCHEMA,
     validate: async (b) =>
-      validateBlock(b, {
+      validateBlock(normalizeBlock(b), {
+        availableFormats: prep.availableFormats,
+        running: inputs.running?.mode ?? 'none',
+        ownRuns: inputs.running?.own_runs ?? [],
+        longestRunMin: inputs.longest_run_min ?? null,
+        previousLongRunMin: null,
+        finalWeek: program.total_weeks,
         startWeek: 1,
         endWeek,
         outlineWeeks: outline.weeks,
@@ -463,6 +505,7 @@ async function generateFirstBlock(
     effort,
     timeoutMs: effort === 'high' ? BLOCK_TIMEOUT_MS.high : BLOCK_TIMEOUT_MS.other,
     repairTimeoutMs: REPAIR_TIMEOUT_MS,
+    deadline: started + BACKGROUND_BUDGET_MS,
     countsAs: 'confirmation',
     paidWith,
   });
@@ -510,13 +553,23 @@ async function generateFirstBlock(
 async function prepareGeneration(admin: SupabaseClient, athlete: AthleteRow, inputs: ProgramInputs, weeks: OutlineWeek[]) {
   const level = LEVEL_NAME[athlete.level];
   const race = await requireRaceOption(admin, inputs.race_option_id);
-  const [candidates, frame, tabataTimings, coach] = await Promise.all([
+  const [candidates, frame, tabataTimings, coach, plyo] = await Promise.all([
     loadCandidates(admin, athlete, race, { includeRaceSessions: weeks.some((w) => w.phase === 'specific' || w.phase === 'taper') }),
     sessionFrame(admin, inputs.minutes_per_session),
     Promise.all([1, 2, 3, 4].map((n) => planFormat(admin, 'Tabata', 4 * n + 2 * (n - 1), level))),
     loadCoachProfile(admin, athlete.id),
+    planFormat(admin, 'Plyometric', 10, level),
   ]);
-  return { candidates, frame, tabataTimings, coach };
+  const running = inputs.running?.mode ?? 'none';
+  return {
+    candidates,
+    frame,
+    tabataTimings,
+    coach,
+    availableFormats: availableFormats(candidates, running),
+    plyoContacts: Array.isArray(plyo.contacts) ? [Number(plyo.contacts[0]), Number(plyo.contacts[1])] as [number, number] : null,
+    runExerciseIds: [...candidates.exercises.values()].filter(isRunning).map((e) => e.id),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -644,6 +697,7 @@ async function adjustWeek(
   reasons: string[],
   checkinId: string,
 ) {
+  const started = Date.now();
   const { admin } = deps;
   const settings = await loadSettings(admin);
   const level = LEVEL_NAME[athlete.level];
@@ -657,7 +711,8 @@ async function adjustWeek(
   };
   const index = block.sessions.weeks.findIndex((w) => w.week === week);
   const previousWeek: BlockWeek | undefined = index > 0 ? block.sessions.weeks[index - 1] : await lastWeekBefore(admin, program.id, block.block_no);
-  const { candidates, frame, tabataTimings, coach } = await prepareGeneration(admin, athlete, inputs, [target]);
+  const prep = await prepareGeneration(admin, athlete, inputs, [target]);
+  const { candidates, frame, tabataTimings, coach } = prep;
   const model = await modelFor(admin, 'week_adjust');
   const effort = athlete.tier === 'member' ? model.effortMember : model.effortOther;
 
@@ -679,11 +734,18 @@ async function adjustWeek(
     system: systemPrompt(await readReferenceText(admin)),
     prompt: blockPrompt({
       athlete, inputs, coach, outline: program.outline, startWeek: week, endWeek: week, candidates, frame, tabataTimings,
+      availableFormats: prep.availableFormats, plyoContacts: prep.plyoContacts, runExerciseIds: prep.runExerciseIds,
       targetWeeks: [target], previousWeek, adjustment,
     }),
     schema: BLOCK_SCHEMA,
     validate: async (b) =>
-      validateBlock(b, {
+      validateBlock(normalizeBlock(b), {
+        availableFormats: prep.availableFormats,
+        running: inputs.running?.mode ?? 'none',
+        ownRuns: inputs.running?.own_runs ?? [],
+        longestRunMin: inputs.longest_run_min ?? null,
+        previousLongRunMin: lastLongRun(block.sessions.weeks.filter((w) => w.week < week)),
+        finalWeek: program.total_weeks,
         startWeek: week,
         endWeek: week,
         outlineWeeks: [target],
@@ -700,6 +762,7 @@ async function adjustWeek(
     effort,
     timeoutMs: effort === 'high' ? BLOCK_TIMEOUT_MS.high : BLOCK_TIMEOUT_MS.other,
     repairTimeoutMs: REPAIR_TIMEOUT_MS,
+    deadline: started + BACKGROUND_BUDGET_MS,
     countsAs: null,
     paidWith: null,
   });
@@ -712,6 +775,13 @@ async function adjustWeek(
   const sessions: Block = { ...block.sessions, weeks: block.sessions.weeks.map((w) => (w.week === week ? adjusted : w)) };
   await admin.from('program_blocks').update({ sessions }).eq('id', block.id);
   await admin.from('weekly_checkins').update({ status: 'adjusted', previous_week: block.sessions.weeks[index] ?? null }).eq('id', checkinId);
+}
+
+/** Minutes of the last long run in these weeks, if any. */
+function lastLongRun(weeks: BlockWeek[]): number | null {
+  let last: number | null = null;
+  for (const w of weeks) for (const s of w.sessions) for (const p of s.parts) if (p.format === 'Run' && p.run_type === 'long') last = p.minutes;
+  return last;
 }
 
 /** The last week of the previous block, if there is one. */

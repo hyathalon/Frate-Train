@@ -1,7 +1,7 @@
 import type { AthleteRow } from './auth.ts';
 import { type Candidates, formatExercises, formatFormats, formatRaceSessions, formatTemplates, type RaceOption } from './candidates.ts';
-import type { Timing } from './validate.ts';
-import type { BlockWeek, Outline, OutlineWeek } from './schemas.ts';
+import { type Timing, weeklyNeeds } from './validate.ts';
+import type { BlockWeek, Outline, OutlineWeek, RunningMode } from './schemas.ts';
 
 // The system prompt is identical for every call, so it is cached; everything
 // that varies (athlete, dates, candidate lists) goes in the user message.
@@ -18,6 +18,10 @@ export interface ProgramInputs {
   weaknesses: string[];
   longest_run_min?: number | null; // longest run in the last 3 weeks, minutes
   cross_training_preferences?: string[]; // ranked, most preferred first
+  running: {
+    mode: RunningMode; // programmed | own_plan | none
+    own_runs: { day: string; intensity: 'hard' | 'easy' }[]; // own_plan only
+  };
 }
 
 // Frates's session design rules. Static text, so it stays in the cached system prompt.
@@ -74,17 +78,20 @@ export interface CoachProfile {
   coach_notes: string | null;
 }
 
-// Program scope set by the coach: no standalone running. Takes priority over the
-// reference material and over the running examples in the session design rules.
-const PROGRAM_SCOPE = `Program scope (this takes priority over everything above and below):
-- This program has no standalone running sessions: no easy runs, long runs, tempo, threshold, interval or hill-sprint runs. Apply the session types, RPE scale and progression rules to ergs and other cross-training instead (air bike, BikeErg, SkiErg, rower), and to sleds, circuits and the other formats.
-- Running appears only as run segments in race simulations (at the race's run distance, no cap) and as short run segments in compromised parts (at most 25% of that part's time). Athletes may add runs themselves; you never do.
+// The athlete's running choice (in <athlete>) decides where running goes.
+// Takes priority over the reference material's running programs.
+const RUNNING_RULES = `Running (follow the athlete's running choice in the athlete facts; this takes priority over the reference material):
+- "Program my running": plan their running with Run parts (run_type key, easy, long or recovery), using the session design rules above for types, RPE, ranges and long-run progression. Every week needs running suited to the phase: a key run, plus an easy or long run where days allow. Start the long run at or just below their longest run in the last 3 weeks, then extend it by at most 10 minutes at a time. A long run may make its session longer than the usual minutes (up to 120 min).
+- "I already have a run plan": don't plan any runs (no Run parts); they run on their own days. Plan around them: no heavy lower-body strength or sled work the day before a hard run (and preferably not two days before). Count their runs in the week's load.
+- "No running": no Run parts. Apply the session types, RPE scale and progression rules to ergs and other cross-training instead (air bike, BikeErg, SkiErg, rower), and to sleds, circuits and the other formats.
+- For every choice, running also appears as run segments in race simulations (at the race's run distance) and as short run segments in compromised parts (at most 25% of that part's time).
 - The niggle rules apply to erg and station work in the same way: swap to a pain-free off-feet or upper-body option with the same purpose and RPE.`;
 
 const FORMAT_RULES = `Session structure:
 - A session is a warm-up, then 1 to 3 parts, then a cool-down. The warm-up and cool-down are added for you; give only the parts. The parts' minutes plus warm-up and cool-down must equal the athlete's minutes per session (within 5 minutes).
 - Each part has one format. Timed formats (Circuit, Tabata, HIIT, Mobility, Aerobic) are dosed by time and RPE only, never reps. Rep formats (AMRAP, EMOM, ForTime, Station, RaceSim, Compromised) give reps or distance. Strength gives sets × reps plus a load by feel (e.g. "3 × 8 (6-10), moderate load, RPE 7"). Plyometrics give foot contacts.
 - Timing (work, rest, rounds, blocks) comes from the database; don't restate it in the dose.
+- Weekly mix (core sessions, each need in a different session): with running programmed, 3 sessions = a key run, a strength session and a hybrid/station session; 4 or more = a key run, an easy or long run, a strength session and a hybrid/station session. Otherwise, 2 or more sessions = at least one strength session and one conditioning/station session. Race week is exempt.
 - Plyometrics go first, straight after the warm-up, with full recovery.
 - Tabata is classic only: 20 s maximal work / 10 s complete rest × 8 rounds per 4-minute block, 1 exercise or 2 alternating, Tabata-suitable exercises only (marked T). For beginners, cue it "hard but controlled".
 - Give a short technique cue (in cue) for race-station exercises and for exercises that target the athlete's weaknesses.
@@ -114,10 +121,16 @@ How this coach plans:
 
 ${SESSION_DESIGN_RULES}
 
-${PROGRAM_SCOPE}
+${RUNNING_RULES}
 
 ${FORMAT_RULES}`;
 }
+
+const RUNNING_LABEL: Record<RunningMode, string> = {
+  programmed: 'Program my running',
+  own_plan: 'I already have a run plan',
+  none: 'No running',
+};
 
 function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachProfile | null, race: RaceOption): string {
   const strengths = coach?.strengths.length ? coach.strengths : inputs.strengths;
@@ -134,7 +147,11 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
     `Goal: ${inputs.goal}`,
     `Strengths: ${strengths.length ? strengths.join(', ') : 'not specified'}`,
     `Weaknesses: ${weaknesses.length ? weaknesses.join(', ') : 'not specified'}`,
-    `Longest run in the last 3 weeks: ${inputs.longest_run_min ? `${inputs.longest_run_min} min` : 'not specified'} (context for leg load only; the program has no standalone runs)`,
+    `Running choice: ${RUNNING_LABEL[inputs.running.mode]}`,
+    ...(inputs.running.mode === 'own_plan'
+      ? [`Their own runs: ${inputs.running.own_runs.map((r) => `${r.day} (${r.intensity})`).join(', ') || 'days not given'}`]
+      : []),
+    `Longest run in the last 3 weeks: ${inputs.longest_run_min ? `${inputs.longest_run_min} min` : 'not specified'}`,
     `Cross-training preferences (most preferred first): ${inputs.cross_training_preferences?.length ? inputs.cross_training_preferences.join(', ') : 'not specified (use the equipment list)'}`,
   ];
   if (coach?.priority_pillars.length) lines.push(`Coach's priority pillars: ${coach.priority_pillars.join(', ')}`);
@@ -172,7 +189,9 @@ Total weeks: ${window.totalWeeks} (week ${window.totalWeeks} is race week)
 
 Outline every week from 1 to ${window.totalWeeks}:
 - Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final 1 to 2 weeks and includes race week.
-- For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload weeks "deload", otherwise frequency, intensity or volume), the number of core sessions (1 to ${days}), the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
+- For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload weeks "deload", otherwise frequency, intensity or volume), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
+- Core sessions per week are never more than ${days} (the athlete trains ${days} days). Optional sessions go on the same days.
+- Plan the weekly mix and running for the athlete's running choice (${RUNNING_LABEL[inputs.running.mode]}).
 - Build up core sessions gradually; add at most one new stimulus per 4-week block, first as an optional session.
 - In the summary, describe core and optional sessions accurately: core sessions are the week's planned sessions; optional ones are extras "if you have time".`;
 }
@@ -187,6 +206,9 @@ export function blockPrompt(args: {
   candidates: Candidates;
   frame: { warmup_min: number; cooldown_min: number };
   tabataTimings: Timing[];
+  availableFormats: Set<string>;
+  plyoContacts: [number, number] | null; // this athlete's foot-contact range per session
+  runExerciseIds: string[];
   targetWeeks?: OutlineWeek[]; // overrides the outline's targets (weekly adjustments)
   previousWeek?: BlockWeek; // the week before, for progression
   adjustment?: string; // why this week is being rewritten
@@ -218,21 +240,29 @@ ${JSON.stringify(outline)}
 </season_outline>
 ${previous}${adjustment}
 <targets>
-${weeks.map((w) => `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions, up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}`).join('\n')}
+${weeks.map((w) => {
+    const needs = weeklyNeeds(inputs.running.mode, w.core_sessions);
+    return `Week ${w.week}: ${w.phase}, ${w.load} load${w.deload ? ', deload' : ''}; lever ${w.lever}; exactly ${w.core_sessions} core sessions, up to ${w.optional_sessions} optional; key session on ${inputs.key_session_day}: ${w.key_session}; focus: ${w.focus}${needs.length && w.week !== outline.weeks.length ? `; core sessions must include (each in a different session): ${needs.join(', ')}` : ''}`;
+  }).join('\n')}
 Every session: ${frame.warmup_min} min warm-up + parts totalling ${partsMinutes} min + ${frame.cooldown_min} min cool-down = ${inputs.minutes_per_session} min (deload weeks may be shorter).
 Sessions only on ${inputs.training_days.join(', ')}; one core session per day.
 </targets>
 
 <formats>
-${formatFormats(candidates)}
+Use only these formats for this athlete: ${[...args.availableFormats].join(', ')}.
+${formatFormats(candidates, args.availableFormats)}
 Tabata part lengths for this athlete: ${tabataTimings.map((t) => `${t.blocks} block(s) = ${t.minutes} min`).join('; ')}
+${args.plyoContacts ? `Plyometric foot contacts for this athlete: ${args.plyoContacts[0]}–${args.plyoContacts[1]} per plyometric part.` : ''}
+Race simulations must fit the session length: at ${inputs.minutes_per_session} min, plan a partial simulation (some stations with their runs), never a full race.${candidates.race.run_distance_m ? ` Every run segment in a race simulation is exactly ${candidates.race.run_distance_m} m: set run_distance_m to ${candidates.race.run_distance_m}.` : ''}
+Running exercises for this athlete (use these ids for any run): ${args.runExerciseIds.join(', ') || 'none'}.
 </formats>
 
 Rules for sessions:
 - Use only the exercises, templates and race sessions listed below, by their exact id. Never invent an exercise or rename one.
 - Strength, Circuit and Mobility parts use a template: set template_id, set minutes to the template's part length, and give exactly one item per slot, in slot order, whose movement pattern fits the slot (and body region, where the slot names one). Other formats have template_id null.
 - Each item sets exactly one of exercise_id or race_session_id; the other is null. Set block only for Tabata items, foot_contacts only for plyometric drills, run_minutes only for running in compromised parts, and run_distance_m only for run segments in race simulations${candidates.race.run_distance_m ? ` (${candidates.race.run_distance_m} m)` : ''}. Leave the others null.
-- Running exercises are marked R; they only go in RaceSim and Compromised parts.
+- Running exercises are marked R; they only go in ${inputs.running.mode === 'programmed' ? 'Run, ' : ''}RaceSim and Compromised parts.${inputs.running.mode === 'programmed' ? ' Run parts set run_type (key, easy, long or recovery).' : ''}
+- Leave out fields that don't apply (cue, block, foot_contacts, run_minutes, run_distance_m, template_id, run_type, slot) instead of sending them empty.
 - Optional sessions have optional true and a short slot key that stays the same across these weeks (for example "extra-intervals"), so the athlete's completions can be counted. Core sessions have optional false and slot null.
 - Mark exactly one core session a week as the key session, on ${inputs.key_session_day}.
 - Give each week's progression: the lever from the outline and, in one sentence, what changes.

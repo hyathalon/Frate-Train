@@ -1,5 +1,5 @@
 import { type Candidates, type Exercise, isBodyweightOnly, isErg, isRunning, partMinutes, slotMatches } from './candidates.ts';
-import type { Block, BlockWeek, Outline, Session, SessionPart } from './schemas.ts';
+import { type Block, type BlockWeek, DAYS, type Outline, type RunningMode, type Session, type SessionPart } from './schemas.ts';
 
 // Each validator returns plain-English errors. An empty list means valid.
 // The same messages go back to Claude in the one automatic repair attempt.
@@ -84,12 +84,19 @@ export interface BlockContext {
   timings: Map<string, Timing>; // plan_format() results, keyed by timingKey
   settings: BlockSettings;
   previousWeek?: BlockWeek; // the last week of the previous block, if any
+  availableFormats: Set<string>;
+  running: RunningMode;
+  ownRuns: { day: string; intensity: 'hard' | 'easy' }[]; // own_plan only
+  longestRunMin: number | null; // longest run in the last 3 weeks (programmed running)
+  previousLongRunMin: number | null; // the last long run already planned (later blocks)
+  finalWeek: number; // race week, exempt from the weekly mix minimums
 }
 
 const DEFAULT_LEEWAY = 0.05;
+const LONG_RUN_SESSION_MAX = 120;
 
 // "10 reps", "3 x 10", "3 × 10" – but not "4 x 20 m" or "5 x 2 min".
-const REPS_RE = /\b\d+\s*reps?\b|\b\d+\s*[x×]\s*\d+(?!\s*(?:s|sec|secs|seconds|min|mins|minutes|m|km|cal|cals)\b)(?!\s*[-–(])/i;
+const REPS_RE = /\b\d+\s*reps?\b|\b\d+\s*[x×]\s*\d+(?![\d.])(?!\s*(?:s|sec|secs|seconds|min|mins|minutes|m|km|cal|cals)\b)(?!\s*[-–(])/i;
 const SETS_REPS_RE = /\b\d+\s*(?:sets?\s*(?:\([^)]*\)\s*)?)?[x×]\s*\d+/i;
 const LOAD_BY_FEEL_RE = /\b(rpe|load|bodyweight|light|moderate|heavy|by feel|race standard)\b/i;
 // Coach's rule: intensity by RPE and feel, never fixed units or zones.
@@ -166,8 +173,95 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     }
 
     week.sessions.forEach((s, j) => validateSession(s, `${label}, session ${j + 1} ("${s.title}")`, week.progression.lever === 'deload', ctx, errors));
+    if (week.week !== ctx.finalWeek) checkWeeklyMix(core, label, ctx, errors);
+    if (ctx.running === 'own_plan') checkOwnRunSpacing(week, label, ctx, errors);
   });
+  if (ctx.running === 'programmed') checkLongRuns(block, ctx, errors);
   return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Weekly mix, own run plan spacing, long runs
+// ---------------------------------------------------------------------------
+
+const HYBRID_FORMATS = ['Station', 'Compromised', 'RaceSim', 'Circuit', 'HIIT', 'Tabata', 'AMRAP', 'EMOM', 'ForTime', 'Aerobic'];
+type Need = 'key run' | 'easy or long run' | 'run' | 'strength' | 'hybrid or station';
+
+function serves(s: Session): Set<Need> {
+  const out = new Set<Need>();
+  for (const p of s.parts) {
+    if (p.format === 'Run') {
+      out.add('run');
+      if (p.run_type === 'key') out.add('key run');
+      if (p.run_type === 'easy' || p.run_type === 'long' || p.run_type === 'recovery') out.add('easy or long run');
+    }
+    if (p.format === 'Strength') out.add('strength');
+    if (HYBRID_FORMATS.includes(p.format)) out.add('hybrid or station');
+  }
+  return out;
+}
+
+/** Can each need be met by a different session? (small backtracking match) */
+function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<number>()): boolean {
+  if (needs.length === 0) return true;
+  const [first, ...rest] = needs;
+  for (let i = 0; i < sessions.length; i++) {
+    if (used.has(i) || !sessions[i].has(first)) continue;
+    used.add(i);
+    if (matchable(rest, sessions, used)) return true;
+    used.delete(i);
+  }
+  return false;
+}
+
+export function weeklyNeeds(running: RunningMode, coreSessions: number): Need[] {
+  if (running === 'programmed') {
+    if (coreSessions >= 4) return ['key run', 'easy or long run', 'strength', 'hybrid or station'];
+    if (coreSessions === 3) return ['key run', 'strength', 'hybrid or station'];
+    return coreSessions >= 1 ? ['key run'] : [];
+  }
+  return coreSessions >= 2 ? ['strength', 'hybrid or station'] : [];
+}
+
+function checkWeeklyMix(core: Session[], label: string, ctx: BlockContext, errors: string[]) {
+  const needs = weeklyNeeds(ctx.running, core.length);
+  if (needs.length && !matchable(needs, core.map(serves))) {
+    errors.push(`${label}: with ${core.length} core sessions the week needs, each in a different core session: ${needs.join(', ')}.`);
+  }
+}
+
+const HEAVY_LOWER = ['Squat', 'Hinge', 'Lunge / single-leg'];
+
+/** Own run plan: no heavy lower-body strength or sled work the day before a hard run. */
+function checkOwnRunSpacing(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
+  for (const run of ctx.ownRuns.filter((r) => r.intensity === 'hard')) {
+    const dayBefore = DAYS[(DAYS.indexOf(run.day as (typeof DAYS)[number]) + 6) % 7];
+    for (const s of week.sessions.filter((x) => x.day === dayBefore)) {
+      const heavy = s.parts.some((p) =>
+        p.items.some((it) => {
+          const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
+          return e && (e.movement_pattern === 'Sled' || (p.format === 'Strength' && HEAVY_LOWER.includes(e.movement_pattern)));
+        })
+      );
+      if (heavy) errors.push(`${label}: "${s.title}" on ${dayBefore} has heavy lower-body or sled work the day before the athlete's hard run on ${run.day}.`);
+    }
+  }
+}
+
+/** Programmed running: the first long run starts at or below the longest recent run; then +10 min at most. */
+function checkLongRuns(block: Block, ctx: BlockContext, errors: string[]) {
+  let last = ctx.previousLongRunMin;
+  for (const week of block.weeks) {
+    for (const s of week.sessions) {
+      for (const p of s.parts.filter((x) => x.format === 'Run' && x.run_type === 'long')) {
+        const cap = last !== null ? last + 10 : ctx.longestRunMin !== null ? ctx.longestRunMin + 5 : null;
+        if (cap !== null && p.minutes > cap) {
+          errors.push(`Week ${week.week}, "${s.title}": the long run is ${p.minutes} min; it can be at most ${cap} min (${last !== null ? 'previous long run + 10' : 'longest run in the last 3 weeks + 5'}).`);
+        }
+        last = p.minutes;
+      }
+    }
+  }
 }
 
 function validateSession(s: Session, where: string, deload: boolean, ctx: BlockContext, errors: string[]) {
@@ -178,7 +272,10 @@ function validateSession(s: Session, where: string, deload: boolean, ctx: BlockC
   const total = ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
   const tol = ctx.settings.minutesTolerance;
   const minTotal = deload ? Math.floor(ctx.minutesPerSession * ctx.settings.deloadSessionMinRatio) : ctx.minutesPerSession - tol;
-  if (total < minTotal || total > ctx.minutesPerSession + tol) {
+  // A long run may make its session longer than usual, up to LONG_RUN_SESSION_MAX.
+  const longRun = s.parts.some((p) => p.format === 'Run' && p.run_type === 'long');
+  const maxTotal = longRun ? Math.max(ctx.minutesPerSession + tol, LONG_RUN_SESSION_MAX) : ctx.minutesPerSession + tol;
+  if (total < minTotal || total > maxTotal) {
     errors.push(`${where}: with the ${ctx.frame.warmup_min} min warm-up and ${ctx.frame.cooldown_min} min cool-down it lasts ${total} min; sessions must be ${ctx.minutesPerSession} min (±${tol})${deload ? `, or down to ${minTotal} min in a deload week` : ''}.`);
   }
 
@@ -190,6 +287,15 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
   if (!f) {
     errors.push(`${where}: unknown format.`);
     return;
+  }
+  if (part.format === 'Run' && ctx.running !== 'programmed') {
+    errors.push(`${where}: no Run parts; the athlete didn't choose "Program my running".`);
+  }
+  if (!ctx.availableFormats.has(part.format)) {
+    errors.push(`${where}: ${part.format} isn't available for this athlete; use one of: ${[...ctx.availableFormats].join(', ')}.`);
+  }
+  if (part.format === 'Run' ? !part.run_type : part.run_type) {
+    errors.push(`${where}: ${part.format === 'Run' ? 'Run parts need run_type (key, easy, long or recovery)' : 'run_type is only for Run parts'}.`);
   }
   const rules = f.rules;
   const exercises: (Exercise | undefined)[] = [];
@@ -220,7 +326,9 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
     if (f.dose_kind === 'foot_contacts' && !(item.foot_contacts && item.foot_contacts > 0)) errors.push(`${at}: plyometric drills need foot_contacts.`);
     // Running only in race simulations and compromised parts.
     if (exercise && isRunning(exercise)) {
-      if (f.running === 'none') errors.push(`${at}: no running in ${part.format} parts; running only appears in race simulations and compromised parts.`);
+      if (f.running === 'none') {
+        errors.push(`${at}: no running in ${part.format} parts; running goes in ${ctx.running === 'programmed' ? 'Run parts, ' : ''}race simulations and compromised parts.`);
+      }
       if (f.running === 'sim' && ctx.candidates.race.run_distance_m && item.run_distance_m !== ctx.candidates.race.run_distance_m) {
         errors.push(`${at}: run segments in a ${ctx.candidates.race.label} simulation are ${ctx.candidates.race.run_distance_m} m (run_distance_m).`);
       }
@@ -316,6 +424,12 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
       }
       break;
     }
+    case 'Run':
+      inRange(range(rules.minutes), part.minutes, 'the minutes');
+      exercises.forEach((e, k) => {
+        if (e && !isRunning(e)) errors.push(`${where}, item ${k + 1}: Run parts only contain running exercises.`);
+      });
+      break;
     case 'RaceSim':
     case 'Station':
       inRange(range(rules.minutes), part.minutes, 'the minutes');
