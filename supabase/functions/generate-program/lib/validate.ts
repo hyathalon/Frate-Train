@@ -50,8 +50,12 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
     }
     if (w.pillars.length === 0) errors.push(`Week ${w.week}: list at least one pillar.`);
     const strength = strengthTarget(w, { ...ctx, finalWeek: ctx.totalWeeks });
-    if (w.strength_sessions !== strength) {
-      errors.push(`Week ${w.week}: strength_sessions must be ${strength} (${w.week === ctx.totalWeeks ? 'race week: one short maintain session at least 5 days before the race, if the week allows' : w.phase === 'taper' ? 'taper: 1 at maintain' : `the athlete chose ${ctx.strengthPref}, within ${w.core_sessions} core sessions`}); it is ${w.strength_sessions}.`);
+    // Deload weeks may drop strength sessions (at least 1 if any are planned).
+    const strengthOk = w.deload && w.week !== ctx.totalWeeks
+      ? w.strength_sessions <= strength && w.strength_sessions >= Math.min(1, strength)
+      : w.strength_sessions === strength;
+    if (!strengthOk) {
+      errors.push(`Week ${w.week}: strength_sessions must be ${w.deload && w.week !== ctx.totalWeeks ? `1 to ${strength}` : strength} (${w.week === ctx.totalWeeks ? 'race week: one short maintain session at least 5 days before the race, if the week allows' : w.phase === 'taper' ? 'taper: 1 at maintain' : `the athlete chose ${ctx.strengthPref}, within ${w.core_sessions} core sessions`}); it is ${w.strength_sessions}.`);
     }
     const others = weeklyOthers(ctx.running, w.core_sessions).length;
     if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload
@@ -335,6 +339,11 @@ export function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<n
     used.delete(i);
   }
   return false;
+}
+
+/** Core sessions a normal week needs so the athlete's strength sessions fit beside the running and hybrid needs. */
+export function coreSessionsForStrength(running: RunningMode, daysAvailable: number, strengthPref: number): number {
+  return Math.min(daysAvailable * 2, weeklyOthers(running, 99).length + strengthPref);
 }
 
 /** The week's running and hybrid needs (strength comes on top; see strengthTarget). */

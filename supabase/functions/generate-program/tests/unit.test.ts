@@ -406,6 +406,22 @@ Deno.test('strength placement: with_hard_sessions, own_days, short second sessio
   assert.match(week2(validateBlock(block(), { ...ctx, finalWeek: 2, raceDay: 'Thu' })), /at least 5 days before the race \(no day fits\)/);
 });
 
+Deno.test('outline strength_sessions: the choice in normal weeks, 1 up to it in deloads, enough core sessions', () => {
+  const o = outline();
+  const oc = { totalWeeks: 4, daysAvailable: 4, running: 'none' as const, strengthPref: 2, raceDay: 'Sat' };
+  for (const w of o.weeks) w.strength_sessions = w.week === 4 ? 1 : 2; // 3 core: hybrid + 2 strength
+  assert.deepEqual(validateOutline(o, oc), []);
+  o.weeks[1].strength_sessions = 1;
+  assert.match(validateOutline(o, oc).join(' '), /Week 2: strength_sessions must be 2/);
+  // A deload week (not race week) may drop to 1.
+  const d = { ...o, weeks: o.weeks.map((w) => ({ ...w })) };
+  d.weeks[1] = { ...d.weeks[1], deload: true, lever: 'deload', strength_sessions: 1 };
+  assert.doesNotMatch(validateOutline(d, oc).join(' '), /Week 2: strength_sessions/);
+  // Too few core sessions for the choice.
+  o.weeks[1] = { ...o.weeks[1], strength_sessions: 1, core_sessions: 2 };
+  assert.match(validateOutline(o, { ...oc, strengthPref: 2 }).join(' '), /Week 2: plan at least 3 core sessions/);
+});
+
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {
   const b = block();
   const previous = b.weeks[1]; // 3 core sessions, 135 min
