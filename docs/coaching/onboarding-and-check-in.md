@@ -16,14 +16,26 @@ Principles:
 ## 1. Onboarding (sign-up)
 
 ### Screen 1: Your goal
-**1. Are you training for an event?** *(required)* `event_goal`
-- Yes: a hybrid race → event name (optional text) + event date (date picker)
-- Yes: a running race → distance + date
-- No: general fitness and strength
+**1. What's your main goal event?** *(required)* `event_goal`
+- A Hyathlon race → division (Open · Pro · Doubles) + event name (optional text) + date
+- A running race → distance + date
+- No event in the next 3 months: general fitness and strength *(the program runs in rolling 4-week blocks)*
 
-**2. Do you want running in your program?** *(required)* `include_running`
-- Yes
-- No, off-feet training only
+**1b. Any other events this year?** *(optional)* `other_events[]`
+- Add as many as you like: event name · type (Hyathlon race / running race + distance / other) · date · "Race it" or "Run it as training"
+- Helper text: "You can add events any time from your calendar."
+
+**1c. When was your last race?** `last_race`
+- In the last 4 weeks → what was it (Hyathlon race / marathon or longer / half marathon / 10 km or shorter / other) + date
+- More than 4 weeks ago / never
+
+**2. How do you want running in your program?** *(required)* `running_choice`
+- Program my running
+- I already have a run plan → which days, and is each run hard or easy?
+- No running (off-feet training only)
+
+**2b. Which days suit your hardest session and your long run?** *(optional)* `preferred_key_day`, `preferred_long_run_day`
+- Mon–Sun chips for each · "No preference" (the app picks)
 
 **3. How long have you been training consistently?** `training_age`
 - Less than 6 months · 6–12 months · 1–3 years · 3+ years
@@ -32,7 +44,7 @@ Principles:
 - Running · Strength · Strength endurance (stations fall apart late in the race) · Aerobic fitness · Not sure
 - "Strength endurance" allows a 3rd strength session a week.
 
-### Screen 2: Your running *(skipped if Q2 = No)*
+### Screen 2: Your running *(skipped if Q2 = No running)*
 **4. How many times a week do you run at the moment?** `runs_per_week`
 - 0 · 1 · 2 · 3 · 4 · 5+
 
@@ -43,6 +55,7 @@ Principles:
 
 **6. Do you have a recent race or time-trial result?** *(optional)* `recent_result`
 - Distance or event · time · date
+- For a Hyathlon race, also: **average run pace** (e.g. 4:45 /km). This is the best anchor for your personal zones.
 - Helper text: "This helps us set your personal training zones. Skip it if you don't have one."
 
 ### Screen 3: Your week
@@ -60,6 +73,12 @@ Principles:
 
 **10b. Can you train twice in a day?** `can_double`
 - No · Sometimes · Yes
+
+**10a. How do you want strength in your program?** `strength_choice`
+- Program my strength
+- I already do strength or classes (e.g. F45, CrossFit, my own strength coach) → for each: a title, which days, hard or easy, and *optionally* the exercises and sets
+- No strength
+- If "I already do…": 10c and 10d are skipped. Those sessions count in the athlete's load and runs are planned around them (interference rule).
 
 **10c. When would you like your strength sessions?** `strength_placement`
 - Same day as my hard sessions *(recommended: keeps your easy days easy)*. Strength is a separate session later that day, or straight after the run if you can't train twice.
@@ -86,10 +105,14 @@ Principles:
 
 **15. Anything you dislike or won't do?** *(optional text)* `dislikes`
 
-### Screen 5: Your body
+### Screen 5: Your body *(member accounts only, after the consent step; see §11)*
 **16. Is there anything you're currently noticing in your body?** `current_body_reports`
 - No
 - Yes → same body-report questions as the weekly check-in (§2, Q4–Q7)
+
+**17. Any injuries in the last 12 months?** `injury_history` — area · type (e.g. calf/Achilles, bone stress) · roughly when · back to full training? (yes / not yet)
+
+**18. Would you like your program to take your menstrual cycle into account?** `cycle_tracking` — No · Yes → cycle length and last start date, plus *optional*: when in your cycle you usually feel strongest, and when you feel weakest or more tired
 
 Footer text: "We use this to adjust your training. It isn't medical advice. If something persists or worsens, check with your medical professional."
 
@@ -132,6 +155,9 @@ If not "Nothing", show Q5–Q7. Button: "+ Add another area".
 **8. Has anything changed with your availability this week?** `availability_changed`
 - No
 - Yes → days available this week (Mon–Sun chips) + time per session (same options as onboarding Q9)
+
+**8b. Travelling this week?** `travel` — No · Yes → which days + what you'll have: Hotel/other gym · Treadmill only · No equipment
+- The app swaps sessions to what's available. With no equipment: bodyweight maintenance sessions.
 
 **9. Anything else your coach should know?** *(optional text)* `note`
 - Placeholder: "Travel, work, illness, a race, anything else"
@@ -185,10 +211,12 @@ Pain is treated like a 4+ whatever its rating, because by definition it changes 
 ## 5. Session log (after each session)
 Kept to a few taps. This is what the weekly adjustment reads.
 
+**0. How did it feel?** `session_feel` — 😄 Great · 🙂 Good · 😐 OK · 😕 Poor · 😣 Awful *(feeds the load graph alongside session RPE)*
 **1. How hard was the session overall?** `session_rpe` (0–10 slider)
 **2. What did you complete?** `completed` — sets done, or duration, pre-filled with the plan so the athlete only changes what was different
 **3. Who did you train with?** `training_with` (optional) — Solo · With a friend · Group session · With my coach
 **4. Where?** `location` (optional) — Gym · Home · Outdoors
+**4b. Comment for your coach** *(optional text)* `session_comment`
 **5. Did you change the session?** `modification_reason` (only shown if completed ≠ planned) — Couldn't finish the sets · Couldn't hold the effort · Short on time · Niggle · Felt great, did more · Other
 
 A planned session with nothing logged by the end of its day is marked **missed** (the athlete can still log it late).
@@ -293,3 +321,40 @@ Buttons: **Looks good** · **Change something**
 
 - The athlete sees one line confirming when the change applies, e.g. *"Got it. Next week will have 3 strength sessions."*
 - Coached members: the coach is notified of changes. Coach-set key sessions stay unless the coach changes them.
+
+---
+
+## 11. Member-only features (consent required)
+Behind the privacy checklist and an explicit consent step. Not available to self-serve athletes.
+- **Body reports** (onboarding Q16, weekly check-in Q4–Q7) and the wait-and-watch / off-feet rules.
+- **Injury history** (Q17): athletes with a recent calf, Achilles or bone-stress injury start with no hills and nothing faster than 5–15 km effort; hills, VO2max and speed return once the first block goes well.
+- **Return to run after a longer injury:** a walk–run progression (stages), then a short easy test run, with off-feet bike/erg sessions keeping fitness. Progression follows the athlete's medical professional; the app gives considerations only.
+- **Menstrual cycle** (Q18): the program can adapt to where the athlete is in their cycle, using what *they* report about when they feel strongest (place key sessions and efforts there) and weakest (lower end of ranges, easier options). Considerations only.
+- **Coach restrictions and focus:** the coach can block session types (e.g. "no hill sprints", "no running during a strength block") and set a goal focus; the generator respects them.
+- **Hidden planned sessions:** the coach can plan ahead; the athlete sees those weeks later.
+
+## 12. Events and the calendar
+- Athletes can **add, edit or remove events any time** from the calendar (name, type/distance, date, race it or run it as training). The plan adapts from the next week.
+- Not every event needs a taper. "Race it" events get a lighter day or two before and recovery after; "run it as training" events replace that day's session.
+- **Recovery after a race** depends on how demanding it was:
+
+| Event | Before quality run sessions return |
+|---|---|
+| Marathon or longer | 3 weeks (easy running and off-feet only) |
+| Half marathon | 1 week |
+| Hyathlon race | 1 week |
+| 10 km or shorter | Straight back into it |
+
+- **After an event**, the athlete is asked: *"What do you want training to look like now?"* — Recover, then keep building to my next event · Maintain for a while · Take a break · New goal (rebuild my plan).
+
+## 13. Weekly focus and block banner
+- Each week shows a **focus line** at the top: for self-serve athletes it's generated from the week's main pillar (e.g. "Threshold week: hitting each quality run is the focus"); for members it's the coach's note (generated draft the coach can edit).
+- A **block banner** across the weeks names the phase (e.g. "Base: building your engine", "Maintenance during 3 weeks of strength focus").
+- Every session shows a short **"Why this session"** line (its purpose and main benefit).
+- The calendar shows **planned vs completed totals** per week by type (run, bike, strength, etc.).
+
+## 14. Logging from watches
+Uploads don't always line up with the plan. The app needs to:
+- **match an upload to the planned session** (same day and type) instead of showing it as a separate unplanned workout;
+- **merge split uploads** (warm-up, each interval and cool-down uploaded separately) into one session;
+- **credit a session done a day late** (or early) against the planned one.
