@@ -94,7 +94,7 @@ const COACHING_RULES_MAPPING = `How the coaching rules map to this request:
 - exercise_shortlist = the <exercises> list (plus <templates> and <race_sessions>); use only those ids.
 - checkin, history and athlete_edits are included when available; when missing, write a conservative benchmark.
 - Give sets as a planned number with a range in the dose, e.g. "3 sets (2–4) × 8 min @ RPE 8–8.5 · Mod. Hard / 2 min easy"; give long runs as planned minutes with a range, e.g. "60 min (50–70) @ RPE 6–8 · Steady".
-- List cross-training alternatives in the session's alternatives field: modalities from the athlete's equipment, preferred first.
+- Sessions done on an erg list the athlete's other ergs or cross-training options in the session's alternatives field, preferred first. Leave it empty when they have no other option.
 - Give each session its session_type, build_or_maintain, and progression (extend, qualify or benchmark, and in a few words what changed versus the last similar session; benchmark when there is no history).
 - Weekly modification: apply the body-report and history rules only when that information is provided. If body reports or logged history are missing, make no change for them.
 - Athlete-facing text never names event brands; say "Hyathlon race" or "race".
@@ -315,5 +315,5 @@ export function repairPrompt(errors: string[]): string {
   return `Your answer broke these rules:
 ${errors.map((e) => `- ${e}`).join('\n')}
 
-Return the complete corrected answer, following all the original rules.`;
+Return the complete corrected answer: every week and every session, not only the ones you changed. Follow all the original rules.`;
 }

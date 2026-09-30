@@ -291,7 +291,13 @@ Deno.test('own run plan: no heavy lower-body or sled work the day before a hard 
 
 Deno.test('session fields: progression change and cross-training alternatives', () => {
   assert.match(errorsFor((b) => { b.weeks[1].sessions[0].progression.change = ' '; }), /progression\.change/);
-  assert.match(errorsFor((b) => { b.weeks[1].sessions[2].alternatives = []; }), /list alternatives/);
+  // One erg only: nothing to switch to, so no alternatives needed.
+  const noAlts = block();
+  noAlts.weeks[1].sessions[2].alternatives = [];
+  assert.doesNotMatch(validateBlock(noAlts, ctx).join(' '), /alternatives/);
+  // A second erg: the erg session must list it.
+  const twoErgs = { ...candidates, exercises: new Map([...candidates.exercises, ['ROW', ex('ROW', { movement_pattern: 'Erg', equipment_options: [['Rower']] })]]) };
+  assert.match(validateBlock(noAlts, { ...ctx, candidates: twoErgs }).join(' '), /list alternatives/);
   assert.doesNotMatch(errorsFor((b) => { b.weeks[1].sessions[0].alternatives = []; }), /alternatives/);
 });
 
