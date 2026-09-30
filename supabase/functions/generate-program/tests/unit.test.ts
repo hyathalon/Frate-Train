@@ -9,6 +9,7 @@ import { COACHING_RULES } from '../lib/prompts.ts';
 import { type Block, type BlockWeek, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
 import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '../lib/time.ts';
 import { trimDeload } from '../lib/deload.ts';
+import { placeRaceWeekStrength } from '../lib/fixups.ts';
 import { intervalIntroWeek, runningLevel } from '../lib/running.ts';
 import { type BlockContext, strengthTarget, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
 
@@ -345,8 +346,32 @@ Deno.test('programmed running: key run, easy/long run, run types and long-run ca
 
 Deno.test('own run plan: no heavy lower-body or sled work the day before a hard run', () => {
   const own: BlockContext = { ...ctx, running: 'own_plan', ownRuns: [{ day: 'Tue', intensity: 'hard' }, { day: 'Thu', intensity: 'easy' }] };
-  assert.match(validateBlock(block(), own).join(' '), /"Strength" on Mon has heavy lower-body or sled work the day before the athlete's hard run on Tue/);
+  assert.match(validateBlock(block(), own).join(' '), /"Strength" on Mon has heavy lower-body work the day before the athlete's hard run on Tue; make it upper body \+ core/);
   assert.deepEqual(validateBlock(block(), { ...own, ownRuns: [{ day: 'Tue', intensity: 'easy' }] }), []);
+});
+
+Deno.test('interference (all athletes): not the day before a key or long run, not a PM session two days before', () => {
+  const run = (type: string, minutes: number, dose: string) =>
+    ({ format: 'Run' as const, template_id: null, run_type: type as 'key', minutes, items: [item('RUN', dose)] });
+  const week2 = (errs: string[]) => errs.filter((e) => e.startsWith('Week 2')).join(' | ');
+  const programmed: BlockContext = { ...ctx, running: 'programmed', keySessionDay: 'Wed', trainingDays: ['Mon', 'Tue', 'Wed', 'Fri', 'Sat'] };
+  // Key run on Wednesday: Tuesday's squat strength is the day before.
+  const b = block();
+  b.weeks[1].sessions[1].parts = [run('key', 30, '3 × 8 min @ RPE 8-8.5 / 2 min easy, week 2')];
+  b.weeks[1].sessions[0].day = 'Tue';
+  assert.match(week2(validateBlock(b, programmed)), /"Strength" on Tue has heavy lower-body work the day before the key run on Wed; make it upper body \+ core/);
+  // Monday as the first session of the day (two days before): allowed…
+  b.weeks[1].sessions[0].day = 'Mon';
+  assert.doesNotMatch(week2(validateBlock(b, programmed)), /heavy lower-body/);
+  // …but not as a second (PM) session two days before.
+  b.weeks[1].sessions[0].order_in_day = 2;
+  assert.match(week2(validateBlock(b, programmed)), /"Strength" on Mon \(second session\) has heavy lower-body work two days before the key run on Wed/);
+  // Upper body + core only: fine the day before.
+  const upper = block();
+  upper.weeks[1].sessions[1].parts = [run('key', 30, '3 × 8 min @ RPE 8-8.5 / 2 min easy, week 2')];
+  upper.weeks[1].sessions[0].day = 'Tue';
+  upper.weeks[1].sessions[0].parts[0].items = upper.weeks[1].sessions[0].parts[0].items.map((it) => ({ ...it, exercise_id: 'PU' }));
+  assert.doesNotMatch(week2(validateBlock(upper, programmed)), /heavy lower-body/);
 });
 
 Deno.test('two sessions a day: order_in_day, can_double, strength never inside a run session', () => {
@@ -547,6 +572,22 @@ Deno.test('before the first interval session the key session is the main aerobic
   const lr = block();
   lr.weeks[1].sessions[2].parts = [run('long', 30, '30 min @ RPE 6-8 Steady, week 2')]; // Friday long run, Saturday compromised after it
   assert.match(week(validateBlock(lr, { ...programmed, runningBeginner: true }), 2), /the day after the long run \(Sat\) is the absorption run or cross-training/);
+});
+
+Deno.test('race week: strength moves to at least 5 days before the race, in code', () => {
+  // Week 2 as race week, race on Saturday: only Monday qualifies.
+  const b = block();
+  const w = b.weeks[1];
+  w.sessions[0].day = 'Wed'; // strength moved off Monday, beside the key session
+  w.sessions[0].order_in_day = 2;
+  const note = placeRaceWeekStrength(w, { finalWeek: 2, raceDay: 'Sat', trainingDays: ctx.trainingDays });
+  assert.equal(note, 'race-week strength moved: "Strength" Wed → Mon');
+  assert.deepEqual([w.sessions[0].day, w.sessions[0].order_in_day, w.sessions[1].order_in_day], ['Mon', 1, 1]);
+  // Not race week, or no allowed training day: nothing moves.
+  assert.equal(placeRaceWeekStrength(block().weeks[1], { finalWeek: 12, raceDay: 'Sat', trainingDays: ctx.trainingDays }), null);
+  const thu = block().weeks[1];
+  thu.sessions[0].day = 'Wed';
+  assert.equal(placeRaceWeekStrength(thu, { finalWeek: 2, raceDay: 'Thu', trainingDays: ctx.trainingDays }), null);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

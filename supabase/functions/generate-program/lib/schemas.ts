@@ -222,7 +222,7 @@ export const BLOCK_SCHEMA = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['day', 'order_in_day', 'title', 'key_session', 'pillar', 'session_type', 'build_or_maintain', 'progression', 'optional', 'parts'],
+              required: ['day', 'order_in_day', 'title', 'key_session', 'pillar', 'session_type', 'build_or_maintain', 'progression', 'alternatives', 'optional', 'parts'],
               properties: {
                 day: { type: 'string', enum: [...DAYS] },
                 order_in_day: { type: 'integer', enum: [1, 2], description: '1 = first session of the day (AM), 2 = second (PM).' },
@@ -242,7 +242,7 @@ export const BLOCK_SCHEMA = {
                 },
                 alternatives: {
                   type: 'array',
-                  description: 'Cross-training alternatives from the athlete\'s equipment, preferred first.',
+                  description: 'Cross-training alternatives from the athlete\'s equipment, preferred first. Required on every session: list them for erg/cross-training sessions, [] otherwise.',
                   items: {
                     type: 'object',
                     additionalProperties: false,

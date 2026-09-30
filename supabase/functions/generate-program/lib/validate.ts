@@ -268,7 +268,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     const strengthCount = plan?.strength_sessions ?? strengthTarget({ week: week.week, phase: plan?.phase ?? 'base', core_sessions: core.length, deload: plan?.deload }, ctx);
     const optionalStrength = plan ? deloadOptionalStrength(plan, ctx) : 0;
     if (!final) checkWeeklyMix(core, label, ctx, strengthCount, errors);
-    if (ctx.running === 'own_plan') checkOwnRunSpacing(week, label, ctx, errors);
+    checkInterference(week, label, ctx, errors);
     checkEasyDays(week, label, ctx, strengthCount, errors);
     checkStrengthWeek(week, label, ctx, strengthCount, optionalStrength, plan?.phase === 'taper' || !!plan?.deload || final, errors);
   });
@@ -485,18 +485,49 @@ function checkWeeklyMix(core: Session[], label: string, ctx: BlockContext, stren
 
 const HEAVY_LOWER = ['Squat', 'Hinge', 'Lunge / single-leg'];
 
-/** Own run plan: no heavy lower-body strength or sled work the day before a hard run. */
-function checkOwnRunSpacing(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
-  for (const run of ctx.ownRuns.filter((r) => r.intensity === 'hard')) {
-    const dayBefore = DAYS[(DAYS.indexOf(run.day as (typeof DAYS)[number]) + 6) % 7];
-    for (const s of week.sessions.filter((x) => x.day === dayBefore)) {
-      const heavy = s.parts.some((p) =>
-        p.items.some((it) => {
-          const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
-          return e && (e.movement_pattern === 'Sled' || (p.format === 'Strength' && HEAVY_LOWER.includes(e.movement_pattern)));
-        })
-      );
-      if (heavy) errors.push(`${label}: "${s.title}" on ${dayBefore} has heavy lower-body or sled work the day before the athlete's hard run on ${run.day}.`);
+/** Heavy lower-body strength, loaded lunges (stations, race work) or sled work anywhere in the session. */
+function heavyLower(s: Session, ctx: BlockContext): string | null {
+  for (const p of s.parts) {
+    for (const it of p.items) {
+      const e = it.exercise_id ? ctx.candidates.exercises.get(it.exercise_id) : undefined;
+      if (!e) continue;
+      if (e.movement_pattern === 'Sled') return 'sled';
+      if (p.format === 'Strength' && HEAVY_LOWER.includes(e.movement_pattern)) return 'heavy lower-body';
+      if (e.movement_pattern === 'Lunge / single-leg' && ['Station', 'Compromised', 'RaceSim'].includes(p.format)) return 'lunge';
+    }
+  }
+  return null;
+}
+
+/**
+ * Interference (all athletes): no heavy lower-body, lunge or sled work the day before
+ * a key run or the long run (or the athlete's own hard run), and never as a second
+ * (PM) session two days before. The fix is upper body + core, not moving the session.
+ */
+function checkInterference(week: BlockWeek, label: string, ctx: BlockContext, errors: string[]) {
+  const targets: { day: number; what: string }[] = [];
+  for (const s of week.sessions) {
+    for (const p of s.parts) {
+      if (p.format === 'Run' && (p.run_type === 'key' || p.run_type === 'long')) {
+        targets.push({ day: DAYS.indexOf(s.day), what: `the ${p.run_type === 'key' ? 'key' : 'long'} run on ${s.day}` });
+      }
+    }
+  }
+  if (ctx.running === 'own_plan') {
+    for (const r of ctx.ownRuns.filter((x) => x.intensity === 'hard')) {
+      targets.push({ day: DAYS.indexOf(r.day as (typeof DAYS)[number]), what: `the athlete's hard run on ${r.day}` });
+    }
+  }
+  const flagged = new Set<Session>();
+  for (const t of targets) {
+    for (const s of week.sessions) {
+      if (flagged.has(s)) continue;
+      const gap = t.day - DAYS.indexOf(s.day);
+      if (gap !== 1 && !(gap === 2 && s.order_in_day === 2)) continue;
+      const kind = heavyLower(s, ctx);
+      if (!kind) continue;
+      flagged.add(s);
+      errors.push(`${label}: "${s.title}" on ${s.day}${gap === 2 ? ' (second session)' : ''} has ${kind} work ${gap === 1 ? 'the day before' : 'two days before'} ${t.what}; make it upper body + core instead of moving it.`);
     }
   }
 }

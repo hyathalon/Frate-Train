@@ -55,7 +55,13 @@ async function spent(): Promise<number> {
   return (data ?? []).reduce((s, r) => s + Number(r.cost_usd ?? 0), 0);
 }
 
-interface Profile { key: string; member?: boolean; athlete: Record<string, unknown>; inputs: Record<string, unknown> }
+interface Profile {
+  key: string;
+  member?: boolean;
+  athlete: Record<string, unknown>;
+  inputs: Record<string, unknown>;
+  taperWeeks?: number[]; // weeks the outline must put in the taper, or the block isn't worth testing
+}
 
 const RACE_12 = '2026-12-26'; // a Saturday, 12 weeks after Monday 5 October 2026
 const profiles: Profile[] = [
@@ -90,9 +96,11 @@ const profiles: Profile[] = [
     key: 'specific-4wk-programmed',
     athlete: { tier: 'app', level: 'intermediate', equipment: ['Dumbbell', 'Kettlebell', 'Wall ball', 'Rower', 'SkiErg', 'Sled', 'Sandbag'], training_locations: ['Gym', 'Outdoor'] },
     inputs: { race_date: '2026-10-31', training_days: ['Mon', 'Wed', 'Thu', 'Sat'], key_session_day: 'Wed', minutes_per_session: 50,
-      goal: 'Hyathlon race – Open, sharpen for race day', strengths: ['Rowing'], weaknesses: ['Compromised running'],
+      goal: 'Hyathlon race – Open, sharpen for race day, with a 2-week taper (weeks 3 and 4)', strengths: ['Rowing'], weaknesses: ['Compromised running'],
       longest_run_min: 50, cross_training_preferences: ['Rower', 'SkiErg'], running: { mode: 'programmed' },
-      can_double: 'sometimes', strength_placement: 'with_hard_sessions', limiters: ['running'], training_age: '1_3_years', runs_per_week: 3 },
+      can_double: 'sometimes', strength_placement: 'with_hard_sessions', limiters: ['running'], training_age: '1_3_years', runs_per_week: 3,
+      interval_experience: 'yes' },
+    taperWeeks: [3, 4],
   },
 ];
 
@@ -116,10 +124,18 @@ async function runProfile(p: Profile): Promise<Result> {
     const athleteId = await makeAthlete(u.userId, { name: `Live ${p.key}`, ...(c ? { coach_user_id: c.userId } : {}), ...p.athlete });
     const token = c ? c.token : u.token;
     let t0 = Date.now();
-    const pv = await call({ action: 'preview', athlete_id: athleteId, inputs: p.inputs }, token);
+    let pv = await call({ action: 'preview', athlete_id: athleteId, inputs: p.inputs }, token);
     r.previewMs = Date.now() - t0;
     log(p.key, 'preview', pv.status, `${(r.previewMs / 1000).toFixed(0)} s`);
     if (pv.status !== 200) throw new Error(`preview ${pv.status}: ${JSON.stringify(pv.body)}`);
+    const taperOk = (body: { program: { outline: { weeks: { week: number; phase: string }[] } } }) =>
+      (p.taperWeeks ?? []).every((n) => body.program.outline.weeks.find((w) => w.week === n)?.phase === 'taper');
+    if (!taperOk(pv.body)) {
+      log(p.key, 'outline has no taper in weeks', p.taperWeeks?.join(', '), '- previewing once more');
+      pv = await call({ action: 'preview', athlete_id: athleteId, inputs: p.inputs }, token);
+      if (pv.status !== 200) throw new Error(`preview ${pv.status}: ${JSON.stringify(pv.body)}`);
+      if (!taperOk(pv.body)) throw new Error(`the outline didn't put weeks ${p.taperWeeks?.join(', ')} in the taper; block not generated`);
+    }
     await Deno.writeTextFile(`${OUT}${p.key}.preview.json`, JSON.stringify(pv.body, null, 2));
     const programId = pv.body.program.id;
     t0 = Date.now();
@@ -184,7 +200,7 @@ try {
   // Profiles run in parallel, each started only while the cap covers a worst case for everything in flight.
   const running: Promise<void>[] = [];
   let inFlight = 0;
-  for (const p of profiles.filter((x) => !ONLY || x.key === ONLY)) {
+  for (const p of profiles.filter((x) => !ONLY || ONLY.split(',').includes(x.key))) {
     while (inFlight > 0 && (await spent()) + (inFlight + 1) * RESERVE > CAP) await new Promise((res) => setTimeout(res, 15_000));
     if ((await spent()) + (inFlight + 1) * RESERVE > CAP) {
       log('cap: skipping', p.key);

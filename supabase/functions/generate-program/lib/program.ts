@@ -6,6 +6,7 @@ import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockContent, blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
 import { trimDeload } from './deload.ts';
+import { placeRaceWeekStrength } from './fixups.ts';
 import { intervalIntroWeek, runningLevel } from './running.ts';
 import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_CHOICES, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE, TRAINING_AGES, VARIETY_PREFERENCES, EVENT_TYPES } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
@@ -675,6 +676,7 @@ async function generateBlockWeeks(a: {
       repairTimeoutMs: REPAIR_TIMEOUT_MS, deadline, countsAs: null, paidWith: null, attempts: WEEK_ATTEMPTS, ...more,
     });
   const trim = (week: BlockWeek, previous: BlockWeek | undefined, c: BlockContext) => {
+    placeRaceWeekStrength(week, c);
     if (previous) trimDeload(week, previous, c);
   };
   const fail = (error: string | null) => ({ block: null, error, countEventId: null, frame });
@@ -694,7 +696,9 @@ async function generateBlockWeeks(a: {
     weeks.filter((w) => w.week > startWeek).map((w) =>
       call(promptFor(w.week, { referenceWeek: week1 }), async (b) => {
         const n = normalizeBlock(b);
-        return validateBlock(n, await ctx(w.week, w.week, { previousWeek: week1, crossWeek: false }, n));
+        const c = await ctx(w.week, w.week, { previousWeek: week1, crossWeek: false }, n);
+        if (n.weeks[0]) placeRaceWeekStrength(n.weeks[0], c);
+        return validateBlock(n, c);
       })
     ),
   );
@@ -1020,6 +1024,7 @@ async function adjustWeek(
         block: n, outlineWeeks: [target],
         extra: { previousWeek, previousLongRunMin: lastLongRun(block.sessions.weeks.filter((w) => w.week < week)) },
       });
+      if (n.weeks[0]) placeRaceWeekStrength(n.weeks[0], c);
       if (previousWeek && n.weeks[0]) trimDeload(n.weeks[0], previousWeek, c);
       return validateBlock(n, c);
     },
