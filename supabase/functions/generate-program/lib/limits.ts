@@ -18,6 +18,8 @@ export interface AppAllowance {
   previews: Counter;
   confirmations: Counter;
   credits: number; // purchased confirmations left (used after the monthly ones)
+  modifications: Counter; // plan changes (athlete-requested replans) this month (§16)
+  modificationCredits: number; // purchased plan changes left (used after the monthly ones)
   resetsOn: string; // first day of next month, athlete's timezone
   timezone: string;
 }
@@ -58,19 +60,23 @@ export async function appAllowance(
       .eq('status', 'ok')
       .gte('created_at', since);
 
-  const [previews, confirmations, ledger] = await Promise.all([
+  const [previews, confirmations, modifications, ledger] = await Promise.all([
     countEvents(base().eq('counts_as', 'preview')),
     countEvents(base().eq('counts_as', 'confirmation').eq('paid_with', 'monthly')),
-    admin.from('athlete_credit_ledger').select('delta').eq('athlete_id', athlete.id).eq('kind', 'confirmation'),
+    countEvents(base().eq('counts_as', 'modification').eq('paid_with', 'monthly')),
+    admin.from('athlete_credit_ledger').select('kind, delta').eq('athlete_id', athlete.id),
   ]);
   if (ledger.error) throw new Error(`Could not read credits: ${ledger.error.message}`);
-  const credits = ledger.data.reduce((sum, row) => sum + row.delta, 0);
+  const balance = (kind: string) => ledger.data.filter((r) => r.kind === kind).reduce((sum, row) => sum + row.delta, 0);
+  const credits = balance('confirmation');
 
   return {
     kind: 'app',
     previews: counter(previews, setting(settings, 'app_monthly_outline_previews')),
     confirmations: counter(confirmations, setting(settings, 'app_monthly_confirmations')),
     credits: Math.max(0, credits),
+    modifications: counter(modifications, setting(settings, 'app_monthly_modifications')),
+    modificationCredits: Math.max(0, balance('modification')),
     resetsOn,
     timezone: athlete.timezone,
   };
@@ -132,6 +138,20 @@ export function assertCanConfirm(allowance: AppAllowance | CoachAllowance): 'mon
   if (allowance.credits > 0) return 'credit';
   throw new HttpError(429, 'monthly_confirmations_used',
     `You've used your ${allowance.confirmations.limit} program confirmations for this month.`,
+    { allowance });
+}
+
+/**
+ * Which allowance an athlete-requested replan ("Rebuild my plan", regenerate a week)
+ * uses: members and coaches none (unlimited / their daily builds), self-serve
+ * athletes the monthly plan changes, then purchased ones. Charged only on success.
+ */
+export function assertCanModify(allowance: AppAllowance | CoachAllowance | { kind: 'member' }): 'monthly' | 'credit' | null {
+  if (allowance.kind !== 'app') return null;
+  if (allowance.modifications.left > 0) return 'monthly';
+  if (allowance.modificationCredits > 0) return 'credit';
+  throw new HttpError(429, 'monthly_modifications_used',
+    `You've used your ${allowance.modifications.limit} plan changes for this month. Get 4 more for $10, or keep editing sessions yourself for free.`,
     { allowance });
 }
 

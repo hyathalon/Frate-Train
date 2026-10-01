@@ -188,6 +188,76 @@ export type Database = {
           },
         ]
       }
+      athlete_preference_changes: {
+        Row: {
+          after: Json
+          athlete_id: string
+          before: Json
+          changed_at: string
+          changed_by: string | null
+          id: number
+          keys: string[]
+        }
+        Insert: {
+          after: Json
+          athlete_id: string
+          before: Json
+          changed_at?: string
+          changed_by?: string | null
+          id?: never
+          keys: string[]
+        }
+        Update: {
+          after?: Json
+          athlete_id?: string
+          before?: Json
+          changed_at?: string
+          changed_by?: string | null
+          id?: never
+          keys?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_preference_changes_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athlete_preferences: {
+        Row: {
+          answers: Json
+          athlete_id: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          answers?: Json
+          athlete_id: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          answers?: Json
+          athlete_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_preferences_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: true
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athletes: {
         Row: {
           athlete_type: string | null

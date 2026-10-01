@@ -175,6 +175,35 @@ Deno.test({
       await t.step("another athlete can't confirm this program → 403", async () => {
         assert.equal((await call({ action: 'confirm', program_id: program!.id }, other.token)).body.code, 'not_your_athlete');
       });
+      await t.step('onboarding answers: save, load, suggestions; library terms on the athlete; health refused', async () => {
+        const saved = await call({ action: 'save_preferences', answers: {
+          event_goal: { kind: 'hyathlon', division: 'open', date: '2027-01-23' }, running_choice: 'none', off_feet_includes: ['erg'],
+          days_available: 3, days_unavailable: ['Mon'], session_min: '30_45', training_age: '3_plus_years',
+          training_locations: ['Home', 'Outdoors'], strength_equipment: ['Kettlebells'], off_feet_equipment: ['Rowing erg'],
+        } }, app.token);
+        assert.equal(saved.status, 200, JSON.stringify(saved.body));
+        assert.deepEqual(saved.body.suggestions, { training_days: ['Tue', 'Thu', 'Sat'], key_session_day: 'Thu', minutes_per_session: 40, goal: 'Hyathlon race – Open on 2027-01-23' });
+        const { data: row } = await admin.from('athletes').select('level, equipment, training_locations').eq('id', app.athlete!.id).single();
+        assert.deepEqual(row, { level: 'advanced', equipment: ['Kettlebell', 'Kettlebell or dumbbell', 'Rower'], training_locations: ['Home', 'Outdoor'] });
+        // A later save merges; null removes an answer; the change log records it.
+        await call({ action: 'save_preferences', answers: { session_min: '45_60', off_feet_includes: null } }, app.token);
+        const loaded = await call({ action: 'get_preferences' }, app.token);
+        assert.equal(loaded.body.answers.session_min, '45_60');
+        assert.equal(loaded.body.answers.off_feet_includes, undefined);
+        assert.equal(loaded.body.version, 2);
+        const { data: log } = await admin.from('athlete_preference_changes').select('keys').eq('athlete_id', app.athlete!.id);
+        assert.deepEqual(log!.map((l) => l.keys), [['off_feet_includes', 'session_min']]);
+        assert.equal((await call({ action: 'save_preferences', answers: { injury_history: [] } }, app.token)).status, 400);
+        assert.equal((await call({ action: 'get_preferences', athlete_id: other.athlete!.id }, app.token)).body.code, 'not_your_athlete');
+      });
+      await t.step("a coach saves a member's answers", async () => {
+        const coach = await makeUser('coach');
+        await admin.from('coaches').insert({ user_id: coach.userId });
+        const r = await call({ action: 'save_preferences', athlete_id: member.athlete!.id, answers: { training_age: '1_3_years' } }, coach.token);
+        assert.equal(r.status, 200, JSON.stringify(r.body));
+        const { data: row } = await admin.from('athletes').select('level').eq('id', member.athlete!.id).single();
+        assert.equal(row!.level, 'intermediate');
+      });
     } finally {
       await cleanup();
       const { count } = await admin.from('athletes').select('*', { count: 'exact', head: true });

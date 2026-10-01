@@ -21,7 +21,7 @@ import { authenticate } from './lib/auth.ts';
 import { makeCallClaude } from './lib/claude.ts';
 import { createClient } from './lib/deps.ts';
 import { corsHeaders, errorResponse, HttpError, jsonResponse } from './lib/http.ts';
-import { buildsStatus, confirm, type Deps, preview, weeklyCheckin } from './lib/program.ts';
+import { buildsStatus, confirm, type Deps, getPreferences, preview, savePreferences, weeklyCheckin } from './lib/program.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 // JSON object of the project's secret keys, keyed by name.
@@ -42,7 +42,14 @@ const deps: Deps = {
   },
 };
 
-const ACTIONS = { builds_status: buildsStatus, preview, confirm, weekly_checkin: weeklyCheckin } as const;
+const ACTIONS = {
+  builds_status: buildsStatus,
+  preview,
+  confirm,
+  weekly_checkin: weeklyCheckin,
+  get_preferences: getPreferences,
+  save_preferences: savePreferences,
+} as const;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });

@@ -6,6 +6,9 @@ import { HttpError } from './http.ts';
 import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAllowance } from './limits.ts';
 import { blockContent, blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
 import { trimDeload } from './deload.ts';
+import {
+  type Answers, athleteFieldsFromAnswers, checkAnswers, goalText, programInputsFromAnswers, SESSION_MINUTES, suggestKeyDay, suggestTrainingDays,
+} from './preferences.ts';
 import { placeRaceWeekStrength } from './fixups.ts';
 import { homeOffFeet, intervalIntroWeek, runningLevel } from './running.ts';
 import { longRunPlan } from './longruns.ts';
@@ -419,7 +422,11 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
   const { admin } = deps;
   const settings = await loadSettings(admin);
   const athlete = await resolveAthlete(admin, caller, body.athlete_id, { forBuilding: true });
-  const inputs = parseInputs(body.inputs);
+  // From the saved onboarding answers (step 6), or inputs sent directly; inputs override answers.
+  const raw = body.use_preferences
+    ? { ...programInputsFromAnswers(await loadAnswers(admin, athlete.id)), ...((body.inputs ?? {}) as Record<string, unknown>) }
+    : body.inputs;
+  const inputs = parseInputs(raw);
   const race = await requireRaceOption(admin, inputs.race_option_id);
   await checkCrossTraining(admin, inputs.cross_training_preferences);
 
@@ -876,6 +883,66 @@ async function compromisedLevelFor(
     .eq('athlete_id', athlete.id).not('confirmed_at', 'is', null).lt('race_date', new Date().toISOString().slice(0, 10));
   if (error) throw new Error(`Could not count completed programs: ${error.message}`);
   return (count ?? 0) >= 1 ? 'standard' : 'entry';
+}
+
+// ---------------------------------------------------------------------------
+// Onboarding answers (athlete_preferences). Coaches read and edit their athletes';
+// athletes their own. Saving merges the answers given (null removes one) and
+// updates the athlete's level, equipment and locations.
+// ---------------------------------------------------------------------------
+
+async function loadAnswers(admin: SupabaseClient, athleteId: string): Promise<Answers> {
+  const { data, error } = await admin.from('athlete_preferences').select('answers').eq('athlete_id', athleteId).maybeSingle();
+  if (error) throw new Error(`Could not load the onboarding answers: ${error.message}`);
+  return (data?.answers ?? {}) as Answers;
+}
+
+function suggestions(answers: Answers) {
+  const days = Array.isArray(answers.training_days) && answers.training_days.length
+    ? answers.training_days as string[]
+    : answers.days_available ? suggestTrainingDays(Number(answers.days_available), (answers.days_unavailable ?? []) as string[]) : null;
+  return {
+    training_days: days,
+    key_session_day: days ? suggestKeyDay(days, answers.preferred_key_day as string | null) : null,
+    minutes_per_session: SESSION_MINUTES[String(answers.session_min)] ?? null,
+    goal: goalText(answers),
+  };
+}
+
+export async function getPreferences(deps: Deps, caller: Caller, body: Record<string, unknown>) {
+  const athlete = await resolveAthlete(deps.admin, caller, body.athlete_id, { forBuilding: false });
+  const { data, error } = await deps.admin.from('athlete_preferences').select('answers, version, updated_at').eq('athlete_id', athlete.id).maybeSingle();
+  if (error) throw new Error(`Could not load the onboarding answers: ${error.message}`);
+  const answers = (data?.answers ?? {}) as Answers;
+  return { athlete_id: athlete.id, answers, version: data?.version ?? 0, updated_at: data?.updated_at ?? null, suggestions: suggestions(answers) };
+}
+
+export async function savePreferences(deps: Deps, caller: Caller, body: Record<string, unknown>) {
+  const { admin } = deps;
+  const athlete = await resolveAthlete(admin, caller, body.athlete_id, { forBuilding: false });
+  const given = checkAnswers(body.answers);
+  const current = await loadAnswers(admin, athlete.id);
+  const answers: Answers = { ...current };
+  for (const [k, v] of Object.entries(given)) {
+    if (v === null) delete answers[k];
+    else answers[k] = v;
+  }
+  // Once the answers are complete enough to build from, they must make valid inputs.
+  try {
+    parseInputs(programInputsFromAnswers(answers));
+  } catch (err) {
+    if (!(err instanceof HttpError) || !['onboarding_incomplete', 'coming_soon'].includes(err.code)) throw err;
+  }
+  const { data, error } = await admin.from('athlete_preferences')
+    .upsert({ athlete_id: athlete.id, answers, updated_by: caller.userId }, { onConflict: 'athlete_id' })
+    .select('answers, version, updated_at').single();
+  if (error) throw new Error(`Could not save the onboarding answers: ${error.message}`);
+  const fields = athleteFieldsFromAnswers(answers);
+  if (Object.keys(fields).length) {
+    const { error: e2 } = await admin.from('athletes').update(fields).eq('id', athlete.id);
+    if (e2) throw new Error(`Could not update the athlete: ${e2.message}`);
+  }
+  return { athlete_id: athlete.id, answers: data.answers, version: data.version, updated_at: data.updated_at, suggestions: suggestions(data.answers as Answers) };
 }
 
 /** Everything a block or week call needs besides the outline. */

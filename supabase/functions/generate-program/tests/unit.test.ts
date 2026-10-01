@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import type { AthleteRow } from '../lib/auth.ts';
 import { availableFormats, type Candidates, type Exercise, filterExercises, type RaceOption, type SessionFormat, type Template } from '../lib/candidates.ts';
 import { HttpError } from '../lib/http.ts';
-import { type AppAllowance, assertCanConfirm, assertCanPreview, type CoachAllowance } from '../lib/limits.ts';
+import { type AppAllowance, assertCanConfirm, assertCanModify, assertCanPreview, type CoachAllowance } from '../lib/limits.ts';
+import { athleteFieldsFromAnswers, checkAnswers, programInputsFromAnswers, suggestKeyDay, suggestTrainingDays } from '../lib/preferences.ts';
 import { parseInputs } from '../lib/program.ts';
 import { COACHING_RULES } from '../lib/prompts.ts';
 import { type Block, type BlockWeek, normalizeBlock, type Outline, type Session } from '../lib/schemas.ts';
@@ -900,9 +901,51 @@ Deno.test('parseInputs: training days, key day, minutes and the optional coach i
   assert.match(code({ ...baseInputs, cross_training_preferences: Array(9).fill('Rower') }), /up to 8/);
 });
 
-const app = (previewsLeft: number, confirmationsLeft: number, credits: number): AppAllowance => ({
+const app = (previewsLeft: number, confirmationsLeft: number, credits: number, modificationsLeft = 2, modificationCredits = 0): AppAllowance => ({
   kind: 'app', previews: { used: 4 - previewsLeft, limit: 4, left: previewsLeft },
-  confirmations: { used: 2 - confirmationsLeft, limit: 2, left: confirmationsLeft }, credits, resetsOn: '2026-10-01', timezone: 'Australia/Sydney',
+  confirmations: { used: 2 - confirmationsLeft, limit: 2, left: confirmationsLeft }, credits,
+  modifications: { used: 2 - modificationsLeft, limit: 2, left: modificationsLeft }, modificationCredits,
+  resetsOn: '2026-10-01', timezone: 'Australia/Sydney',
+});
+
+Deno.test('plan changes (modification credits): monthly, then purchased; members and coaches unlimited', () => {
+  assert.equal(assertCanModify(app(4, 2, 0, 1, 0)), 'monthly');
+  assert.equal(assertCanModify(app(4, 2, 0, 0, 3)), 'credit');
+  assert.throws(() => assertCanModify(app(4, 2, 0, 0, 0)), (e: HttpError) => e.code === 'monthly_modifications_used' && /Get 4 more for \$10/.test(e.message));
+  assert.equal(assertCanModify({ kind: 'member' }), null);
+  assert.equal(assertCanModify({ kind: 'coach', builds: { used: 0, limit: 100, left: 100 }, resetsAt: null }), null);
+});
+
+Deno.test('onboarding answers → generator inputs and library terms', () => {
+  // Training days spread out; the key day is the preferred one if it's a training day.
+  assert.deepEqual(suggestTrainingDays(3, []), ['Mon', 'Wed', 'Fri']);
+  assert.deepEqual(suggestTrainingDays(3, ['Mon', 'Wed']), ['Tue', 'Thu', 'Sat']);
+  assert.deepEqual(suggestTrainingDays(7, ['Sun']), ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+  assert.equal(suggestKeyDay(['Mon', 'Wed', 'Fri'], 'Fri'), 'Fri');
+  assert.equal(suggestKeyDay(['Mon', 'Wed', 'Fri'], 'Tue'), 'Wed');
+  const answers = {
+    event_goal: { kind: 'hyathlon', division: 'pro', name: 'Sydney', date: '2027-01-23' },
+    running_choice: 'program', days_available: 4, days_unavailable: ['Sun'], session_min: '45_60', preferred_key_day: 'Tue',
+    training_age: '3_plus_years', training_locations: ['Gym', 'Outdoors'], strength_equipment: ['Barbell and plates', 'Sled'],
+    off_feet_equipment: ['Rowing erg', 'Elliptical'], cross_training_preferences: ['Elliptical', 'Rowing erg'], longest_run_min: 60,
+    other_events: [{ name: '10k', type: '10k_or_shorter', date: '2026-11-14', event_priority: 'C' }], race_sims: { choice: 'plan_for_me' },
+    strength_choice: 'program', strength_sessions_pref: 3,
+  };
+  const inputs = parseInputs(programInputsFromAnswers(answers));
+  assert.equal(inputs.race_option_id, 'hyathlon-pro');
+  assert.equal(inputs.goal, 'Hyathlon race – Pro (Sydney) on 2027-01-23');
+  assert.equal(inputs.minutes_per_session, 50);
+  assert.equal(inputs.training_days.length, 4);
+  assert.equal(inputs.running.mode, 'programmed');
+  assert.deepEqual(inputs.cross_training_preferences, ['Cross-trainer', 'Rower']);
+  assert.equal(inputs.strength_sessions_pref, 3);
+  assert.deepEqual(athleteFieldsFromAnswers(answers), {
+    level: 'advanced', equipment: ['Barbell', 'Plate', 'Sled', 'Rower', 'Cross-trainer'], training_locations: ['Gym', 'Outdoor'],
+  });
+  // Missing answers, coming-soon goals and health answers.
+  assert.throws(() => programInputsFromAnswers({}), (e: HttpError) => e.code === 'onboarding_incomplete');
+  assert.throws(() => programInputsFromAnswers({ ...answers, event_goal: { kind: 'running', distance: '10k', date: '2027-01-23' } }), (e: HttpError) => e.code === 'coming_soon');
+  assert.throws(() => checkAnswers({ injury_history: [] }), /consent step/);
 });
 
 Deno.test('allowance decisions: monthly first, then purchased credits, then refused', () => {
