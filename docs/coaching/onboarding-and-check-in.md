@@ -22,8 +22,13 @@ Principles:
 - No event in the next 3 months: general fitness and strength *(the program runs in rolling 4-week blocks)*
 
 **1b. Any other events this year?** *(optional)* `other_events[]`
-- Add as many as you like: event name · type (Hyathlon race / running race + distance / other) · date · "Race it" or "Run it as training"
-- Helper text: "You can add events any time from your calendar."
+- Add as many as you like: event name · type (Hyathlon race / running race + distance / other) · date · **priority (A / B / C)** `event_priority`
+- Priority picker (one line each):
+  - **A: My major target.** Full preparation, peak and taper.
+  - **B: Important race / checkpoint.** Some preparation, short taper.
+  - **C: Training race / practice.** Train through it, little or no taper.
+- The main goal event (Q1) is an **A race** by default; the athlete can change it.
+- Helper text: "You can add events and change their priority any time from your calendar."
 
 **1c. When was your last race?** `last_race`
 - In the last 4 weeks → what was it (Hyathlon race / marathon or longer / half marathon / 10 km or shorter / other) + date
@@ -313,7 +318,7 @@ Rules:
 Before the app generates the next 4 weeks, the athlete sees a short **"Plan your next block"** screen. Everything is pre-filled from their current answers, so most athletes just tap **Looks good**.
 
 It shows what they actually did last block (sessions per week, long run, strength sessions), then lets them change:
-- Event and date (or "no event")
+- Event and date (or "no event"), and **other events with their A / B / C priority**
 - Days available and time per session
 - Can train twice in a day
 - Running choice (program my running / I have a run plan / no running)
@@ -349,8 +354,18 @@ Behind the privacy checklist and an explicit consent step. Not available to self
 - **Hidden planned sessions:** the coach can plan ahead; the athlete sees those weeks later.
 
 ## 12. Events and the calendar
-- Athletes can **add, edit or remove events any time** from the calendar (name, type/distance, date, race it or run it as training). The plan adapts from the next week.
-- Not every event needs a taper. "Race it" events get a lighter day or two before and recovery after; "run it as training" events replace that day's session.
+- Athletes can **add, edit or remove events any time** from the calendar (name, type/distance, date, **A / B / C priority**). The plan adapts from the next week.
+- **Race priority decides the preparation** (the athlete chooses; the app recommends):
+
+| Priority | Purpose | Approach in the plan |
+|---|---|---|
+| **A race** | The major target | Full preparation: the periodisation outline (base → specific → taper) is built backwards from it. Full taper (Hyathlon 8–14 days; marathon/half by program length) and full recovery after. |
+| **B race** | Important race / performance checkpoint | Some preparation: placed in the build or specific phase as a checkpoint. Short taper *(proposed: 3–5 days lighter, volume down ~20–30%, one short sharpener kept, no long run that week)*. Recovery after follows the event table below. |
+| **C race** | Training race / practice | Train through it: little or no taper (an easy or lighter day before at most). The race replaces that day's key or long session and counts in load. Recovery after follows the event table below if it was raced hard; if run at a controlled effort, normal training resumes after an easy day. |
+
+- **More than one A race:** allowed. *Proposed:* ideally 8+ weeks apart. If two A races are closer, the app notes that the second won't get a full build (recover, a short re-build, then taper) — a note, never a block.
+- **B or C race close to an A race:** *proposed:* the app notes any B or C race in the last ~10–14 days before an A Hyathlon race (or within the marathon taper) and suggests running it as a C race at controlled effort or skipping it. The athlete decides.
+- **No A race set** (general fitness): B and C races sit inside the rolling 4-week blocks with the same approach.
 - **Recovery after a race** depends on how demanding it was:
 
 | Event | Before quality run sessions return |

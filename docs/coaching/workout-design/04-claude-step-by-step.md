@@ -5,6 +5,9 @@
 - `01-workout-design-principles.md`: extend/qualify, the 9 manipulators, the 5-step decision process
 - `02-running-workouts.md`: running
 - `03-cross-training-workouts.md`: ergs, stations, strength endurance, hybrid
+- `09-coach-insights.md`: fatigue-avoidance, threshold as a state, Hyathlon taper (8–14 days), return after racing, strength types and dosing, compliance formats, race simulation frequency
+- `08-compromised-running-and-running-database.md`: compromised (re-composition) sessions, 4-phase running structure, taper, fitness test
+- `07-beginner-and-return-to-run.md`: beginner levels, walk–run and beginner sessions, the 20-min bridge, return-to-run stages
 - `06-strength-principles.md`: strength work — intensity before volume before frequency, working sets only, low volume/high effort, consolidating stress onto hard days
 - `05-training-methods.md`: each training method (recovery → sprints, hills) with zone, RPE, work, recovery and total
 - `../app/onboarding-and-check-in.md`: onboarding inputs, weekly check-in, readiness colour and body-report rules (used in Step 1 and Step 9b)
@@ -52,10 +55,12 @@ If a key input is missing, make a conservative choice and state the assumption.
 - Assign the zone internally, but **show the athlete RPE + feel word** (e.g. "RPE 8–8.5 · Mod. Hard"). Chart: Z1 1–4 Recovery · Z2 5–6 Easy · Z2 6–8 Steady · Z3 8–8.5 Mod. Hard · Z4 8.5–9.5 Hard · Z5 9.5–10 Very Hard.
 - Choose the **modality:** run, or a cross-training alternative from `00` §5. Use cross-training for recovery, extra aerobic volume without impact, managing load, or station-specific work.
 - **Give alternatives** for cross-training sessions from the athlete's available equipment, preferred first (e.g. "Pool run, or elliptical, or bike").
-- **Z1 (RPE 1–4) is only for recovery sessions, warm-ups and cool-downs.** Easy runs are **RPE 5–6 (Easy)**; long runs are **RPE 6–8 (Steady)**.
-- **Long run:** usually 50–90 min, starting from the athlete's longest run in the last 3 weeks and extending in small steps.
+- **Z1 (RPE 1–4) is only for recovery sessions, warm-ups and cool-downs.** Easy runs are **RPE 5–6 (Easy)**; long runs are **RPE 5–6 for beginner–intermediate runners, RPE 6–7 for advanced**.
+- **Long run:** usually 60–90 min (advanced up to 90–120 min), starting from the athlete's longest run in the last 3 weeks and extending in small steps.
 
 ### Step 7. Choose ONE manipulator and label the progression
+- Applies to **quality sessions** (intervals, the long run, key strength sessions, race simulations). Easy, recovery, optional and maintain sessions can repeat unchanged.
+- **Repeats by athlete choice** (`09` §4): a quality session may repeat unchanged 2–3 times while the response improves (same output at lower RPE/HR). Follow `repeat_preference`: same two weeks in a row then progress · alternate weeks · something different each time.
 - Compare with the last similar session and change **one lever**: speed/zone, recovery, rep length, terrain/modality, volume, density, "stuff", surges, or feedback/constraints.
 - Label it **Extend** (more volume or longer reps at the same zone) or **Qualify** (same work at a higher output, or with less recovery).
 - Surges and feedback constraints are mainly for the **specific / race phase**.
@@ -90,7 +95,18 @@ Rules for the format:
 
 ## Part B: Placing sessions in a week
 
+**Core principle: the app recommends, the athlete decides.** Our training rules decide what the app (and Claude) *generates*. The athlete can always personalise it, even against those rules: add, move, modify or lock sessions, and change their preferences. When a change goes against a rule, the app shows a short, friendly note about the trade-off (e.g. recovery cost) and then lets them go ahead. Notes, never blocks. The only limits: coached members can't delete coach-set key sessions (they can move or modify them), and body-report messages still say "check with your medical professional".
+
+So: generate by the rules below, but always respect the athlete's own choices, locked sessions and additions, and explain any trade-off in one line rather than refusing.
+
 ### Step 9. Build the week
+### Quality sessions (what counts)
+- **Running programs:** the **interval sessions and the long run** are the quality sessions of the week. The key session is the main interval session.
+- **Strength-only or no-running programs:** the key (quality) session can be a **hard strength session, an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a Hyathlon race simulation, or a hard AMRAP/EMOM-type workout**. A key strength session can stand alone on its day; the athlete's other strength sessions follow their placement choice. Race simulations and erg/bike sessions follow what the athlete chose in onboarding Q2c (run segments in simulations are swapped for their preferred erg or bike).
+- **Never quality:** station skill (technique/Economy work: warm-up, strength day or short add-on), easy or recovery sessions, and **core and mobility** — except in a **taper or post-event week**, when core and mobility can be the week's main session.
+- **Race week (running programs):** the key session is a short sharpener **at least 4–5 days before the race**: 10–15 min easy warm-up, **15 min just slower than race effort** (about 10–20 s/km slower than the athlete's race average run pace, if stored; otherwise RPE 8), 10–15 min easy cool-down. The race itself is the main event; other runs are easy.
+- Beginners still get a real quality session, just a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), not an easy circuit.
+
 1. Place the **key sessions** first (the build stimuli for this phase).
 2. Space repeats of the same stimulus:
    - Building: every ~7–14 days (avg ~10).
@@ -104,7 +120,10 @@ Rules for the format:
 6. Count station and erg work in weekly load, not just running km.
 6b. **Consolidate the stress** (`06`): strength, circuits and accessories go on hard days, paired with quality running days as a second session that day (run first, strength later), never on recovery or easy days. Strength is the athlete's chosen number of sessions (default 2; 3 if strength endurance is a limiter; 4+ if they choose it; see `06` §7), 2–3 working sets, 6–10 reps, max 3–4 exercise groups. Don't add light strength sessions for frequency.
 7. Fit around the **strength coach's plan**. Complement it, don't duplicate it.
-8. Add **one new stimulus at a time** (e.g. 1 → 2 interval sessions, or 3 → 4 sessions/week). Mark the new addition as **optional ("if you have time")**. Optional sessions never break streaks.
+8. Add **one new stimulus at a time** (e.g. 1 → 2 interval sessions, or 3 → 4 sessions/week). **Experienced athletes** (3+ years of consistent training, no current injury) can take more than one at once (e.g. an extra run and a new interval session). Mark new additions as **optional ("if you have time")**. Optional sessions never break streaks.
+9. **Athletes' own strength or classes** (F45, CrossFit, their strength coach): treat as fixed sessions, count them in load (hard unless the athlete marks them easy), and place runs around them with the interference rule.
+10. **Events in the program:** recovery after a race depends on the event (marathon or longer: 3 weeks before quality run sessions; half marathon or Hyathlon race: 1 week; 10 km or shorter: straight back into it; see `../app/onboarding-and-check-in.md` §12). "Race it" events get a lighter day or two before; "run it as training" events replace that day's session.
+11. **Travel:** use only what's available that week; with no equipment, bodyweight maintenance sessions.
 
 ### Step 9b. Weekly modification (check-in)
 Each week the athlete can report soreness, a niggle, fatigue or an availability change. Adjust the coming week:
@@ -126,9 +145,10 @@ Each week the athlete can report soreness, a niggle, fatigue or an availability 
 ### Step 10. Outline, then 4-week blocks
 1. Programs are **max 16 weeks**.
 2. Give the **full periodisation outline** up front, with phases, dates and the key emphasis of each phase:
-   - **Base:** Easy (RPE 5–6) volume and a Steady (RPE 6–8) long run, LT (Z3) emphasis, pure speed, general strength, technique.
+   - **Base:** Easy (RPE 5–6) volume and a long run (RPE 5–6; 6–7 advanced), LT (Z3) emphasis, pure speed, general strength, technique.
    - **Specific:** race-effort / compromised work up to weekly, CV/VO2max blocks, surges and constraints.
    - **Taper:** reduce volume, keep some intensity, no long run in the final taper.
+   - **Race priority (A / B / C):** build the outline backwards from the **A race(s)** (full peak and taper). Place **B races** as checkpoints in the build or specific phase with a short taper (3–5 days lighter). Train through **C races** (little or no taper; the race replaces that day's key or long session). Note, never remove, a B or C race in the last ~10–14 days before an A race. Full rules: `../app/onboarding-and-check-in.md` §12.
 3. Generate **4-week blocks** one at a time.
 4. Adapt each new block to what the athlete **actually did**, like a coach would. Example: planned 4 sessions/week but did 2 → next block 3/week.
 5. Re-check the norm from the latest logs before each block.
