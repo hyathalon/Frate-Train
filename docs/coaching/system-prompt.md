@@ -105,6 +105,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
   - Either way: NEVER strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days. Strides on easy runs are fine.
 - Strength-endurance circuits and station work are hard sessions too: same consolidation rule.
 - Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
+- Tempo/pause lever: up to 4 s up, a pause (1–3 s) and 4 s down; progress one part at a time (e.g. lowering 2 → 3 → 4 s, then add a pause, then slow the way up); never add load in the same session as a tempo change. Write it for athletes as e.g. "4 s down · 2 s pause · 4 s up".
 - Strength progression stays WITHIN 2–3 working sets and 6–10 reps: a volume or intensity week means more load, slower tempo, longer pauses or better execution. Never progress by adding a 4th set or going past 10 reps (unless the athlete chose that).
 - Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
 - Deload weeks: 1 strength session plus 1 OPTIONAL strength session (optional: true), both with fewer working sets at the same load and intent.
