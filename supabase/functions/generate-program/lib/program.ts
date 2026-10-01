@@ -7,7 +7,7 @@ import { allowanceFor, appAllowance, assertCanConfirm, assertCanPreview, coachAl
 import { blockContent, blockPrompt, type CoachProfile, outlinePrompt, type ProgramInputs, repairPrompt, systemPrompt } from './prompts.ts';
 import { trimDeload } from './deload.ts';
 import { placeRaceWeekStrength } from './fixups.ts';
-import { intervalIntroWeek, runningLevel } from './running.ts';
+import { homeOffFeet, intervalIntroWeek, runningLevel } from './running.ts';
 import { longRunPlan } from './longruns.ts';
 import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_CHOICES, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE, TRAINING_AGES, VARIETY_PREFERENCES, EVENT_TYPES } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
@@ -456,6 +456,7 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
       strengthChoice: inputs.strength_choice ?? 'program',
       raceDay: weekdayOf(inputs.race_date),
       beginner: athlete.level === 'beginner',
+      homeOffFeet: homeOffFeet(inputs, athlete.level),
     }),
     maxTokens: 16000,
     timeoutMs: PREVIEW_TIMEOUT_MS,
@@ -813,6 +814,7 @@ async function blockContext(a: {
     strengthPlacement: inputs.strength_placement ?? 'with_hard_sessions',
     strengthChoice: inputs.strength_choice ?? 'program',
     beginner: a.level === 'Beginner',
+    homeOffFeet: homeOffFeet(inputs, a.level.toLowerCase()),
     ownStrength: inputs.own_strength ?? [],
     raceDay: a.raceDay,
     postEventWeeks: a.startDate ? postEventWeeks(inputs, a.startDate) : [],

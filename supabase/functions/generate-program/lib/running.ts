@@ -35,6 +35,12 @@ export function intervalIntroWeek(inputs: Pick<ProgramInputs, 'running' | 'longe
   return level === 'beginner_2' ? BRIDGE_WEEKS + week : week;
 }
 
+/** The home beginner off-feet profile: no running, a beginner, and no erg or bike sessions chosen (Q2c). */
+export function homeOffFeet(inputs: Pick<ProgramInputs, 'running' | 'off_feet_includes'>, level: string): boolean {
+  const off = inputs.off_feet_includes;
+  return inputs.running?.mode === 'none' && level === 'beginner' && !!off && !off.includes('erg') && !off.includes('bike');
+}
+
 export const RUNNING_LEVEL_LABEL: Record<RunningLevel, string> = {
   beginner_1: 'Beginner 1 (walk–run: build to continuous running first; no interval sessions yet)',
   beginner_2: `Beginner 2 (aerobic runs with walk breaks; a ~${BRIDGE_WEEKS}-week bridge to 20 min continuous first)`,

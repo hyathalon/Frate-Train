@@ -1,4 +1,4 @@
-import { type Candidates, type Exercise, isBike, isBodyweightOnly, isErg, isRowOrSki, isRunning, partMinutes, slotMatches, type Template } from './candidates.ts';
+import { type Candidates, type Exercise, isBike, isBodyweightOnly, isErg, isRowOrSki, isRunning, isWalking, partMinutes, slotMatches, type Template } from './candidates.ts';
 import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type OutlineWeek, type OwnStrengthSession, type RunningMode, type Session, type SessionPart, type StrengthChoice, type StrengthPlacement } from './schemas.ts';
 
 // Each validator returns plain-English errors. An empty list means valid.
@@ -17,6 +17,7 @@ export interface OutlineContext {
   strengthChoice?: StrengthChoice; // default 'program'
   raceDay: string | null; // weekday of the race, in the final week
   beginner?: boolean; // beginners: one run/conditioning session per training day, strength as second sessions
+  homeOffFeet?: boolean; // home beginner, no running, no ergs/bike: key + strength; other days rest or easy walk
 }
 
 /** Race week gets one short maintain strength session, at least 5 days before the race. */
@@ -74,9 +75,9 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
     if (deloadOptionalStrength(w, sctx) > w.optional_sessions) {
       errors.push(`Week ${w.week}: a deload week has 1 optional strength session, so optional_sessions must be at least 1.`);
     }
-    const needed = coreSessionsForStrength(ctx.running, ctx.daysAvailable, ctx.strengthPref, ctx.beginner);
+    const needed = coreSessionsForStrength(ctx.running, ctx.daysAvailable, ctx.strengthPref, ctx.beginner, ctx.homeOffFeet);
     if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload && (ctx.strengthChoice ?? 'program') === 'program' && w.core_sessions < needed) {
-      errors.push(`Week ${w.week}: plan at least ${needed} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day${ctx.beginner ? '; beginners: a run or conditioning session on every training day, strength as second sessions' : ''}).`);
+      errors.push(`Week ${w.week}: plan at least ${needed} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day${ctx.beginner && !ctx.homeOffFeet ? '; beginners: a run or conditioning session on every training day, strength as second sessions' : ''}).`);
     }
     if (i === 0 && w.lever !== 'start') errors.push('Week 1 must use lever "start".');
     // Taper weeks (including race week) cut volume: lever "deload", like deload weeks.
@@ -149,6 +150,7 @@ export interface BlockContext {
   strengthPlacement: StrengthPlacement;
   strengthChoice?: StrengthChoice; // default 'program'
   beginner?: boolean; // beginners: strength as second sessions on quality days
+  homeOffFeet?: boolean; // home beginner, no running, no ergs/bike (the weekly shape in system-prompt.md)
   ownStrength?: OwnStrengthSession[]; // strength_choice 'own': the athlete's own strength/classes
   raceDay: string | null; // weekday of the race (final week)
   postEventWeeks?: number[]; // weeks straight after a raced event
@@ -388,6 +390,12 @@ function checkKeySession(s: Session, weekNo: number, label: string, taperOrPostE
   const workout = s.parts.some((p) => ['AMRAP', 'EMOM', 'ForTime'].includes(p.format));
   const simulation = s.parts.some((p) => p.format === 'RaceSim' || (ctx.running === 'none' && p.format === 'CompromisedRun'));
   const compromised = ctx.running === 'own_plan' && s.parts.some((p) => p.format === 'Compromised' || p.format === 'CompromisedRun');
+  if (ctx.homeOffFeet) {
+    if (!offFeetIntervals && !workout) {
+      errors.push(`${label}: the key session is bodyweight intervals or an AMRAP/EMOM at RPE 8+ (e.g. 6–10 × 40 s hard / 20–40 s easy, or a 12–16 min AMRAP), never an easy technique circuit; "${s.title}" is neither.`);
+    }
+    return;
+  }
   if (!hardStrength && !offFeetIntervals && !workout && !simulation && !compromised) {
     errors.push(`${label}: without programmed running, the key session is a hard strength session, an off-feet interval session at RPE 8+, a race simulation${ctx.running === 'own_plan' ? ', a compromised session' : ''} or a hard AMRAP/EMOM-type workout; "${s.title}" is none of these.`);
   }
@@ -427,6 +435,36 @@ function checkRaceWeekRuns(week: BlockWeek, label: string, errors: string[]) {
  * Running beginners: never 3 training days in a row, and the day after the long run
  * is the absorption run or cross-training (easy), if anything.
  */
+/**
+ * Home beginner, no running, no ergs/bike: one strength session straight after the key
+ * session (the same visit; fine when can_double is "no"), the other may stand alone;
+ * station skill only as a ≤10 min add-on on a strength day; other days rest, or an easy
+ * brisk walk and mobility.
+ */
+function checkHomeOffFeetWeek(week: BlockWeek, label: string, ctx: BlockContext, strength: Session[], errors: string[]) {
+  const key = week.sessions.find((s) => s.key_session && !s.optional);
+  if (key && strength.length && !strength.some((s) => s.day === key.day && s.order_in_day === 2)) {
+    errors.push(`${label}: one strength session goes straight after the key session ("${key.title}", ${key.day}) as its own session (order_in_day 2).`);
+  }
+  const strengthDays = new Set(week.sessions.filter(isStrengthSession).map((s) => s.day));
+  for (const s of week.sessions) {
+    if (s === key || isStrengthSession(s)) {
+      for (const p of s.parts.filter((x) => x.format === 'Station' && x.minutes > 10)) {
+        errors.push(`${label}: "${s.title}": station skill is a short add-on (10 min or less); this part is ${p.minutes} min.`);
+      }
+      continue;
+    }
+    if (s.session_type === 'station_skill') {
+      if (!strengthDays.has(s.day)) errors.push(`${label}: "${s.title}": station skill only as a short add-on on a strength day.`);
+      continue;
+    }
+    const easy = isEasySession(s) || isRecoverySession(s);
+    if (!easy || s.parts.some((p) => p.format !== 'Aerobic' && p.format !== 'Mobility')) {
+      errors.push(`${label}: "${s.title}" on ${s.day}: other days are rest, or an easy brisk walk (RPE 5–6) and mobility; no circuits or hard work.`);
+    }
+  }
+}
+
 /** Station skill is warm-up, strength-day or short add-on work: never a day's only main session. */
 function checkStationSkillDays(week: BlockWeek, label: string, errors: string[]) {
   for (const day of DAYS) {
@@ -580,8 +618,9 @@ export function matchable(needs: Need[], sessions: Set<Need>[], used = new Set<n
 }
 
 /** Core sessions a normal week needs so the athlete's strength sessions fit beside the running and hybrid needs. */
-export function coreSessionsForStrength(running: RunningMode, daysAvailable: number, strengthPref: number, beginner = false): number {
-  const others = beginner ? Math.max(daysAvailable, weeklyOthers(running, 99).length) : weeklyOthers(running, 99).length;
+export function coreSessionsForStrength(running: RunningMode, daysAvailable: number, strengthPref: number, beginner = false, homeOffFeet = false): number {
+  // Home beginner off-feet: the key session plus the strength sessions; other days are rest or easy walks.
+  const others = homeOffFeet ? 1 : beginner ? Math.max(daysAvailable, weeklyOthers(running, 99).length) : weeklyOthers(running, 99).length;
   return Math.min(daysAvailable * 2, others + strengthPref);
 }
 
@@ -744,6 +783,10 @@ function checkStrengthWeek(
   const on = (day: string) => week.sessions.filter((s) => s.day === day && !s.optional);
   const hardDay = (day: string) => on(day).some(hard) || ownHard(day);
 
+  if (ctx.homeOffFeet) {
+    checkHomeOffFeetWeek(week, label, ctx, strength, errors);
+    return;
+  }
   if (ctx.strengthPlacement === 'with_hard_sessions' || ctx.beginner) {
     for (const s of strength) {
       if (!hardDay(s.day)) continue;
@@ -968,7 +1011,7 @@ function validatePart(part: SessionPart, index: number, where: string, ctx: Bloc
       inRange(range(rules.exercises), count, 'the number of exercises');
       inRange(range(rules.minutes), part.minutes, 'the minutes');
       exercises.forEach((e, k) => {
-        if (e && !isErg(e)) errors.push(`${where}, item ${k + 1}: steady aerobic parts use ergs.`);
+        if (e && !isErg(e) && !isWalking(e)) errors.push(`${where}, item ${k + 1}: steady aerobic parts use ergs or walking.`);
       });
       break;
     case 'AMRAP':

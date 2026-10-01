@@ -13,6 +13,7 @@ const PUBLISHABLE = Deno.env.get('SUPABASE_PUBLISHABLE_KEY')!;
 const FN = `${URL_}/functions/v1/generate-program`;
 const admin = createClient(URL_, Deno.env.get('SUPABASE_SECRET_KEY')!, { auth: { persistSession: false } });
 const CAP = Number(Deno.env.get('CAP') ?? '2');
+const CALL_MARGIN = Number(Deno.env.get('CALL_MARGIN') ?? '0.15'); // about one week call
 const ONLY = Deno.env.get('ONLY');
 const RESERVE = Number(Deno.env.get('RESERVE') ?? '0.6'); // worst case per profile: preview + 4 week calls + repairs
 const OUT = (Deno.env.get('OUT') ?? './live-out').replace(/\/?$/, '/');
@@ -188,7 +189,8 @@ let watching = true;
 let paused = false;
 const watcher = (async () => {
   while (watching) {
-    if (!paused && (await spent()) >= CAP) {
+    // Pause one call's cost early: the call already running still finishes and is billed.
+    if (!paused && (await spent()) >= CAP - CALL_MARGIN) {
       await setPaused(1);
       paused = true;
       log('CAP REACHED: generation paused');

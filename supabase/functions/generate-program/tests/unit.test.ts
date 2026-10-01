@@ -11,8 +11,8 @@ import { localDate, monthWindow, nextMonday, planWindow, zonedMidnight } from '.
 import { trimDeload } from '../lib/deload.ts';
 import { longRunPlan } from '../lib/longruns.ts';
 import { placeRaceWeekStrength } from '../lib/fixups.ts';
-import { intervalIntroWeek, runningLevel } from '../lib/running.ts';
-import { type BlockContext, strengthTarget, taperTarget, taperWeeks, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
+import { homeOffFeet, intervalIntroWeek, runningLevel } from '../lib/running.ts';
+import { type BlockContext, coreSessionsForStrength, strengthTarget, taperTarget, taperWeeks, type Timing, timingKey, validateBlock, validateOutline, weeklyNeeds } from '../lib/validate.ts';
 
 // ---------------------------------------------------------------------------
 // time
@@ -120,6 +120,7 @@ const candidates: Candidates = {
     ['WB', ex('WB', { movement_pattern: 'Med ball / throw' })],
     ['HOP', ex('HOP', { movement_pattern: 'Plyometric', methods: ['Plyometric'] })],
     ['DL', ex('DL', { movement_pattern: 'Hinge', equipment_options: [['Barbell']] })],
+    ['WALK', ex('WALK', { name: 'Brisk walk', movement_pattern: 'Walking' })],
   ]),
   templates: new Map([[strengthT.id, strengthT], [circuitT.id, circuitT]]),
   raceSessions: new Map(),
@@ -303,8 +304,11 @@ Deno.test('regex: "3 x 20s surges" in a timed dose is not reps', () => {
 
 Deno.test('only formats available to the athlete', () => {
   assert.match(validateBlock(block(), { ...ctx, availableFormats: new Set([...ALL_FORMATS].filter((f) => f !== 'Tabata')) }).join(' '), /Tabata isn't available for this athlete/);
+  // Steady aerobic work needs an erg or walking.
   const noErgs = { ...candidates, exercises: new Map([...candidates.exercises].filter(([id]) => id !== 'BIKE')) };
-  assert.equal(availableFormats(noErgs, 'none').has('Aerobic'), false);
+  assert.equal(availableFormats(noErgs, 'none').has('Aerobic'), true); // the brisk walk
+  const noErgsOrWalks = { ...candidates, exercises: new Map([...candidates.exercises].filter(([id]) => id !== 'BIKE' && id !== 'WALK')) };
+  assert.equal(availableFormats(noErgsOrWalks, 'none').has('Aerobic'), false);
   assert.equal(availableFormats(candidates, 'none').has('Run'), false);
   assert.equal(availableFormats(candidates, 'programmed').has('Run'), true);
 });
@@ -712,6 +716,39 @@ Deno.test('taper length by program length; station skill never alone; titles nam
   assert.match(week2(validateBlock(t, ctx)), /the title names SkiErg, but no exercise in the session uses it/);
   t.weeks[1].sessions[2].title = 'Air Bike Repeats';
   assert.doesNotMatch(week2(validateBlock(t, ctx)), /the title names/);
+});
+
+Deno.test('home beginner, no running, no ergs/bike: the weekly shape', () => {
+  assert.equal(homeOffFeet({ running: { mode: 'none', own_runs: [] }, off_feet_includes: [] }, 'beginner'), true);
+  assert.equal(homeOffFeet({ running: { mode: 'none', own_runs: [] }, off_feet_includes: ['bike'] }, 'beginner'), false);
+  assert.equal(homeOffFeet({ running: { mode: 'none', own_runs: [] }, off_feet_includes: null }, 'beginner'), false);
+  // Outline: the key session plus the strength sessions (not a session on every training day).
+  assert.equal(coreSessionsForStrength('none', 3, 2, true, true), 3);
+  assert.equal(coreSessionsForStrength('none', 3, 2, true, false), 5);
+
+  const home: BlockContext = { ...ctx, homeOffFeet: true, beginner: true };
+  const week2 = (e: string[]) => e.filter((x) => x.startsWith('Week 2')).join(' | ');
+  // A strength key session isn't this athlete's key session.
+  const sk = block();
+  sk.weeks[1].sessions[0].key_session = true;
+  sk.weeks[1].sessions[1].key_session = false;
+  assert.match(week2(validateBlock(sk, { ...home, keySessionDay: 'Mon' })), /the key session is bodyweight intervals or an AMRAP\/EMOM at RPE 8\+/);
+  // One strength session straight after the key session.
+  assert.match(week2(validateBlock(block(), home)), /one strength session goes straight after the key session \("Compromised \+ Tabata", Wed\)/);
+  const after = block();
+  after.weeks[1].sessions[0].day = 'Wed';
+  after.weeks[1].sessions[0].order_in_day = 2;
+  assert.doesNotMatch(week2(validateBlock(after, home)), /straight after the key session/);
+  // Other days: rest, or an easy brisk walk and mobility — Friday's hard bike session isn't.
+  assert.match(week2(validateBlock(after, home)), /"Bike" on Fri: other days are rest, or an easy brisk walk \(RPE 5–6\) and mobility/);
+  const walk = structuredClone(after);
+  walk.weeks[1].sessions[2] = { ...walk.weeks[1].sessions[2], title: 'Brisk walk', session_type: 'easy_steady', alternatives: [],
+    parts: [{ format: 'Aerobic', template_id: null, run_type: null, minutes: 30, items: [item('WALK', '30 min brisk walk @ RPE 5-6 Easy')] }] };
+  assert.doesNotMatch(week2(validateBlock(walk, home)), /"Brisk walk" on Fri: other days are rest|steady aerobic parts/);
+  // Station skill: a short add-on on a strength day only.
+  const station = structuredClone(after);
+  station.weeks[1].sessions[0].parts.push({ format: 'Station', template_id: null, run_type: null, minutes: 15, items: [item('WB', '3 × 10 wall balls')] });
+  assert.match(week2(validateBlock(station, home)), /station skill is a short add-on \(10 min or less\); this part is 15 min/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

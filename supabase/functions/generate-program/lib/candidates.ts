@@ -119,6 +119,7 @@ const ALWAYS_AVAILABLE = ['Bodyweight', 'None (running)'];
 
 export const isRunning = (e: Exercise) => e.movement_pattern === 'Running';
 export const isErg = (e: Exercise) => e.movement_pattern === 'Erg';
+export const isWalking = (e: Exercise) => e.movement_pattern === 'Walking';
 export const isBodyweightOnly = (e: Exercise) =>
   (e.equipment_options ?? []).some((option) => option.every((item) => ALWAYS_AVAILABLE.includes(item)));
 
@@ -292,7 +293,7 @@ export function availableFormats(c: Candidates, running: RunningMode, offFeet: s
         case 'HIIT':
           return count((e) => isErg(e) || (isBodyweightOnly(e) && !isRunning(e))) >= 1;
         case 'Aerobic':
-          return count(isErg) >= 1;
+          return count((e) => isErg(e) || isWalking(e)) >= 1;
         case 'Plyometric':
           return count(isPlyometric) >= 2;
         case 'Run':
