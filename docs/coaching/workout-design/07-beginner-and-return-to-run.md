@@ -41,7 +41,7 @@ Complete beginners also see a **pre-exercise screening** prompt at sign-up (e.g.
 | **Walk–run** | e.g. 2 × (60 s run / 60 s walk) + 4 × (30 s run / 30 s walk), building to 12 × (60 s run / 30 s walk) | Runs RPE 5–6, walks recovery |
 | **Aerobic run** | e.g. 2 × 5 min steady run / 2 min walk, building to 2 × 7 or 4 × 5 min | RPE 6–8 · Steady |
 | **Absorption run** | 10–16 min easy (walk-in warm-up and cool-down) | RPE 1–4 · Recovery |
-| **Long run** | 12 → 28 min (5 km), up to 60 min (10 km). For Beginner 1: 2 × (5 min run + 5 min walk), building to 2 × (15 min run + 2 min walk) | RPE 6–8 · Steady; walk breaks allowed |
+| **Long run** | 12 → 28 min (5 km), up to 60 min (10 km). For Beginner 1: 2 × (5 min run + 5 min walk), building to 2 × (15 min run + 2 min walk) | RPE 5–6 · Easy; walk breaks allowed |
 | **Fartlek** | 10–14 min of hard efforts with easy running between, athlete's choice of timing | Efforts RPE 8.5–9.5; easy RPE 5–6 |
 | **Tempo** | e.g. 2 × 8 min hard / 2 min standing, 3 × 7 min, or 4 × 5 min | RPE 8–8.5 (Mod. Hard) to 8.5–9 |
 | **Cross-training** | 15–25 min walk or other activity | RPE 5–6 · Easy |

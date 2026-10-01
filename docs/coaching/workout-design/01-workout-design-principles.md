@@ -34,7 +34,7 @@ Paces, erg splits, watts and loads are specific to each athlete, so **every sess
 
 Passive rest (standing or walking between reps) sits below Z1.
 
-**Athlete-facing label is RPE + feel word** (e.g. "RPE 5–6 · Easy"), because people read "Zone 1 / Zone 2" differently. Zones are kept internally. Z1 (RPE 1–4) is for recovery sessions, warm-ups and cool-downs; easy runs are RPE 5–6 (Easy) and long runs RPE 6–8 (Steady).
+**Athlete-facing label is RPE + feel word** (e.g. "RPE 5–6 · Easy"), because people read "Zone 1 / Zone 2" differently. Zones are kept internally. Z1 (RPE 1–4) is for recovery sessions, warm-ups and cool-downs; easy runs are RPE 5–6 (Easy) and long runs RPE 5–6 for beginner–intermediate runners, 6–7 for advanced.
 
 - **Zone/RPE prescribes; performance measures.** The athlete trains to the zone, and their logged pace, split, watts or load at that zone shows whether the norm has shifted.
 - A race-pace reference ("roughly 10 km effort") or a load-by-feel reference ("a load you can push 25 m at Z3") may be added.

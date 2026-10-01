@@ -49,13 +49,14 @@ Different strength types solve different problems; the app tags exercises by typ
 | Strength type | What it's for in Hyathlon | Typical dose | Example exercises |
 |---|---|---|---|
 | **General strength** (default) | Foundation | 2–3 working sets × 6–10 reps, "hard, with intent: 1–2 good reps left", rest 90 s–2 min | Squat, RDL, split squat, row, press, pull-up |
+| **General strength / hypertrophy** | Muscle and tissue capacity; robustness; building a base | 2–3 working sets × 8–12 reps, hard with intent (1–2 good reps left), rest 60–90 s | Goblet squat, split squat, RDL, step-ups, rows, presses, pull-downs, calf raises |
 | **Maximal strength** | Raises the ceiling when race loads are a big % of max (sled, carries) | 2–4 sets × 3–6 reps, heavy with good form, rest 2–3 min | Back/front squat, trap-bar deadlift, heavy sled, weighted pull-up |
 | **Explosive / power** | Fast force: wall balls, burpee broad jumps, accelerating back into the run | 3–5 sets × 3–5 reps, moved fast; full rest 2–3 min; stop when speed drops | Jump squats, med-ball throws, KB swings, broad jumps, short sled sprints |
 | **Reactive (plyometric)** | Cheaper running: absorb, reverse, reapply force each stride | 20–60 foot contacts a session (beginners 20–40), short ground contact, full recovery; 1–2×/week, little and often | Pogo hops, skips, bounds, hurdle hops; drop jumps for advanced |
 | **Isometric** | Keeps trunk, grip and posture organised under fatigue; tendon resilience | 3–5 × 20–45 s holds (or 5 × 5 s max-intent), rest 60–90 s | Wall sit, split-squat hold, calf iso, plank / side plank, farmer hold, dead hang |
 | **Strength endurance** | Your 80th rep still useful | 12–20+ reps or 30–90 s timed, or race-specific sets (20–30 wall balls, 20–50 m lunges), rest 30–90 s; a hard session | Wall balls, sandbag lunges, sled push/pull at race load, burpee broad jumps |
 
-- **Phase emphasis (proposed):** base: general + maximal + isometric; build: maximal + explosive + reactive; specific: strength endurance + power at race speed; taper: low-volume explosive/power (fresh and fast).
+- **Phase emphasis (proposed):** base: general, general strength/hypertrophy (8–12), maximal + isometric; build: maximal + explosive + reactive; specific: strength endurance + power at race speed; taper: low-volume explosive/power (fresh and fast).
 - Reactive and explosive work is **neural**: little and often, done fresh, stop when quality drops. It can sit early in a strength session or after a warm-up on a quality day.
 - Limits for each type replace the 6–10 rep check for that type only; general strength keeps 2–3 × 6–10.
 

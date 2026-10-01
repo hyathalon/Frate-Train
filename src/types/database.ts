@@ -95,6 +95,7 @@ export type Database = {
         Row: {
           athlete_id: string
           coach_notes: string | null
+          compromised_level: string
           limiters: string | null
           priority_pillars: string[]
           share_notes: boolean
@@ -106,6 +107,7 @@ export type Database = {
         Insert: {
           athlete_id: string
           coach_notes?: string | null
+          compromised_level?: string
           limiters?: string | null
           priority_pillars?: string[]
           share_notes?: boolean
@@ -117,6 +119,7 @@ export type Database = {
         Update: {
           athlete_id?: string
           coach_notes?: string | null
+          compromised_level?: string
           limiters?: string | null
           priority_pillars?: string[]
           share_notes?: boolean
@@ -357,6 +360,45 @@ export type Database = {
         }
         Relationships: []
       }
+      compromised_templates: {
+        Row: {
+          cue: string | null
+          family: string
+          id: string
+          level: string
+          main_set: string
+          name: string
+          purpose: string
+          rounds: string
+          sort_order: number
+          stations: string[]
+        }
+        Insert: {
+          cue?: string | null
+          family: string
+          id: string
+          level: string
+          main_set: string
+          name: string
+          purpose: string
+          rounds: string
+          sort_order: number
+          stations?: string[]
+        }
+        Update: {
+          cue?: string | null
+          family?: string
+          id?: string
+          level?: string
+          main_set?: string
+          name?: string
+          purpose?: string
+          rounds?: string
+          sort_order?: number
+          stations?: string[]
+        }
+        Relationships: []
+      }
       custom_exercises: {
         Row: {
           created_at: string
@@ -517,6 +559,7 @@ export type Database = {
           promoted_from: string | null
           secondary_pillar: string | null
           source: string
+          strength_types: string[]
           tabata_suitable: boolean
           updated_at: string
           where_setting: string
@@ -540,6 +583,7 @@ export type Database = {
           promoted_from?: string | null
           secondary_pillar?: string | null
           source?: string
+          strength_types?: string[]
           tabata_suitable?: boolean
           updated_at?: string
           where_setting: string
@@ -563,6 +607,7 @@ export type Database = {
           promoted_from?: string | null
           secondary_pillar?: string | null
           source?: string
+          strength_types?: string[]
           tabata_suitable?: boolean
           updated_at?: string
           where_setting?: string

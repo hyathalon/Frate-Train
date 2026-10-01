@@ -57,10 +57,11 @@ The goal is not to show how much work we can fit into a week. The goal is to get
 
 Strength training still needs progression: more load, more reps, better execution, more density, longer pauses, slower tempo, more force. If nothing is being asked of the athlete that they could not already do, you are not progressively training. You are just repeating exercise.
 
+- **Tempo and pauses as levers:** tempo can be slowed up to **4 s up, a pause, and 4 s down** (e.g. progress 2 s → 3 s → 4 s on the way down, then add a 1–3 s pause, then slow the way up). Written for athletes as e.g. "4 s down · 2 s pause · 4 s up". Slower tempo makes the same load harder, so it's a progression on its own: don't add load in the same session.
 - Every strength session progresses **one** lever against the last similar session, labelled Extend (more reps or sets) or Qualify (more load, force, density, pause, slower tempo or better execution), as in `01`.
 - **Maintaining strength** (e.g. in taper or a busy block): same load and intent, **fewer working sets** (1–2). Strength is held by keeping the intensity, not the volume, so don't drop to light loads.
 - **Deload weeks:** 1 strength session plus 1 **optional** strength session, both with fewer working sets (same load and intent).
-- **Strength types:** 2–3 × 6–10 is the default for general strength. Maximal, explosive/power, reactive, isometric and strength-endurance work each have their own dosing (`09` §7).
+- **Strength types:** 2–3 × 6–10 is the default for general strength. **General strength / hypertrophy (2–3 × 8–12)** is its own type. Maximal, explosive/power, reactive, isometric and strength-endurance work each have their own dosing (`09` §7).
 - **Taper:** 1 strength session a week, at maintain, **tapered for power**: same load, fewer sets and reps, moved fast (fresh, fast muscle for sled, wall balls, lunges). **Race week:** 1 short maintain session early in the week, at least 5 days before the race.
 
 ## 7. Athlete choice: more strength sessions

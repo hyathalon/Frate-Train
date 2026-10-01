@@ -35,13 +35,14 @@ export interface ProgramInputs {
   can_run_20_min?: 'yes' | 'no' | null; // onboarding Q5 follow-up when the longest run is "not sure"
   off_feet_includes?: ('simulations' | 'erg' | 'bike')[] | null; // onboarding Q2c (no running)
   hyathlon_races_count?: '0' | '1_2' | '3_5' | '6_plus' | null; // onboarding Q1d
+  repeat_preference?: 'same_two_weeks' | 'alternate' | 'always_new' | null; // onboarding 14b
   runs_per_week?: number | null; // onboarding 4 (5 = 5+)
   recent_result?: { event: string; time: string; date: string | null; avg_run_pace: string | null } | null; // onboarding 6
   variety_preference?: VarietyPreference | null; // onboarding 14
   dislikes?: string | null; // onboarding 15
   preferred_long_run_day?: string | null; // onboarding 2b
   last_race?: { type: EventType; date: string } | null; // onboarding 1c, only if in the last 4 weeks
-  other_events?: { name: string; type: EventType; date: string; mode: 'race' | 'training' }[]; // onboarding 1b / §12
+  other_events?: { name: string; type: EventType; date: string; event_priority: 'A' | 'B' | 'C' }[]; // onboarding 1b / §12; the goal event is A
   running: {
     mode: RunningMode; // programmed | own_plan | none
     own_runs: { day: string; intensity: 'hard' | 'easy' }[]; // own_plan only
@@ -116,12 +117,17 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
   - Core sessions are exactly the key session + their strength sessions (deload: key + 1 strength, with the optional strength session on top).
   - Progress by intensity or volume only — never the frequency lever for this profile.
   - Any extra session is an optional easy walk + mobility.
-- Taper length by program length: 12+ weeks → 3-week taper (~80% → ~60% → ~30%); 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week.
+- Taper: Hyathlon races 8–14 days (race week + the week before): volume down 40–60% (e.g. threshold 8 × 4 min → 4 × 4 min; long run 75 → 35 min), keep intensity and frequency; strength tapers for power (same load, fewer sets and reps, done fast). Marathon / half marathon goals: ~3 weeks, ~80% → ~60% → ~30%.
 - Race week (running programs): key session = short sharpener at least 4–5 days before the race: 10–15 min easy warm-up, 15 min just slower than race effort (~10–20 s/km slower than the athlete's race average run pace if stored, otherwise RPE 8), 10–15 min easy cool-down. Other runs easy.
-- Advanced / high-volume running (up to ~70–100 km/week): Mon aerobic, Tue quality AM + second session PM, Wed medium-long run (easy, 12–15 km for most), Thu quality AM + second session PM, Fri aerobic or recovery, Sat recovery, Sun long run (most 60–90 min; advanced up to 90–120 min max). Strength gets the PM slot on quality days first; easy doubles only where there's no strength that day, only if can_double allows and the athlete wants them. Build weeks steady. Taper ~80% → ~60% → ~30% of usual volume.
+- Advanced / high-volume running (up to ~70–100 km/week): Mon aerobic, Tue quality AM + second session PM, Wed medium-long run (easy, 12–15 km for most), Thu quality AM + second session PM, Fri aerobic or recovery, Sat recovery, Sun long run (most 60–90 min; advanced up to 90–120 min max). Strength gets the PM slot on quality days first; easy doubles only where there's no strength that day, only if can_double allows and the athlete wants them. Build weeks steady. Taper as for the race (Hyathlon 8–14 days; marathon ~3 weeks).
 - Beginners get a real quality session at a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), never an easy circuit.
 - Beginners: strength sits as the second session on quality days (or straight after the run if can_double is no), leaving other training days for runs or conditioning.
 - "Change ONE manipulator" applies to quality sessions (intervals, long run, key strength, race simulations). Easy, recovery, optional and maintain sessions may repeat unchanged.
+- Repeats: a quality session may repeat unchanged 2–3 times while the athlete's response improves; follow athlete.repeat_preference (same_two_weeks: the same session two weeks in a row, then progress | alternate: A / B / A / B, each progressing on its repeat | always_new: change one lever every session).
+- Full Hyathlon race simulations at most every 3–4 weeks (specific phase); compromised work otherwise in small doses inside quality days.
+- After a race: no intensity in the first 48–72 h; the first quality session (day 4–7 after one Hyathlon race; ~10 days after 2+ races in one event) starts with a test-the-system warm-up note: if it doesn't feel normal, make it easy aerobic.
+- Motivation low (athlete.motivation ≤4 or dropping 2+ below their average): easy sessions use compliance formats (aerobic intervals 40–70 s @ RPE 6–7 / 20–40 s RPE 1–4; 15–20 s @ RPE 8–8.5 / 40–70 s easy; surges 5–10 s @ RPE 9 / 40–60 s easy; pick-ups 40–50 s @ RPE 8 every 5–6 min) — still easy overall.
+- Long-run efforts only for well-conditioned athletes, never beginners.
 - Starting running level (athlete.running_level, from the longest recent run): Beginner 1 (0 min) → walk–run; Beginner 2 (under 20 min) → aerobic runs with walk breaks, and a race goal starts with a ~4-week bridge to 20 min continuous; 20+ min → normal programming.
 - Running beginners (Beginner 1–2): 3 runs a week (main, absorption, long) + 1 cross-training; never 3 training days in a row; the absorption run or cross-training goes the day after the long run.
 - 30 s efforts inside an aerobic run come before the first interval session.
@@ -135,7 +141,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Race recovery before quality run sessions return: marathon or longer → 3 weeks (easy running and off-feet only); half marathon or Hyathlon race → 1 week; 10 km or shorter → straight back into normal sessions. Race priority: A race → build the periodisation outline backwards from it; full taper and full recovery. B race → checkpoint in the build/specific phase; short taper (3–5 days lighter, volume down ~20–30%, keep one short sharpener, no long run that week); recovery by event type. C race → train through it: at most an easy or lighter day before; it replaces that day's key or long session and counts in load; recovery by event type if raced hard, otherwise one easy day. If a B or C race falls in the last ~10–14 days before an A Hyathlon race (or inside a marathon taper), add a note suggesting a controlled effort; never remove it.
 - Travel weeks: only the equipment the athlete says they'll have; no equipment → bodyweight maintenance.
 - CrossFit-style WODs are hard sessions: same consolidation rule as strength.
-- Phases (base → build → specific → taper): base = Easy (5–6) volume + long run (5–6; 6–7 advanced), LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume to ~80%, then ~60%, then ~30% of usual in race week (plus the race), keep some intensity, no long run in final week.
+- Phases (base → build → specific → taper): base = Easy (5–6) volume + long run (5–6; 6–7 advanced), LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume (Hyathlon: 8–14 days, down 40–60%; marathon/half: ~3 weeks, ~80% → ~60% → ~30%), keep intensity and frequency, no long run in final week.
 
 ## Strength work
 - Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
@@ -150,6 +156,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Progress ONE lever per strength session vs the last similar one: load, reps, execution, density, pause length, slower tempo or force. Repeating what they could already do is not training.
 - Tempo/pause lever: up to 4 s up, a pause (1–3 s) and 4 s down; progress one part at a time (e.g. lowering 2 → 3 → 4 s, then add a pause, then slow the way up); never add load in the same session as a tempo change. Write it for athletes as e.g. "4 s down · 2 s pause · 4 s up".
 - Strength progression stays WITHIN 2–3 working sets and 6–10 reps: a volume or intensity week means more load, slower tempo, longer pauses or better execution. Never progress by adding a 4th set or going past 10 reps (unless the athlete chose that).
+- Strength types (general, general strength/hypertrophy, maximal, explosive/power, reactive, isometric, strength endurance) are tagged in the exercise library. Their own doses aren't confirmed yet: all strength uses 2–3 working sets × 6–10 reps for now.
 - Maintain strength = same load and intent, fewer working sets (1–2). Never maintain with light loads.
 - Deload weeks: 1 strength session plus 1 OPTIONAL strength session (optional: true), both with fewer working sets at the same load and intent.
 - Taper: 1 strength session/week at maintain. Race week: 1 short maintain session early in the week, at least 5 days before the race.
@@ -246,6 +253,12 @@ const EVENT_LABEL: Record<EventType, string> = {
   hyathlon: 'Hyathlon race', marathon_or_longer: 'marathon or longer', half_marathon: 'half marathon', '10k_or_shorter': '10 km or shorter', other: 'other event',
 };
 
+const PRIORITY_LABEL: Record<'A' | 'B' | 'C', string> = {
+  A: 'major target: full preparation, peak and taper',
+  B: 'important race / checkpoint: short taper',
+  C: 'training race: train through it',
+};
+
 const RUNNING_LABEL: Record<RunningMode, string> = {
   programmed: 'Program my running',
   own_plan: 'I already have a run plan',
@@ -285,11 +298,12 @@ function athleteFacts(athlete: AthleteRow, inputs: ProgramInputs, coach: CoachPr
     `Hyathlon races done: ${({ '0': '0', '1_2': '1–2', '3_5': '3–5', '6_plus': '6+' } as Record<string, string>)[inputs.hyathlon_races_count ?? ''] ?? 'not specified'}`,
     `Runs per week now: ${inputs.runs_per_week == null ? 'not specified' : inputs.runs_per_week >= 5 ? '5+' : inputs.runs_per_week}`,
     `Recent race or time trial: ${inputs.recent_result ? `${inputs.recent_result.event} in ${inputs.recent_result.time}${inputs.recent_result.date ? ` (${inputs.recent_result.date})` : ''}${inputs.recent_result.avg_run_pace ? `, average run pace ${inputs.recent_result.avg_run_pace}` : ''}` : 'none given'}`,
+    `repeat_preference: ${inputs.repeat_preference ?? 'always_new'}`,
     `Variety: ${VARIETY_LABEL[inputs.variety_preference ?? ''] ?? 'not specified'}`,
     `Dislikes or won't do: ${inputs.dislikes || 'none given'}`,
     ...(inputs.preferred_long_run_day ? [`Preferred long-run day: ${inputs.preferred_long_run_day}`] : []),
     `Last race (in the last 4 weeks): ${inputs.last_race ? `${EVENT_LABEL[inputs.last_race.type]} on ${inputs.last_race.date}` : 'none'}`,
-    `Other events: ${inputs.other_events?.length ? inputs.other_events.map((e) => `${e.name} (${EVENT_LABEL[e.type]}) on ${e.date}, ${e.mode === 'race' ? 'race it' : 'run it as training'}`).join('; ') : 'none'}`,
+    `Other events: ${inputs.other_events?.length ? inputs.other_events.map((e) => `${e.name} (${EVENT_LABEL[e.type]}) on ${e.date}, priority ${e.event_priority} (${PRIORITY_LABEL[e.event_priority]})`).join('; ') : 'none'}`,
     `limiters (the athlete's answer): ${inputs.limiters?.length ? inputs.limiters.join(', ') : 'not specified'}`,
     `Key session day: ${inputs.key_session_day}`,
     `Minutes per session: ${inputs.minutes_per_session}`,
@@ -338,7 +352,7 @@ Total weeks: ${window.totalWeeks} (week ${window.totalWeeks} is race week)
 </program>
 
 Outline every week from 1 to ${window.totalWeeks}:
-- Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final ${taperWeeks(window.totalWeeks)} weeks including race week (programs of 12+ weeks: 3; shorter: 2, i.e. race week + 1 week).
+- Group the weeks into phases (base, build, specific, taper) that cover every week in order. Shorter programs can skip base or build. The taper is the final ${taperWeeks(window.totalWeeks)} weeks: race week and the week before (Hyathlon races taper 8–14 days).
 - For each week give the focus, the load (Low, Moderate or High), whether it is a deload, the one progression lever (week 1 "start", deload and taper weeks including race week "deload", otherwise ${homeOffFeet(inputs, athlete.level) ? 'intensity or volume (never frequency for this athlete)' : 'frequency, intensity or volume'}), the number of core sessions, the number of optional sessions (0 to 2), the key session (on ${inputs.key_session_day}), 2 to 4 key sessions in a few words each, and the pillars it trains.
 - Core sessions per week are never more than ${days * 2} (the athlete trains ${days} days, up to 2 sessions a day; see can_double). Optional sessions go on the same days.
 ${(inputs.strength_choice ?? 'program') !== 'program' ? `- strength_sessions is 0 every week: the athlete ${inputs.strength_choice === 'own' ? 'does their own strength or classes (fixed sessions that count in load; plan around them)' : 'wants no strength sessions'}.` : `- strength_sessions per week (counted inside core_sessions): the athlete chose ${inputs.strength_sessions_pref ?? 2}, usually as the second session on hard days. ${homeOffFeet(inputs, athlete.level) ? 'For this athlete core_sessions is exactly 1 (the key session) + strength_sessions, every week; any extra session is an optional easy walk + mobility. ' : ''}Normal weeks (not deload, taper or race week): core_sessions at least ${coreSessionsForStrength(inputs.running.mode, days, inputs.strength_sessions_pref ?? 2, athlete.level === 'beginner', homeOffFeet(inputs, athlete.level))} (${homeOffFeet(inputs, athlete.level) ? 'the key session' : athlete.level === 'beginner' ? `a run or conditioning session on each of the ${days} training days` : weeklyNeeds(inputs.running.mode, 99, 0).join(', ') || 'no other needs'}, plus ${inputs.strength_sessions_pref ?? 2} strength), and strength_sessions = the smaller of ${inputs.strength_sessions_pref ?? 2} and core_sessions minus ${weeklyNeeds(inputs.running.mode, 99, 0).length}. Deload weeks: strength_sessions 1, plus 1 optional strength session (count it in optional_sessions), both at maintain. Taper weeks: 1 (maintain). Race week (week ${window.totalWeeks}): ${raceWeekStrengthDays(inputs.race_date ? weekdayOf(inputs.race_date) : null).length ? '1 short maintain session, at least 5 days before the race' : '0 (the race is too early in the week for one at least 5 days before it)'}.`}

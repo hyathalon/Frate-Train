@@ -9,7 +9,7 @@ Status key: ✅ decided · ❓ needs a decision · 💡 suggestion
 ## Decisions (30 Sep 2026)
 - **3.1** ✅ Experienced athletes can take more than one new stimulus.
 - **3.2, 3.7, 4.5** ✅ Injury history, return to run and menstrual cycle tracking are **member-only features behind a consent step**.
-- **3.3** ✅ Race recovery depends on the event: marathon or longer 3 weeks before quality run sessions; 10 km or shorter next week. Half marathon and Hyathlon race still to confirm. After an event, ask the athlete what they want training to look like.
+- **3.3** ✅ Race recovery depends on the event: marathon or longer 3 weeks before quality run sessions; half marathon or Hyathlon race 1 week; 10 km or shorter straight back into it. After an event, ask the athlete what they want training to look like.
 - **3.4** ✅ Athletes can add events any time after onboarding.
 - **3.5** ❌ Elevation dropped (only useful if the data uploads).
 - **3.6** ✅ Coach can set restrictions and a goal focus (members).

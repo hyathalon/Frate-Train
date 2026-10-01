@@ -164,11 +164,15 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
       ? { type: oneOf(lr.type, EVENT_TYPES, 'other', `Last race type: ${EVENT_TYPES.join(', ')}.`), date: date(lr.date, 'Last race date')! }
       : null,
     other_events: list(body.other_events, 'Other events', 10).map((e) => {
-      if (!text(e.name, 80) || !isValidDate(e.date) || (e.mode !== 'race' && e.mode !== 'training')) {
-        throw new HttpError(400, 'invalid_input', 'Each event needs a name, a date, and whether you will race it or run it as training.');
+      // Priority A / B / C; older answers ("race it" / "run it as training") map to B / C.
+      const priority = e.event_priority ?? (e.mode === 'race' ? 'B' : e.mode === 'training' ? 'C' : undefined);
+      if (!text(e.name, 80) || !isValidDate(e.date) || !['A', 'B', 'C'].includes(priority as string)) {
+        throw new HttpError(400, 'invalid_input', 'Each event needs a name, a date and a priority (A, B or C).');
       }
-      return { name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date, mode: e.mode as 'race' | 'training' };
+      return { name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date, event_priority: priority as 'A' | 'B' | 'C' };
     }),
+    repeat_preference: body.repeat_preference == null ? null
+      : oneOf(body.repeat_preference, ['same_two_weeks', 'alternate', 'always_new'] as const, 'always_new', 'Repeat preference: same_two_weeks, alternate or always_new.'),
   };
 }
 
@@ -769,7 +773,7 @@ async function generateBlockWeeks(a: {
 function postEventWeeks(inputs: ProgramInputs, startDate: string): number[] {
   const raced = [
     ...(inputs.last_race ? [inputs.last_race.date] : []),
-    ...(inputs.other_events ?? []).filter((e) => e.mode === 'race').map((e) => e.date),
+    ...(inputs.other_events ?? []).filter((e) => e.event_priority === 'A' || e.event_priority === 'B').map((e) => e.date),
   ];
   const weeks = new Set<number>();
   for (const d of raced) {
@@ -822,6 +826,8 @@ async function blockContext(a: {
     advancedRunner: a.level === 'Advanced',
     offFeetIncludes: inputs.running?.mode === 'none' ? inputs.off_feet_includes ?? null : null,
     ownRacePace: !!inputs.recent_result?.avg_run_pace,
+    repeatPreference: inputs.repeat_preference ?? 'always_new',
+    beginnerRunner: a.level === 'Beginner' || ['beginner_1', 'beginner_2'].includes(runningLevel(inputs) ?? ''),
     longRunPlan: runningLevel(inputs) === 'normal'
       ? longRunPlan(inputs.longest_run_min, a.level === 'Advanced', a.outline.weeks, a.totalWeeks)
       : new Map(),

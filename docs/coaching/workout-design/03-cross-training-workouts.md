@@ -23,6 +23,7 @@ The Magness session types carry over to cross-training (`00` §4–5):
 | Strength endurance circuits | Z2–Z4 | Stations, strength | Balanced Athleticism | Hold force output over many reps |
 | Compromised / hybrid (run + station) | Z3–Z4 | Run + stations/ergs | Durability, Fatigue Management | Keep moving well when fatigued |
 | Heavy / power strength | high effort, full rest | Strength | Balanced Athleticism | Force, resilience (neural; stop when form drops) |
+| CrossFit-style WOD (For Time, AMRAP, EMOM; gymnastics, Olympic lifts, mixed modal) | Z3–Z5 | Barbell, gymnastics, ergs, stations | Balanced Athleticism, Fatigue Management | Mixed-modal capacity; a hard session (same consolidation rule as strength). CrossFit exercises come from the exercise database |
 
 **Alternatives:** every cross-training session offers alternatives based on what the athlete has access to and prefers (e.g. "Pool run, or elliptical, or bike"). Athletes record their **available equipment and ranked modality preferences** at onboarding; list their preferred option first.
 
@@ -114,5 +115,6 @@ Hide the erg monitor, don't give the station order or round count, "hold Z3 unti
 - Count station and erg work in weekly load, not just running km.
 - Coordinate with the strength coach's program: cross-training sessions complement, not duplicate, the strength plan.
 - Strength and strength-endurance work follow `06-strength-principles.md`: working sets only, low volume/high effort, and only on hard days (never as light add-ons on recovery or easy days).
+- **Ergs are modalities, not punishments:** frequency first (easy, often, technique), then volume, then intensity. The SkiErg costs more locally than heart rate suggests; the goal is an output fast, cheap and repeatable enough to run well afterwards (`09` §1).
 - Productive fatigue applies to conditioning; for heavy/technical lifts, end the set when mechanics break down.
 - Rehab or pain-related modifications: suggest considerations only, with "check with your medical professional".

@@ -647,14 +647,14 @@ Deno.test('long runs: minutes per stage and cap; base effort by level', () => {
   assert.match(week2(validateBlock(withLong(60, '60 min @ RPE 5-6 Easy'), { ...programmed, longRunPlan: plan })), /this week's long run is LR 4, 85–90 min; it is 60 min/);
 });
 
-Deno.test('taper volume: ~80% then ~60% of usual, counting back from race week', () => {
-  assert.deepEqual([taperTarget(10, 12), taperTarget(11, 12)], [0.8, 0.6]);
+Deno.test('taper volume: Hyathlon ~50% of usual (down 40–60%) the week before race week', () => {
+  assert.deepEqual([taperTarget(10, 12), taperTarget(11, 12)], [0.5, 0.5]);
   const b = block();
   const outlineWeeks = BLOCK_OUTLINE_WEEKS.map((w) => ({ ...w, phase: w.week === 3 ? 'taper' as const : w.phase }));
   // Week 3 as the week before race week (finalWeek 4): target ~60% of usual (week 2, the last normal week). Unchanged it's 100%.
   b.weeks[2].progression.lever = 'deload';
   const errs = validateBlock(b, { ...ctx, outlineWeeks: outlineWeeks.map((w) => (w.week === 3 ? { ...w, lever: 'deload' as const } : w)), finalWeek: 4 });
-  assert.match(errs.join(' '), /Week 3: this taper week should be about 60% of usual volume \(week 2's core minutes\); it is 100%/);
+  assert.match(errs.join(' '), /Week 3: this taper week should be about 50% of usual volume \(week 2's core minutes\); it is 100%/);
 });
 
 Deno.test('no running is off-feet only; off-feet choices; compromised runs use the athlete\'s sessions', () => {
@@ -696,15 +696,15 @@ Deno.test('race week (running programs): the key session is a short sharpener 4�
   assert.match(week2(validateBlock(b, programmed)), /in race week, runs other than the sharpener are easy \(no long run\)/);
 });
 
-Deno.test('taper length by program length; station skill never alone; titles name what is in the session', () => {
-  assert.deepEqual([taperWeeks(16), taperWeeks(12), taperWeeks(11), taperWeeks(6), taperWeeks(4)], [3, 3, 2, 2, 2]);
-  // A 12-week program whose taper is only race week: weeks 10–11 must be taper too.
+Deno.test('Hyathlon taper is race week + 1; station skill never alone; titles name what is in the session', () => {
+  assert.deepEqual([taperWeeks(16), taperWeeks(12), taperWeeks(4)], [2, 2, 2]);
+  // A 12-week program whose taper is only race week: week 11 must be taper too.
   const twelve = { summary: 's', phases: [{ name: 'Base', kind: 'base', start_week: 1, end_week: 11, purpose: 'p' }, { name: 'Taper', kind: 'taper', start_week: 12, end_week: 12, purpose: 'p' }],
     weeks: Array.from({ length: 12 }, (_, i) => ({ week: i + 1, phase: i === 11 ? 'taper' : 'base', focus: 'f', load: 'Moderate', deload: false,
       lever: i === 0 ? 'start' : i === 11 ? 'deload' : 'volume', core_sessions: 3, strength_sessions: 1, optional_sessions: 1, key_session: 'k', key_sessions: ['k'], pillars: ['Aerobic Engine'] })) } as Outline;
   const errs = validateOutline(twelve, { totalWeeks: 12, daysAvailable: 4, ...OUTLINE_CTX }).join(' ');
-  assert.match(errs, /Week 10 is in the 3-week taper \(a 12-week program\), so its phase is taper/);
-  assert.match(errs, /Week 11 is in the 3-week taper/);
+  assert.match(errs, /Week 11 is in the 2-week taper \(a 12-week program\), so its phase is taper/);
+  assert.doesNotMatch(errs, /Week 10 is in the/);
   // Station skill on its own on a day.
   const week2 = (e: string[]) => e.filter((x) => x.startsWith('Week 2')).join(' | ');
   const skill = block();
@@ -758,6 +758,37 @@ Deno.test('home beginner, no running, no ergs/bike: the weekly shape', () => {
   const station = structuredClone(after);
   station.weeks[1].sessions[0].parts.push({ format: 'Station', template_id: null, run_type: null, minutes: 15, items: [item('WB', '3 × 10 wall balls')] });
   assert.match(week2(validateBlock(station, home)), /station skill is a short add-on \(10 min or less\); this part is 15 min/);
+});
+
+Deno.test('repeats follow repeat_preference; race simulations spaced; no long-run efforts for beginners; event priority', () => {
+  const same = (w: BlockWeek, n: number): BlockWeek => ({ ...structuredClone(w), week: n, progression: { lever: 'volume', change: 'c' } });
+  const b = block();
+  b.weeks[1] = same(b.weeks[0], 2); // week 2 = week 1 unchanged
+  const errs = (pref: 'same_two_weeks' | 'alternate' | 'always_new') => validateBlock(b, { ...ctx, repeatPreference: pref }).filter((e) => e.startsWith('Week 2')).join(' | ');
+  assert.match(errs('always_new'), /repeats a session from the week before unchanged/);
+  assert.doesNotMatch(errs('same_two_weeks'), /repeats|same for two weeks/);
+  assert.match(errs('alternate'), /repeats last week's session; the athlete alternates/);
+  b.weeks[2] = same(b.weeks[0], 3); // three weeks the same
+  assert.match(validateBlock(b, { ...ctx, repeatPreference: 'same_two_weeks' }).join(' '), /Week 3: .* has been the same for two weeks; progress it now/);
+
+  // Race simulations: specific phase, at most every 3–4 weeks.
+  const sim = block();
+  const raceSim = { format: 'RaceSim' as const, template_id: null, run_type: null, minutes: 30, items: [item('WB', '20 wall balls')] };
+  sim.weeks[0].sessions[1].parts[0] = structuredClone(raceSim);
+  sim.weeks[1].sessions[1].parts[0] = structuredClone(raceSim);
+  const simErrs = validateBlock(sim, { ...ctx, outlineWeeks: BLOCK_OUTLINE_WEEKS.map((w) => ({ ...w, phase: 'specific' as const })) }).join(' ');
+  assert.match(simErrs, /Week 2: full race simulations at most every 3–4 weeks; the last was week 1/);
+  assert.match(validateBlock(sim, ctx).join(' '), /Week 1: .* is a full race simulation; those go in the specific phase/);
+
+  // Beginners: no efforts in the long run.
+  const lr = block();
+  lr.weeks[1].sessions[3].parts = [{ format: 'Run', template_id: null, run_type: 'long', minutes: 40, items: [item('RUN', '40 min @ RPE 5-6 Easy with 4 × 2 min at RPE 8')] }];
+  assert.match(validateBlock(lr, { ...ctx, running: 'programmed', beginnerRunner: true }).join(' '), /no efforts in a beginner's long run/);
+
+  // Event priority: A / B / C, with older answers mapped (race it → B, run it as training → C).
+  const ev = (e: Record<string, unknown>) => parseInputs({ ...baseInputs, other_events: [{ name: 'X', type: 'hyathlon', date: '2026-11-14', ...e }] }).other_events![0].event_priority;
+  assert.deepEqual([ev({ event_priority: 'A' }), ev({ mode: 'race' }), ev({ mode: 'training' })], ['A', 'B', 'C']);
+  assert.throws(() => ev({ event_priority: 'D' }), /priority \(A, B or C\)/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {

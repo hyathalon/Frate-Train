@@ -4,9 +4,12 @@ import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type Ou
 // Each validator returns plain-English errors. An empty list means valid.
 // The same messages go back to Claude in the one automatic repair attempt.
 
-/** Taper weeks (including race week) by program length. */
-export function taperWeeks(totalWeeks: number): number {
-  return totalWeeks >= 12 ? 3 : 2;
+/**
+ * Taper weeks including race week. Hyathlon races (the only goal so far) taper 8–14
+ * days: race week + the week before (09 §5). Marathon/half goals (later) taper ~3 weeks.
+ */
+export function taperWeeks(_totalWeeks: number): number {
+  return 2;
 }
 
 export interface OutlineContext {
@@ -166,6 +169,8 @@ export interface BlockContext {
   advancedRunner?: boolean; // long runs RPE 6–7 and up to 120 min (others RPE 5–6, up to 90 min)
   offFeetIncludes?: string[] | null; // running 'none' (onboarding Q2c): 'simulations', 'erg', 'bike'; null = not asked
   ownRacePace?: boolean; // the athlete has a stored race average run pace: their own paces may appear beside RPE
+  repeatPreference?: 'same_two_weeks' | 'alternate' | 'always_new'; // onboarding 14b
+  beginnerRunner?: boolean; // beginners: no efforts in long runs
   longRunPlan?: Map<number, { label: string; minutes: [number, number] }>; // long-run stage per week (lib/longruns.ts)
   crossWeek?: boolean; // false while weeks are written in parallel: skip checks that need the real previous week
   keySessionDay: string;
@@ -186,9 +191,9 @@ export interface BlockContext {
 const DEFAULT_LEEWAY = 0.05;
 const TAPER_LEEWAY = 0.1;
 
-/** Taper volume as a share of usual, by weeks to race week: ~60% the week before, ~80% before that (race week ~30%, not checked). */
-export function taperTarget(week: number, finalWeek: number): number {
-  return finalWeek - week <= 1 ? 0.6 : 0.8;
+/** Taper volume as a share of usual (the last normal week): Hyathlon ~50%, i.e. down 40–60%. */
+export function taperTarget(_week: number, _finalWeek: number): number {
+  return 0.5; // Hyathlon: volume down 40–60% (±10% leeway); race week isn't checked
 }
 
 /** The last normal (not deload or taper) week before position i, in this block or the one before. */
@@ -309,11 +314,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
       }
     }
     if (previous) {
-      const before = new Set(previous.sessions.map(sessionSignature));
-      // One-lever progression is for quality sessions; easy, recovery, optional and maintain sessions may repeat.
-      for (const s of week.sessions.filter((x) => !x.optional && x.build_or_maintain !== 'maintain' && !isEasySession(x) && !isRecoverySession(x))) {
-        if (before.has(sessionSignature(s))) errors.push(`${label}: "${s.title}" repeats a session from the week before unchanged; progress load, sets, reps or density.`);
-      }
+      checkRepeats(week, previous, i > 1 ? block.weeks[i - 2] : undefined, label, ctx, errors);
     }
 
     const final = week.week === ctx.finalWeek;
@@ -327,6 +328,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
   });
   if (ctx.running === 'programmed' && ctx.crossWeek !== false) checkLongRuns(block, ctx, errors);
   if (ctx.running === 'programmed') checkLongRunTargets(block, ctx, errors);
+  if (ctx.crossWeek !== false) checkRaceSims(block, ctx, errors);
   return errors;
 }
 
@@ -656,6 +658,43 @@ function checkWeeklyMix(core: Session[], label: string, ctx: BlockContext, stren
 
 const HEAVY_LOWER = ['Squat', 'Hinge', 'Lunge / single-leg'];
 
+/**
+ * Repeats follow athlete.repeat_preference (09 §4). Only quality sessions are checked;
+ * easy, recovery, optional and maintain sessions may always repeat.
+ * - always_new (default): never repeat last week's session unchanged.
+ * - same_two_weeks: the same session two weeks in a row, then progress (not three).
+ * - alternate: A / B / A / B: not last week's session, and progressed from two weeks ago.
+ */
+function checkRepeats(week: BlockWeek, previous: BlockWeek, twoBack: BlockWeek | undefined, label: string, ctx: BlockContext, errors: string[]) {
+  const pref = ctx.repeatPreference ?? 'always_new';
+  const last = new Set(previous.sessions.map(sessionSignature));
+  const before = new Set(twoBack?.sessions.map(sessionSignature) ?? []);
+  for (const s of week.sessions.filter((x) => !x.optional && x.build_or_maintain !== 'maintain' && !isEasySession(x) && !isRecoverySession(x))) {
+    const sig = sessionSignature(s);
+    if (pref === 'same_two_weeks') {
+      if (last.has(sig) && before.has(sig)) errors.push(`${label}: "${s.title}" has been the same for two weeks; progress it now (the athlete repeats a session two weeks in a row, then progresses).`);
+    } else if (pref === 'alternate') {
+      if (last.has(sig)) errors.push(`${label}: "${s.title}" repeats last week's session; the athlete alternates sessions (A / B / A / B).`);
+      else if (before.has(sig)) errors.push(`${label}: "${s.title}" repeats the session from two weeks ago unchanged; progress it on its repeat.`);
+    } else if (last.has(sig)) {
+      errors.push(`${label}: "${s.title}" repeats a session from the week before unchanged; progress load, sets, reps or density.`);
+    }
+  }
+}
+
+/** Full race simulations at most every 3–4 weeks, in the specific phase. */
+function checkRaceSims(block: Block, ctx: BlockContext, errors: string[]) {
+  let lastSim: number | null = null;
+  for (const w of block.weeks) {
+    const sim = w.sessions.find((s) => s.parts.some((p) => p.format === 'RaceSim'));
+    if (!sim) continue;
+    const phase = ctx.outlineWeeks.find((o) => o.week === w.week)?.phase;
+    if (phase && phase !== 'specific') errors.push(`Week ${w.week}: "${sim.title}" is a full race simulation; those go in the specific phase (compromised work in small doses otherwise).`);
+    if (lastSim !== null && w.week - lastSim < 3) errors.push(`Week ${w.week}: full race simulations at most every 3–4 weeks; the last was week ${lastSim}.`);
+    lastSim = w.week;
+  }
+}
+
 /** Heavy lower-body strength, loaded lunges (stations, race work) or sled work anywhere in the session. */
 function heavyLower(s: Session, ctx: BlockContext): string | null {
   for (const p of s.parts) {
@@ -711,7 +750,7 @@ function checkInterference(week: BlockWeek, label: string, ctx: BlockContext, er
 function checkLongRunTargets(block: Block, ctx: BlockContext, errors: string[]) {
   const max = ctx.advancedRunner ? 120 : 90;
   const base: [number, number] = ctx.advancedRunner ? [5, 7] : [5, 6];
-  const top = ctx.advancedRunner ? 9 : 8.5;
+  const top = ctx.beginnerRunner ? base[1] : ctx.advancedRunner ? 9 : 8.5; // long-run efforts never for beginners
   for (const week of block.weeks) {
     const target = ctx.longRunPlan?.get(week.week);
     for (const s of week.sessions) {
@@ -730,7 +769,7 @@ function checkLongRunTargets(block: Block, ctx: BlockContext, errors: string[]) 
         if (lo < base[0] || hi > base[1]) {
           errors.push(`${where}: the long run's base effort is ${ctx.advancedRunner ? 'RPE 6–7 for advanced runners' : 'RPE 5–6 · Easy'}; it says RPE ${lo === hi ? lo : `${lo}–${hi}`}.`);
         }
-        if (ranges.some(([, h]) => h > top)) errors.push(`${where}: long-run segments go up to RPE ${top}.`);
+        if (ranges.some(([, h]) => h > top)) errors.push(`${where}: ${ctx.beginnerRunner ? 'no efforts in a beginner\'s long run; keep it easy' : `long-run segments go up to RPE ${top}`}.`);
       }
     }
   }

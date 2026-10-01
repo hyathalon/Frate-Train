@@ -48,7 +48,7 @@ function makeDeps(callClaude: CallClaude, background: Promise<unknown>[]): Deps 
 }
 
 function outline(totalWeeks: number): Outline {
-  const taperLength = totalWeeks >= 12 ? 3 : 2; // taper length by program length
+  const taperLength = 2; // Hyathlon: race week + the week before
   const taper = (w: number) => w > totalWeeks - taperLength;
   const deload = (w: number) => w % 4 === 0 && !taper(w);
   return {

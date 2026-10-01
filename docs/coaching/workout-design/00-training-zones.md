@@ -26,7 +26,7 @@ Source: Frate Train Coaching *Understanding Your Training Zones* booklet (Traini
 
 In plain terms:
 - **Z1 (Recovery):** barely above resting; recovery sessions, warm-ups and cool-downs.
-- **Z2 (Easy and Steady):** comfortable and conversational. Easy (RPE 5–6) is most of the weekly volume; Steady (RPE 6–8) is long runs and steady aerobic work.
+- **Z2 (Easy and Steady):** comfortable and conversational. Easy (RPE 5–6) is most of the weekly volume and the long run for beginner–intermediate runners; Steady (RPE 6–8) is steady aerobic work, and advanced runners' long runs sit at its low end (6–7).
 - **Z3 (Moderately hard):** sustainable but honest, around the lactate threshold. Hybrid race (Hyathlon) running typically sits around here (≈ 15 km pace).
 - **Z4 (Hard):** threshold and just above; shorter, focused efforts.
 - **Z5 (Very hard):** near-maximal; used sparingly for short, high-quality bursts.
@@ -35,7 +35,7 @@ In plain terms:
 - **Z1** is barely above resting: fat is the dominant fuel, only the easiest slow-twitch fibres work, and the cost is close to zero. This is **true recovery**. It lets the adaptation from the last hard session lock in.
 - **Z2** is still comfortably aerobic but a **real training stimulus**: mitochondrial density, capillarisation, stroke volume. Usually the largest share of weekly volume.
 - Don't lump every non-hard day into one vague "easy". Recovery days done at Z2 blunt recovery, and everything at Z1 leaves aerobic development on the table.
-- Within Z2, **Easy (RPE 5–6)** is the everyday aerobic run and **Steady (RPE 6–8)** is the long run and steady-state aerobic work. The upper end of Steady (7–8) overlaps with aerobic threshold work.
+- Within Z2, **Easy (RPE 5–6)** is the everyday aerobic run and **Steady (RPE 6–8)** is steady-state aerobic work. Long runs: RPE 5–6 for beginner–intermediate runners, RPE 6–7 for advanced. The upper end of Steady (7–8) overlaps with aerobic threshold work.
 
 ## 3. Four physiology concepts
 
@@ -50,7 +50,7 @@ In plain terms:
 |---|---|---|---|---|
 | **Recovery / absorption** | Z1 | Easiest ST fibres only; prioritise recovery | Day (or next session) after a medium–hard workout or race | Should feel almost too easy; resist speeding up |
 | **Easy ± strides or surges (30–60 s)** | Z2 Easy, RPE 5–6 (+ short pick-ups) | Aerobic base via ST fibres; light touch on FT; lactate clearance without real fatigue | Year-round foundation | Where the engine is quietly built |
-| **Long** | Z2 Steady, RPE 6–8 | As easy fibres tire, harder-to-recruit fibres join, so more muscle is trained aerobically | Year-round except taper | Duration and consistency over pace (except planned race-pace segments) |
+| **Long** | Z2: RPE 5–6 (beginner–intermediate), 6–7 (advanced) | As easy fibres tire, harder-to-recruit fibres join, so more muscle is trained aerobically | Year-round except taper | Duration and consistency over pace (except planned race-pace segments) |
 | **Progression** | Z1/Z2 → Z3 (–Z4) | Early ST fatigue forces different fibres into work at faster efforts | Year-round; versatile aerobic-to-threshold | Controlled early, honestly hard by the end |
 | **Aerobic threshold** (marathon–half pace) | upper Z2 – low Z3 | More ST recruitment without high lactate | Base; often inside a long run | Controlled, rhythmic, not a race simulation |
 | **Lactate threshold** (15 km / hybrid-race pace) | Z3 | ST + some FT-a; steady moderate lactate; improves clearance and reuse | Year-round; more in base and race lead-up | Often in blocks, e.g. 20 min + short easy + 10 min |
@@ -80,7 +80,7 @@ Percentages are relative to **each athlete's own threshold** pace or power for t
 ### Applying session types to cross-training
 The Magness session types in §4 carry straight over to ergs and low-impact modalities:
 - **Recovery / absorption:** Z1 (RPE 1–4) spin, row, elliptical or pool. Ideal the day after a hard run or race.
-- **Aerobic volume:** Z2 erg/bike/elliptical. Easy (RPE 5–6) when it replaces an easy run, Steady (RPE 6–8) when it replaces a long run. Adds aerobic volume without running impact.
+- **Aerobic volume:** Z2 erg/bike/elliptical. Easy (RPE 5–6) when it replaces an easy run, the long-run effort (RPE 5–6, or 6–7 for advanced) when it replaces a long run. Adds aerobic volume without running impact.
 - **Progression:** e.g. SkiErg or bike building Z1 → Z3 across the session.
 - **Threshold blocks:** Z3 erg blocks (e.g. 20 min + short easy + 10 min). Pool running or bike for a zero- or low-impact threshold session.
 - **Critical velocity / VO2max:** Z4 reps, and Z4–5 VO2max reps of 2–5 min with stationary rest ≈ half the work time (stop or sit still, not easy spinning). Air bike or BikeErg suit these well.
@@ -91,7 +91,7 @@ The Magness session types in §4 carry straight over to ergs and low-impact moda
 - **Athlete-facing label = RPE.** People interpret "Zone 1 / Zone 2" differently, so sessions shown to athletes use **RPE + feel word** (e.g. "RPE 5–6 · Easy"). Zones are kept internally for planning and analysis.
 - **Z1 (RPE 1–4 · Recovery) is used for recovery sessions, warm-ups and cool-downs** (e.g. the recovery run the day after a hard session). It is not used for general easy running.
 - **Warm-ups and cool-downs are RPE 1–4** (strides or drills can be added to warm-ups).
-- **Easy runs are RPE 5–6 · Easy. Long runs are RPE 6–8 · Steady**, with optional harder segments where planned.
+- **Easy runs are RPE 5–6 · Easy. Long runs are RPE 5–6 for beginner–intermediate runners and RPE 6–7 for advanced**, with optional harder segments where planned.
 - Use the zone boundaries exactly as in the chart: Z1 Recovery 1–4 · Z2 Easy 5–6 · Z2 Steady 6–8 · Z3 Mod. Hard 8–8.5 · Z4 Hard 8.5–9.5 · Z5 Very Hard 9.5–10.
 
 ## 7. Athlete-specific zone values (stored per athlete, never generic)
