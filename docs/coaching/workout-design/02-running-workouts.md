@@ -47,7 +47,7 @@ From a high-level marathon program (about 130–140 km/week). **Advanced Hyathlo
 - Doubles only for athletes who can train twice a day and are at high volume.
 - **Build weeks stay steady** rather than big waves; progress one thing at a time.
 - **Medium-long run** is a session type: longer than an easy run, shorter than the long run, easy effort.
-- **Taper (about 3 weeks):** about **80%**, then **60%**, then about **30%** of usual volume in race week (plus the race). Rest days and optional aerobic runs appear; quality stays but shortens. **Race week:** a short race-effort session about 5 days out, an easy run with a few efforts, a short shakeout the day before, then the race.
+- **Taper (about 3 weeks):** about **80%**, then **60%**, then about **30%** of usual volume in race week (plus the race). **Taper by event:** **Hyathlon races: 8–14 days**, volume down 40–60%, keep intensity and frequency (`09` §5). **Marathon / half marathon:** by program length: 12+ weeks → 3 weeks; 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week. Rest days and optional aerobic runs appear; quality stays but shortens. **Race week:** a short race-effort session about 5 days out, an easy run with a few efforts, a short shakeout the day before, then the race.
 
 ## 2. Manipulators applied to running
 

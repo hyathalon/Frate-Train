@@ -111,6 +111,9 @@ Principles:
 **14. How much variety do you like?** `variety_preference`
 - Mostly the same sessions · A balance · Lots of variety
 
+**14b. How do you like your key sessions to progress?** `repeat_preference`
+- Same session two weeks in a row, then progress · Alternate weeks · Something different each time
+
 **15. Anything you dislike or won't do?** *(optional text)* `dislikes`
 
 ### Screen 5: Your body *(member accounts only, after the consent step; see §11)*
@@ -138,6 +141,10 @@ Footer text: "We use this to adjust your training. It isn't medical advice. If s
 
 **3. How well have you slept over the last few days?** `sleep` 😵 → 😴
 - 0 = very poorly · 10 = really well
+
+**3b. How motivated are you to train this week?** `motivation` 😐 → 🔥
+- 0 = not at all · 10 = can't wait
+- Not part of the readiness score. Low (4 or less) or dropping 2+ below the athlete's average → easy sessions switch to compliance formats (`09` §8) until it recovers.
 
 ### Body check
 **4. Anything you're noticing in your body?** `body_reports[].category`
@@ -350,9 +357,11 @@ Behind the privacy checklist and an explicit consent step. Not available to self
 |---|---|
 | Marathon or longer | 3 weeks (easy running and off-feet only) |
 | Half marathon | 1 week |
-| Hyathlon race | 1 week |
+| Hyathlon race | 1 week (no intensity in the first 48–72 h; quality from day 4–7 after the test) |
 | 10 km or shorter | Straight back into it |
 
+- **An event can hold several races** (e.g. singles + doubles + relay in one competition). Two or more races → about 10 days before quality sessions *(proposed)*.
+- **First quality session after a race** starts with a "test the system" check: longer warm-up and a few strides; if pace, breathing or HR don't feel normal, it becomes easy aerobic instead (`09` §6).
 - **After an event**, the athlete is asked: *"What do you want training to look like now?"* — Recover, then keep building to my next event · Maintain for a while · Take a break · New goal (rebuild my plan).
 
 ## 13. Weekly focus and block banner

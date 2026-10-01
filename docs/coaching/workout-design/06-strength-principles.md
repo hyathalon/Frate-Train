@@ -49,7 +49,7 @@ Strength is not seasoning to dabble through the week: a little lift here, a litt
 - If the athlete can't train twice in a day, the strength session goes straight after the run in the same visit, still as its own session.
 - A strength session that is the **second session of the day is 30–45 min**, not the athlete's full session length.
 - **The athlete chooses.** At onboarding (and any time in settings) they can pick "Same day as my hard sessions" or "On its own days". On its own days, a strength day counts as a hard day: never the day after a key session that needs recovery, never on a recovery day, and followed by an easy or recovery day. They can still move individual sessions week to week.
-- The interference rule still applies: no heavy lower-body, lunge or sled work within ~24–48 h **before** a key run **or the long run**.
+- The interference rule still applies: no heavy lower-body, lunge or sled work within ~24–48 h **before** a key run **or the long run**. In practice: never the day before, and not an afternoon/evening session two days before (e.g. Thursday PM before a Saturday long run). If a strength session has to sit there, make it **upper body and core**.
 
 The goal is not to show how much work we can fit into a week. The goal is to get the adaptation and protect the week.
 
@@ -59,11 +59,13 @@ Strength training still needs progression: more load, more reps, better executio
 
 - Every strength session progresses **one** lever against the last similar session, labelled Extend (more reps or sets) or Qualify (more load, force, density, pause, slower tempo or better execution), as in `01`.
 - **Maintaining strength** (e.g. in taper or a busy block): same load and intent, **fewer working sets** (1–2). Strength is held by keeping the intensity, not the volume, so don't drop to light loads.
-- **Taper:** 1 strength session a week, at maintain. **Race week:** 1 short maintain session early in the week, at least 5 days before the race.
+- **Deload weeks:** 1 strength session plus 1 **optional** strength session, both with fewer working sets (same load and intent).
+- **Strength types:** 2–3 × 6–10 is the default for general strength. Maximal, explosive/power, reactive, isometric and strength-endurance work each have their own dosing (`09` §7).
+- **Taper:** 1 strength session a week, at maintain, **tapered for power**: same load, fewer sets and reps, moved fast (fresh, fast muscle for sled, wall balls, lunges). **Race week:** 1 short maintain session early in the week, at least 5 days before the race.
 
 ## 7. Athlete choice: more strength sessions
 
-Two is the recommendation, but the athlete decides. Some athletes want more, e.g. an upper / lower / core split.
+Two is the recommendation, but the athlete decides. This follows the app's core principle: **the app recommends, the athlete decides** (see `app/onboarding-and-check-in.md` §7). Some athletes want more, e.g. an upper / lower / core split.
 
 - At onboarding (and before each new block) the athlete chooses **2 (recommended), 3, or 4+** strength sessions a week.
 - The app programs what they choose. Extra sessions are placed on hard days first, then on their own days, then on easy days (upper body and core first), with a short note about recovery cost.
@@ -79,6 +81,9 @@ This is the point. Not to sprinkle strength through the week. Not to make every 
 
 - **Strength-endurance circuits and station work** (EMOM, AMRAP, density blocks, sled, wall balls, lunges) are hard sessions too. They follow the same consolidation rule and go on hard days, not as light add-ons.
 - Work around the **strength coach's plan**. Complement it, don't duplicate it.
+- **Strength-only or no-running programs:** the key (quality) session can be a **hard strength session, an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a Hyathlon race simulation, or a hard AMRAP/EMOM-type workout**. A key strength session can stand alone on its day; the athlete's other strength sessions follow their placement choice. Race simulations and erg/bike sessions follow what the athlete chose in onboarding Q2c (run segments in simulations are swapped for their preferred erg or bike). Core and mobility aren't quality sessions, except in a taper or post-event week.
+- **Athletes who already do strength or classes** (F45, CrossFit, their own strength coach) add them by title, days and hard/easy, with optional exercises and sets. The app doesn't program strength for them; it counts those sessions in load and plans runs around them.
+- **Progressing within the ranges:** a strength "volume" or "intensity" week progresses load, tempo, pauses or execution **within 2–3 working sets and 6–10 reps**. Don't progress by adding a 4th set or going past 10 reps (unless the athlete has chosen that).
 - Exercises come from the exercise database.
 
 ## 10. Rules for Claude
