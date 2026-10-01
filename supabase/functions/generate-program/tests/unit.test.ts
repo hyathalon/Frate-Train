@@ -725,6 +725,15 @@ Deno.test('home beginner, no running, no ergs/bike: the weekly shape', () => {
   // Outline: the key session plus the strength sessions (not a session on every training day).
   assert.equal(coreSessionsForStrength('none', 3, 2, true, true), 3);
   assert.equal(coreSessionsForStrength('none', 3, 2, true, false), 5);
+  // Outline: exactly key + strength each week, and never the frequency lever.
+  const o = outline();
+  for (const w of o.weeks) Object.assign(w, { strength_sessions: w.week >= 3 ? 1 : 2, core_sessions: w.week >= 3 ? 2 : 3 });
+  const homeOutline = { totalWeeks: 4, daysAvailable: 3, running: 'none' as const, strengthPref: 2, raceDay: 'Sat', beginner: true, homeOffFeet: true };
+  assert.deepEqual(validateOutline(o, homeOutline), []);
+  o.weeks[1] = { ...o.weeks[1], core_sessions: 4, lever: 'frequency', optional_sessions: 2 };
+  const errs = validateOutline(o, homeOutline).join(' ');
+  assert.match(errs, /Week 2: core_sessions must be 3 \(the key session \+ 2 strength\)/);
+  assert.match(errs, /Week 2: progress by intensity or volume; never the frequency lever/);
 
   const home: BlockContext = { ...ctx, homeOffFeet: true, beginner: true };
   const week2 = (e: string[]) => e.filter((x) => x.startsWith('Week 2')).join(' | ');

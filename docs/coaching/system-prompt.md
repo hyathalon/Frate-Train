@@ -70,6 +70,9 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
   - Station skill: only as a short add-on (≤10 min) inside a strength day, never a day's only session.
   - Other days: rest, or an easy brisk walk (RPE 5–6) and mobility. No circuits on easy days.
   - Deload/taper: same strength rules as everyone (deload 1 + 1 optional; taper 1 at maintain; race week 1 short maintain ≥5 days out); key session shortened, same intensity.
+  - Core sessions are exactly the key session + their strength sessions (deload: key + 1 strength, with the optional strength session on top).
+  - Progress by intensity or volume only — never the frequency lever for this profile.
+  - Any extra session is an optional easy walk + mobility.
 - Taper length by program length: 12+ weeks → 3-week taper (~80% → ~60% → ~30%); 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week.
 - Race week (running programs): key session = short sharpener at least 4–5 days before the race: 10–15 min easy warm-up, 15 min just slower than race effort (~10–20 s/km slower than the athlete's race average run pace if stored, otherwise RPE 8), 10–15 min easy cool-down. Other runs easy.
 - Advanced / high-volume running (up to ~70–100 km/week): Mon aerobic, Tue quality AM + second session PM, Wed medium-long run (easy, 12–15 km for most), Thu quality AM + second session PM, Fri aerobic or recovery, Sat recovery, Sun long run (most 60–90 min; advanced up to 90–120 min max). Strength gets the PM slot on quality days first; easy doubles only where there's no strength that day, only if can_double allows and the athlete wants them. Build weeks steady. Taper ~80% → ~60% → ~30% of usual volume.

@@ -72,11 +72,18 @@ export function validateOutline(outline: Outline, ctx: OutlineContext): string[]
     if (w.strength_sessions !== strength) {
       errors.push(`Week ${w.week}: strength_sessions must be ${strength} (${(ctx.strengthChoice ?? 'program') !== 'program' ? 'the athlete does their own strength or none' : w.week === ctx.totalWeeks ? 'race week: one short maintain session at least 5 days before the race, if the week allows' : w.phase === 'taper' ? 'taper: 1 at maintain' : w.deload ? 'deload: 1 core strength session, plus 1 optional' : `the athlete chose ${ctx.strengthPref}, within ${w.core_sessions} core sessions`}); it is ${w.strength_sessions}.`);
     }
+    if (ctx.homeOffFeet) {
+      // Home beginner off-feet: exactly the key session + strength; intensity or volume weeks, never frequency.
+      if (w.core_sessions !== 1 + w.strength_sessions) {
+        errors.push(`Week ${w.week}: core_sessions must be ${1 + w.strength_sessions} (the key session + ${w.strength_sessions} strength); any extra session is an optional easy walk + mobility.`);
+      }
+      if (w.lever === 'frequency') errors.push(`Week ${w.week}: progress by intensity or volume; never the frequency lever for this athlete.`);
+    }
     if (deloadOptionalStrength(w, sctx) > w.optional_sessions) {
       errors.push(`Week ${w.week}: a deload week has 1 optional strength session, so optional_sessions must be at least 1.`);
     }
     const needed = coreSessionsForStrength(ctx.running, ctx.daysAvailable, ctx.strengthPref, ctx.beginner, ctx.homeOffFeet);
-    if (w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload && (ctx.strengthChoice ?? 'program') === 'program' && w.core_sessions < needed) {
+    if (!ctx.homeOffFeet && w.week !== ctx.totalWeeks && w.phase !== 'taper' && !w.deload && (ctx.strengthChoice ?? 'program') === 'program' && w.core_sessions < needed) {
       errors.push(`Week ${w.week}: plan at least ${needed} core sessions so the athlete's ${ctx.strengthPref} strength sessions fit alongside the running and hybrid work (up to 2 sessions a day${ctx.beginner && !ctx.homeOffFeet ? '; beginners: a run or conditioning session on every training day, strength as second sessions' : ''}).`);
     }
     if (i === 0 && w.lever !== 'start') errors.push('Week 1 must use lever "start".');
