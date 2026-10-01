@@ -8,7 +8,9 @@ import { type Block, type BlockWeek, type CanDouble, DAYS, type Outline, type Ou
  * Taper weeks including race week. Hyathlon races (the only goal so far) taper 8–14
  * days: race week + the week before (09 §5). Marathon/half goals (later) taper ~3 weeks.
  */
-export function taperWeeks(_totalWeeks: number): number {
+export function taperWeeks(totalWeeks: number, goal: 'hyathlon' | 'marathon' | 'half_marathon' = 'hyathlon'): number {
+  if (goal === 'marathon') return totalWeeks >= 12 ? 3 : 2; // 6–11 weeks 2; up to 5 weeks race week + 1
+  if (goal === 'half_marathon') return totalWeeks < 8 ? 1 : 2;
   return 2;
 }
 
@@ -169,6 +171,8 @@ export interface BlockContext {
   advancedRunner?: boolean; // long runs RPE 6–7 and up to 120 min (others RPE 5–6, up to 90 min)
   offFeetIncludes?: string[] | null; // running 'none' (onboarding Q2c): 'simulations', 'erg', 'bike'; null = not asked
   ownRacePace?: boolean; // the athlete has a stored race average run pace: their own paces may appear beside RPE
+  raceSims?: RaceSims; // onboarding 2d (default plan_for_me)
+  warnings?: string[]; // notes that don't fail the block (e.g. race-simulation spacing)
   repeatPreference?: 'same_two_weeks' | 'alternate' | 'always_new'; // onboarding 14b
   beginnerRunner?: boolean; // beginners: no efforts in long runs
   longRunPlan?: Map<number, { label: string; minutes: [number, number] }>; // long-run stage per week (lib/longruns.ts)
@@ -381,6 +385,7 @@ function checkKeySession(s: Session, weekNo: number, label: string, taperOrPostE
     return;
   }
   if (taperOrPostEvent || ctx.finalWeek === undefined) return;
+  if (ctx.running === 'programmed' && ctx.raceSims?.choice === 'my_plan' && isSim(s)) return; // the athlete's own simulation is the key session
   if (ctx.running === 'programmed') {
     const key = s.parts.filter((p) => p.format === 'Run' && p.run_type === 'key');
     if (!key.length) {
@@ -682,16 +687,62 @@ function checkRepeats(week: BlockWeek, previous: BlockWeek, twoBack: BlockWeek |
   }
 }
 
-/** Full race simulations at most every 3–4 weeks, in the specific phase. */
+export interface RaceSims {
+  choice: 'plan_for_me' | 'my_plan' | 'none';
+  type?: 'full' | 'half' | 'other' | null;
+  frequency?: 'weekly' | 'every_2nd_week' | 'monthly' | 'once_before_race' | null;
+  other?: string | null;
+  preferred_day?: string | null;
+}
+
+const isSim = (s: Session) => s.parts.some((p) => p.format === 'RaceSim');
+
+/**
+ * Race simulations follow athlete.race_sims (onboarding 2d).
+ * - plan_for_me: full simulations at most every 3–4 weeks (a warning, not a failure).
+ * - my_plan: the athlete's frequency is followed, as the week's key session.
+ * - none: no simulations.
+ * Always: an easy or recovery day (or rest) after a full simulation; none in race week.
+ */
 function checkRaceSims(block: Block, ctx: BlockContext, errors: string[]) {
-  let lastSim: number | null = null;
+  const rs = ctx.raceSims ?? { choice: 'plan_for_me' };
+  const full = rs.choice !== 'my_plan' || (rs.type ?? 'full') === 'full';
+  const simWeeks: number[] = [];
   for (const w of block.weeks) {
-    const sim = w.sessions.find((s) => s.parts.some((p) => p.format === 'RaceSim'));
-    if (!sim) continue;
-    const phase = ctx.outlineWeeks.find((o) => o.week === w.week)?.phase;
-    if (phase && phase !== 'specific') errors.push(`Week ${w.week}: "${sim.title}" is a full race simulation; those go in the specific phase (compromised work in small doses otherwise).`);
-    if (lastSim !== null && w.week - lastSim < 3) errors.push(`Week ${w.week}: full race simulations at most every 3–4 weeks; the last was week ${lastSim}.`);
-    lastSim = w.week;
+    const sims = w.sessions.filter(isSim);
+    if (!sims.length) continue;
+    const sim = sims[0];
+    if (rs.choice === 'none') errors.push(`Week ${w.week}: "${sim.title}" is a race simulation; the athlete chose no simulations.`);
+    if (w.week === ctx.finalWeek && full) errors.push(`Week ${w.week}: no full race simulation in race week (the last one 7–10+ days before the race).`);
+    if (rs.choice === 'my_plan' && !sim.key_session) errors.push(`Week ${w.week}: "${sim.title}" is the athlete's own race simulation, so it is the week's key session.`);
+    if (full) {
+      const next = DAYS[DAYS.indexOf(sim.day) + 1];
+      for (const s of w.sessions.filter((x) => next && x.day === next)) {
+        if (!isEasySession(s) && !isRecoverySession(s)) errors.push(`Week ${w.week}: "${s.title}" on ${next} is the day after a full race simulation; make it an easy or recovery day.`);
+      }
+    }
+    simWeeks.push(w.week);
+  }
+  if (rs.choice === 'plan_for_me') {
+    for (let k = 1; k < simWeeks.length; k++) {
+      if (simWeeks[k] - simWeeks[k - 1] < 3) ctx.warnings?.push(`Week ${simWeeks[k]}: full race simulations are best at most every 3–4 weeks; the last was week ${simWeeks[k - 1]}.`);
+    }
+  }
+  if (rs.choice === 'my_plan' && rs.frequency) {
+    const weeks = block.weeks.map((w) => w.week).filter((n) => n !== ctx.finalWeek);
+    const has = (n: number) => simWeeks.includes(n);
+    if (rs.frequency === 'weekly') {
+      for (const n of weeks.filter((x) => !has(x))) errors.push(`Week ${n}: the athlete does a race simulation every week (their plan); add it as the key session.`);
+    } else if (rs.frequency === 'every_2nd_week') {
+      for (let k = 1; k < weeks.length; k++) {
+        if (!has(weeks[k]) && !has(weeks[k - 1])) errors.push(`Weeks ${weeks[k - 1]}–${weeks[k]}: the athlete does a race simulation every 2nd week (their plan); one of these weeks needs it.`);
+      }
+    } else if (rs.frequency === 'monthly' && weeks.length >= 3 && !weeks.some(has)) {
+      errors.push(`Weeks ${weeks[0]}–${weeks.at(-1)}: the athlete does a race simulation once a month / at the end of each block (their plan); add one.`);
+    } else if (rs.frequency === 'once_before_race') {
+      const window = [ctx.finalWeek - 2, ctx.finalWeek - 1].filter((n) => weeks.includes(n));
+      if (window.length === 2 && !window.some(has)) errors.push(`Weeks ${window.join('–')}: the athlete does one race simulation before the race (their plan), 7–10+ days out.`);
+    }
   }
 }
 

@@ -12,7 +12,7 @@ import { longRunPlan } from './longruns.ts';
 import { type Block, BLOCK_SCHEMA, type BlockWeek, CAN_DOUBLE, DAYS, normalizeBlock, type Outline, OUTLINE_SCHEMA, type OutlineWeek, type Limiter, LIMITERS, RUNNING_MODES, type RunningMode, STRENGTH_CHOICES, STRENGTH_PLACEMENTS, STRENGTH_SESSIONS_RANGE, TRAINING_AGES, VARIETY_PREFERENCES, EVENT_TYPES } from './schemas.ts';
 import { type CallType, costUsd, loadSettings, type ModelChoice, modelFor, type Settings, setting } from './settings.ts';
 import { dayStart, daysBetween, isValidDate, localDate, nextMonday, planWindow, weekdayOf } from './time.ts';
-import { type BlockContext, type BlockSettings, deloadOptionalStrength, raceWeekStrengthDays, sessionFrame as validatorSessionFrame, strengthTarget, taperTarget, usualWeek, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
+import { type BlockContext, type BlockSettings, type RaceSims, deloadOptionalStrength, raceWeekStrengthDays, sessionFrame as validatorSessionFrame, strengthTarget, taperTarget, usualWeek, type Timing, timingKey, validateBlock, validateOutline } from './validate.ts';
 
 export interface Deps {
   admin: SupabaseClient;
@@ -171,8 +171,25 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
       }
       return { name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date, event_priority: priority as 'A' | 'B' | 'C' };
     }),
+    race_sims: parseRaceSims(body.race_sims),
     repeat_preference: body.repeat_preference == null ? null
       : oneOf(body.repeat_preference, ['same_two_weeks', 'alternate', 'always_new'] as const, 'always_new', 'Repeat preference: same_two_weeks, alternate or always_new.'),
+  };
+}
+
+/** Onboarding 2d: race simulations. Missing → plan_for_me. */
+function parseRaceSims(value: unknown): RaceSims {
+  if (value === undefined || value === null) return { choice: 'plan_for_me' };
+  const v = value as Record<string, unknown>;
+  const choice = oneOf(v.choice, ['plan_for_me', 'my_plan', 'none'] as const, 'plan_for_me', 'Race simulations: plan_for_me, my_plan or none.');
+  if (choice !== 'my_plan') return { choice };
+  return {
+    choice,
+    type: oneOf(v.type, ['full', 'half', 'other'] as const, 'full', 'Race simulation type: full, half or other.'),
+    frequency: oneOf(v.frequency, ['weekly', 'every_2nd_week', 'monthly', 'once_before_race'] as const, 'monthly',
+      'Race simulation frequency: weekly, every_2nd_week, monthly or once_before_race.'),
+    other: typeof v.other === 'string' && v.other.trim() ? v.other.trim().slice(0, 120) : null,
+    preferred_day: (DAYS as readonly unknown[]).includes(v.preferred_day) ? v.preferred_day as string : null,
   };
 }
 
@@ -827,6 +844,8 @@ async function blockContext(a: {
     offFeetIncludes: inputs.running?.mode === 'none' ? inputs.off_feet_includes ?? null : null,
     ownRacePace: !!inputs.recent_result?.avg_run_pace,
     repeatPreference: inputs.repeat_preference ?? 'always_new',
+    raceSims: inputs.race_sims ?? { choice: 'plan_for_me' },
+    warnings: [],
     beginnerRunner: a.level === 'Beginner' || ['beginner_1', 'beginner_2'].includes(runningLevel(inputs) ?? ''),
     longRunPlan: runningLevel(inputs) === 'normal'
       ? longRunPlan(inputs.longest_run_min, a.level === 'Advanced', a.outline.weeks, a.totalWeeks)

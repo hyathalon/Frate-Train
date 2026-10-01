@@ -10,7 +10,7 @@
 - **Threshold is a state, not a fixed pace:** the upper boundary where the body can still stabilise. Training moves that boundary faster. Three levers: aerobic ceiling, how much of it you can use sustainably, and running economy. Easy volume builds the foundation; harder intervals raise the ceiling; strength and faster running improve economy; threshold work teaches the athlete to use all of it at a high, sustainable output.
 - **Progress isn't "faster every week".** The same output getting cheaper (lower RPE or HR, less drift, more control, more repeatable) is progress. Change the session when it stops creating the stimulus (see §4).
 - **Fundamentals (WDM):** find the dose you can sustain (frequency → volume → intensity); target the limiters (from race analysis, later feature), maintain the strengths; overload should be boringly progressive (stimulus → recover → adapt → slightly more); life sets the recovery budget; specific doesn't mean complicated.
-- **Full race simulations are very fatiguing:** not every week. Compromised running in **small, frequent doses** inside quality days gives specificity without the recovery cost. *Proposed default: a full simulation at most every 3–4 weeks, in the specific phase.*
+- **Full race simulations are very fatiguing:** not every week. Compromised running in **small, frequent doses** inside quality days gives specificity without the recovery cost. **Coach decision:** the recommendation is a full simulation every 3–4 weeks, but **the athlete decides** (onboarding Q2d): some do them weekly for the last 6 weeks, every 2nd week, or once a month at the end of a block. If they have their own plan, the app follows it; if not, it follows the 3–4 week rule.
 - **Ergs (SkiErg, rower) are modalities, not punishments:** build frequency first (easy, often, technique), then volume, then intensity. The SkiErg costs more locally than heart rate suggests. The goal is an output that's fast enough, cheap enough and repeatable enough to run well afterwards.
 
 ## 2. Long run (Coach decision)
@@ -34,7 +34,7 @@ Bayens's 5-run week: Mon aerobic + strides · Tue tempo + compromised · Wed no-
 - **Keep intensity and keep frequency:** train as often, just less each time. Short hard efforts keep legs and nervous system switched on.
 - **Strength tapers for power, not just volume:** sled, wall balls and lunges need fresh, fast muscle. Maintain load with fewer sets and reps done fast (see `06`).
 - Watch readiness (sleep, HRV if available, energy, fatigue) through the taper.
-- **Marathon / half marathon goals** keep the longer taper (marathon ~3 weeks: ~80% → ~60% → ~30%).
+- **Marathon goals** keep the longer taper by program length (12+ weeks ~3 weeks: ~80% → ~60% → ~30%; 6–11 weeks 2 weeks; up to 5 weeks race week + 1). **Half marathon (Coach decision):** under 8 weeks → 1 week; 8+ weeks → 2 weeks.
 
 ## 6. Returning to hard training after a race
 - A Hyathlon race is a big systemic stress: heart, muscle damage, heat, dehydration, nervous system. Feeling OK doesn't mean recovered; motivation often returns before the nervous system.

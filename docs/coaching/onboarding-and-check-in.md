@@ -42,6 +42,14 @@ Principles:
 - I already have a run plan → which days, and is each run hard or easy?
 - No running (off-feet training only) → **2c. What would you like in your off-feet program?** `off_feet_includes` (select any): Hyathlon race simulations (run segments swapped for your preferred erg or bike) · Erg sessions (SkiErg / row) · Bike sessions
 
+**2d. Will you include Hyathlon race simulations?** `race_sims` *(shown if the athlete has a Hyathlon event)*
+- **Plan them for me** *(recommended)*: a full simulation about every 3–4 weeks, with smaller compromised doses in between.
+- **I have my own plan** → type: Full · Half · Other (describe) · how often: Every week · Every 2nd week · Once a month / end of each block · Once before the race · preferred day (optional).
+- **No simulations.**
+- Helper text: "Full simulations are hard to recover from, so we recommend one every 3–4 weeks. Some athletes do them weekly in the last 6 weeks: it's your call."
+- Athletes with "No running" do simulations with run segments swapped for their erg or bike (Q2c).
+- The athlete's own plan is followed as set. If full simulations are more often than every 3–4 weeks, the app shows a one-line recovery note, never a block. No full simulation in race week; the app suggests the last one 7–10+ days before an A race.
+
 **2b. Which days suit your hardest session and your long run?** *(optional)* `preferred_key_day`, `preferred_long_run_day`
 - Mon–Sun chips for each · "No preference" (the app picks)
 
@@ -324,6 +332,7 @@ It shows what they actually did last block (sessions per week, long run, strengt
 - Running choice (program my running / I have a run plan / no running)
 - **Strength sessions per week** (2 recommended · 3 · 4 · 5 · 6) and placement (with hard sessions / own days)
 - Limiters
+- Race simulations (plan them for me / my own plan: type and how often / none)
 - Equipment
 - Anything coming up in the next 4 weeks (travel, a race, a busy period) — optional text
 
@@ -359,7 +368,7 @@ Behind the privacy checklist and an explicit consent step. Not available to self
 
 | Priority | Purpose | Approach in the plan |
 |---|---|---|
-| **A race** | The major target | Full preparation: the periodisation outline (base → specific → taper) is built backwards from it. Full taper (Hyathlon 8–14 days; marathon/half by program length) and full recovery after. |
+| **A race** | The major target | Full preparation: the periodisation outline (base → specific → taper) is built backwards from it. Full taper (Hyathlon 8–14 days; marathon by program length; half marathon 1 week under 8 weeks, 2 weeks for 8+ weeks) and full recovery after. |
 | **B race** | Important race / performance checkpoint | Some preparation: placed in the build or specific phase as a checkpoint. Short taper *(proposed: 3–5 days lighter, volume down ~20–30%, one short sharpener kept, no long run that week)*. Recovery after follows the event table below. |
 | **C race** | Training race / practice | Train through it: little or no taper (an easy or lighter day before at most). The race replaces that day's key or long session and counts in load. Recovery after follows the event table below if it was raced hard; if run at a controlled effort, normal training resumes after an easy day. |
 

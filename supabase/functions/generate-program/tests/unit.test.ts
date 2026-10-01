@@ -698,6 +698,9 @@ Deno.test('race week (running programs): the key session is a short sharpener 4�
 
 Deno.test('Hyathlon taper is race week + 1; station skill never alone; titles name what is in the session', () => {
   assert.deepEqual([taperWeeks(16), taperWeeks(12), taperWeeks(4)], [2, 2, 2]);
+  // Marathon and half marathon (running-race goals, later): by program length.
+  assert.deepEqual([taperWeeks(16, 'marathon'), taperWeeks(12, 'marathon'), taperWeeks(8, 'marathon'), taperWeeks(5, 'marathon')], [3, 3, 2, 2]);
+  assert.deepEqual([taperWeeks(6, 'half_marathon'), taperWeeks(8, 'half_marathon')], [1, 2]);
   // A 12-week program whose taper is only race week: week 11 must be taper too.
   const twelve = { summary: 's', phases: [{ name: 'Base', kind: 'base', start_week: 1, end_week: 11, purpose: 'p' }, { name: 'Taper', kind: 'taper', start_week: 12, end_week: 12, purpose: 'p' }],
     weeks: Array.from({ length: 12 }, (_, i) => ({ week: i + 1, phase: i === 11 ? 'taper' : 'base', focus: 'f', load: 'Moderate', deload: false,
@@ -771,14 +774,28 @@ Deno.test('repeats follow repeat_preference; race simulations spaced; no long-ru
   b.weeks[2] = same(b.weeks[0], 3); // three weeks the same
   assert.match(validateBlock(b, { ...ctx, repeatPreference: 'same_two_weeks' }).join(' '), /Week 3: .* has been the same for two weeks; progress it now/);
 
-  // Race simulations: specific phase, at most every 3–4 weeks.
+  // Race simulations follow race_sims. The key session (Wed) becomes a 20-min simulation part + Tabata.
   const sim = block();
-  const raceSim = { format: 'RaceSim' as const, template_id: null, run_type: null, minutes: 30, items: [item('WB', '20 wall balls')] };
+  const raceSim = { format: 'RaceSim' as const, template_id: null, run_type: null, minutes: 20, items: [item('WB', '20 wall balls')] };
   sim.weeks[0].sessions[1].parts[0] = structuredClone(raceSim);
   sim.weeks[1].sessions[1].parts[0] = structuredClone(raceSim);
-  const simErrs = validateBlock(sim, { ...ctx, outlineWeeks: BLOCK_OUTLINE_WEEKS.map((w) => ({ ...w, phase: 'specific' as const })) }).join(' ');
-  assert.match(simErrs, /Week 2: full race simulations at most every 3–4 weeks; the last was week 1/);
-  assert.match(validateBlock(sim, ctx).join(' '), /Week 1: .* is a full race simulation; those go in the specific phase/);
+  // plan_for_me: spacing is only a warning (no failure); any phase.
+  const warnings: string[] = [];
+  const planned = validateBlock(sim, { ...ctx, raceSims: { choice: 'plan_for_me' }, warnings }).join(' ');
+  assert.doesNotMatch(planned, /race simulation|specific phase/);
+  assert.match(warnings.join(' '), /Week 2: full race simulations are best at most every 3–4 weeks; the last was week 1/);
+  // none: no simulations.
+  assert.match(validateBlock(sim, { ...ctx, raceSims: { choice: 'none' } }).join(' '), /Week 1: .* the athlete chose no simulations/);
+  // my_plan weekly: every week has one (weeks 3 and 4 don't).
+  const mine = validateBlock(sim, { ...ctx, raceSims: { choice: 'my_plan', type: 'full', frequency: 'weekly' } }).join(' ');
+  assert.match(mine, /Week 3: the athlete does a race simulation every week \(their plan\)/);
+  assert.doesNotMatch(mine, /Week 2: the athlete does a race simulation every week/);
+  // Always: the day after a full simulation is easy, and none in race week.
+  const after = structuredClone(sim);
+  after.weeks[1].sessions[2].day = 'Thu'; // Friday's hard bike moves to the day after Wednesday's simulation
+  assert.match(validateBlock(after, { ...ctx, trainingDays: ['Mon', 'Wed', 'Thu', 'Sat'], raceSims: { choice: 'plan_for_me' }, warnings: [] }).join(' '),
+    /Week 2: "Bike" on Thu is the day after a full race simulation; make it an easy or recovery day/);
+  assert.match(validateBlock(sim, { ...ctx, finalWeek: 2 }).join(' '), /Week 2: no full race simulation in race week/);
 
   // Beginners: no efforts in the long run.
   const lr = block();
@@ -789,6 +806,11 @@ Deno.test('repeats follow repeat_preference; race simulations spaced; no long-ru
   const ev = (e: Record<string, unknown>) => parseInputs({ ...baseInputs, other_events: [{ name: 'X', type: 'hyathlon', date: '2026-11-14', ...e }] }).other_events![0].event_priority;
   assert.deepEqual([ev({ event_priority: 'A' }), ev({ mode: 'race' }), ev({ mode: 'training' })], ['A', 'B', 'C']);
   assert.throws(() => ev({ event_priority: 'D' }), /priority \(A, B or C\)/);
+  // race_sims: missing → plan_for_me; my_plan keeps type and frequency.
+  assert.deepEqual(parseInputs(baseInputs).race_sims, { choice: 'plan_for_me' });
+  assert.deepEqual(parseInputs({ ...baseInputs, race_sims: { choice: 'my_plan', type: 'half', frequency: 'every_2nd_week', preferred_day: 'Sat' } }).race_sims,
+    { choice: 'my_plan', type: 'half', frequency: 'every_2nd_week', other: null, preferred_day: 'Sat' });
+  assert.throws(() => parseInputs({ ...baseInputs, race_sims: { choice: 'sometimes' } }), /Race simulations: plan_for_me/);
 });
 
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {
