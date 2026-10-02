@@ -161,6 +161,7 @@ export interface Session {
   slot: string | null;
   parts: SessionPart[];
   frame?: { warmup_min: number; cooldown_min: number; total_min: number }; // added server-side
+  target_min?: number; // the skeleton slot's session minutes (set server-side)
 }
 
 export interface BlockWeek {

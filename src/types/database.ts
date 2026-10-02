@@ -274,6 +274,8 @@ export type Database = {
           name: string | null
           paid_weeks: number
           plan: string | null
+          plan_paused_days: number
+          plan_paused_since: string | null
           plan_started_at: string | null
           tier: string
           timezone: string
@@ -296,6 +298,8 @@ export type Database = {
           name?: string | null
           paid_weeks?: number
           plan?: string | null
+          plan_paused_days?: number
+          plan_paused_since?: string | null
           plan_started_at?: string | null
           tier?: string
           timezone?: string
@@ -318,6 +322,8 @@ export type Database = {
           name?: string | null
           paid_weeks?: number
           plan?: string | null
+          plan_paused_days?: number
+          plan_paused_since?: string | null
           plan_started_at?: string | null
           tier?: string
           timezone?: string
@@ -794,6 +800,44 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      plan_pauses: {
+        Row: {
+          athlete_id: string
+          id: number
+          paused_at: string
+          paused_by: string | null
+          reason: string
+          resumed_at: string | null
+          resumed_by: string | null
+        }
+        Insert: {
+          athlete_id: string
+          id?: never
+          paused_at?: string
+          paused_by?: string | null
+          reason: string
+          resumed_at?: string | null
+          resumed_by?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          id?: never
+          paused_at?: string
+          paused_by?: string | null
+          reason?: string
+          resumed_at?: string | null
+          resumed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_pauses_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_blocks: {
         Row: {

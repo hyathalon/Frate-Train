@@ -196,6 +196,24 @@ Deno.test({
         assert.equal((await call({ action: 'save_preferences', answers: { injury_history: [] } }, app.token)).status, 400);
         assert.equal((await call({ action: 'get_preferences', athlete_id: other.athlete!.id }, app.token)).body.code, 'not_your_athlete');
       });
+      await t.step('pause and restart: coach any athlete; app athletes not unless app_monthly; paused = no new plans', async () => {
+        const coach = await makeUser('pausecoach');
+        await admin.from('coaches').insert({ user_id: coach.userId });
+        assert.equal((await call({ action: 'pause_plan', reason: 'travel' }, app.token)).body.code, 'not_allowed');
+        const p = await call({ action: 'pause_plan', athlete_id: app.athlete!.id, reason: 'injury' }, coach.token);
+        assert.equal(p.status, 200, JSON.stringify(p.body));
+        const pv = await call({ action: 'preview', inputs }, app.token);
+        assert.equal(pv.body.code, 'plan_paused');
+        const r = await call({ action: 'resume_plan', athlete_id: app.athlete!.id }, coach.token);
+        assert.equal(r.status, 200, JSON.stringify(r.body));
+        const { data: log } = await admin.from('plan_pauses').select('reason, paused_by, resumed_by').eq('athlete_id', app.athlete!.id);
+        assert.deepEqual(log, [{ reason: 'injury', paused_by: coach.userId, resumed_by: coach.userId }]);
+        await admin.from('athletes').update({ plan: 'app_monthly' }).eq('id', app.athlete!.id);
+        assert.equal((await call({ action: 'pause_plan' }, app.token)).status, 200);
+        assert.equal((await call({ action: 'resume_plan' }, app.token)).status, 200);
+        await admin.from('plan_pauses').delete().eq('athlete_id', app.athlete!.id);
+        await admin.from('coaches').delete().eq('user_id', coach.userId);
+      });
       await t.step("a coach saves a member's answers", async () => {
         const coach = await makeUser('coach');
         await admin.from('coaches').insert({ user_id: coach.userId });

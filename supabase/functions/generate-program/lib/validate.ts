@@ -173,6 +173,9 @@ export interface BlockContext {
   ownRacePace?: boolean; // the athlete has a stored race average run pace: their own paces may appear beside RPE
   raceSims?: RaceSims; // onboarding 2d (default plan_for_me)
   warnings?: string[]; // notes that don't fail the block (e.g. race-simulation spacing)
+  skeleton?: boolean; // placement came from the code skeleton: placement checks are warnings, not failures
+  highVolume?: boolean; // 4+ runs a week: the 8–14 day taper with its volume cut (low volume: ~7 days, no cut check)
+  eventWeeks?: number[]; // weeks holding an A/B/C race other than the goal race: no deload-size check
   repeatPreference?: 'same_two_weeks' | 'alternate' | 'always_new'; // onboarding 14b
   beginnerRunner?: boolean; // beginners: no efforts in long runs
   longRunPlan?: Map<number, { label: string; minutes: [number, number] }>; // long-run stage per week (lib/longruns.ts)
@@ -260,6 +263,8 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     errors.push(`The block must have exactly ${expectedWeeks} weeks (weeks ${ctx.startWeek} to ${ctx.endWeek}); it has ${block.weeks.length}.`);
   }
 
+  // With the code skeleton, placement is decided in code (and unit-tested): placement checks are warnings.
+  const placement: string[] = ctx.skeleton ? (ctx.warnings ?? []) : errors;
   block.weeks.forEach((week, i) => {
     const label = `Week ${week.week}`;
     if (week.week !== ctx.startWeek + i) {
@@ -272,50 +277,52 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
 
     // Counts follow the outline.
     if (plan && core.length !== plan.core_sessions) {
-      errors.push(`${label}: the outline has ${plan.core_sessions} core sessions; the block has ${core.length}.`);
+      placement.push(`${label}: the outline has ${plan.core_sessions} core sessions; the block has ${core.length}.`);
     }
     if (plan && optional.length > plan.optional_sessions) {
-      errors.push(`${label}: at most ${plan.optional_sessions} optional sessions; the block has ${optional.length}.`);
+      placement.push(`${label}: at most ${plan.optional_sessions} optional sessions; the block has ${optional.length}.`);
     }
 
     // Days: only the athlete's days, one core session per day, key session on the key day.
     for (const s of week.sessions) {
       if (!ctx.trainingDays.includes(s.day)) errors.push(`${label}: "${s.title}" is on ${s.day}, which isn't one of the athlete's training days (${ctx.trainingDays.join(', ')}).`);
     }
-    checkDays(week, label, ctx, errors);
+    checkDays(week, label, ctx, placement);
     const keys = core.filter((s) => s.key_session);
     if (keys.length !== 1) errors.push(`${label}: mark exactly one core session as the key session.`);
     else if (keys[0].day !== ctx.keySessionDay && !(week.week === ctx.finalWeek && ctx.running === 'programmed')) {
-      errors.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
+      placement.push(`${label}: the key session must be on ${ctx.keySessionDay}.`);
     }
-    if (week.week === ctx.finalWeek && ctx.running === 'programmed') checkRaceWeekRuns(week, label, errors);
+    if (week.week === ctx.finalWeek && ctx.running === 'programmed') checkRaceWeekRuns(week, label, placement);
     if (optional.some((s) => s.key_session)) errors.push(`${label}: optional sessions can't be the key session.`);
     if (keys.length === 1) checkKeySession(keys[0], week.week, label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
-    if (ctx.runningBeginner) checkBeginnerWeek(week, label, errors);
-    checkStationSkillDays(week, label, errors);
-    checkBackToBackIntervals(week, previous, label, errors);
+    if (ctx.runningBeginner) checkBeginnerWeek(week, label, placement);
+    checkStationSkillDays(week, label, placement);
+    checkBackToBackIntervals(week, previous, label, placement);
 
     // Progression: one lever, matching the outline.
     if (plan && week.progression.lever !== plan.lever) {
       errors.push(`${label}: the outline's lever is "${plan.lever}" but the block uses "${week.progression.lever}".`);
     }
     const cross = ctx.crossWeek !== false;
-    if (cross && previous && week.progression.lever === 'frequency' && week.sessions.length <= previous.sessions.length) {
-      errors.push(`${label}: a frequency week must add a session (as optional first); it has ${week.sessions.length}, the week before had ${previous.sessions.length}.`);
+    const freeDay = ctx.trainingDays.some((d) => !previous?.sessions.some((s) => s.day === d));
+    if (cross && previous && freeDay && week.progression.lever === 'frequency' && week.sessions.length <= previous.sessions.length) {
+      placement.push(`${label}: a frequency week must add a session (as optional first); it has ${week.sessions.length}, the week before had ${previous.sessions.length}.`);
     }
-    const taper = plan?.phase === 'taper' && week.week !== ctx.finalWeek;
+    const taper = plan?.phase === 'taper' && week.week !== ctx.finalWeek && ctx.highVolume !== false;
     const usual = taper ? usualWeek(block.weeks, i, ctx.previousWeek, ctx.outlineWeeks) : undefined;
     if (cross && taper && usual) {
       // Taper: ~80%, then ~60% of usual volume (the last normal week), counting back from race week.
       const [target, ratio] = [taperTarget(week.week, ctx.finalWeek), coreMinutes(week, ctx) / Math.max(1, coreMinutes(usual, ctx))];
       if (Math.abs(ratio - target) > TAPER_LEEWAY) {
-        errors.push(`${label}: this taper week should be about ${Math.round(target * 100)}% of usual volume (week ${usual.week}'s core minutes); it is ${Math.round(ratio * 100)}%.`);
+        placement.push(`${label}: this taper week should be about ${Math.round(target * 100)}% of usual volume (week ${usual.week}'s core minutes); it is ${Math.round(ratio * 100)}%.`);
       }
-    } else if (cross && previous && week.progression.lever === 'deload' && week.week !== ctx.finalWeek) { // race week: no size rule
+    } else if (cross && previous && week.progression.lever === 'deload' && week.week !== ctx.finalWeek && !(ctx.eventWeeks ?? []).includes(week.week)
+      && plan?.phase !== 'taper') { // race week, event weeks and low-volume taper: no size rule
       const ratio = coreMinutes(week, ctx) / Math.max(1, coreMinutes(previous, ctx));
       const lo = ctx.settings.deloadMin - DEFAULT_LEEWAY, hi = ctx.settings.deloadMax + DEFAULT_LEEWAY;
       if (ratio < lo || ratio > hi) {
-        errors.push(`${label}: a deload week should be about ${Math.round(ctx.settings.deloadMin * 100)}–${Math.round(ctx.settings.deloadMax * 100)}% of the previous week's core minutes; it is ${Math.round(ratio * 100)}%.`);
+        placement.push(`${label}: a deload week should be about ${Math.round(ctx.settings.deloadMin * 100)}–${Math.round(ctx.settings.deloadMax * 100)}% of the previous week's core minutes; it is ${Math.round(ratio * 100)}%.`);
       }
     }
     if (previous) {
@@ -326,14 +333,14 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     week.sessions.forEach((s, j) => validateSession(s, `${label}, session ${j + 1} ("${s.title}")`, week.progression.lever === 'deload', final, ctx, errors));
     const strengthCount = plan?.strength_sessions ?? strengthTarget({ week: week.week, phase: plan?.phase ?? 'base', core_sessions: core.length, deload: plan?.deload }, ctx);
     const optionalStrength = plan ? deloadOptionalStrength(plan, ctx) : 0;
-    if (!final) checkWeeklyMix(core, label, ctx, strengthCount, errors);
+    if (!final) checkWeeklyMix(core, label, ctx, strengthCount, placement);
     checkInterference(week, label, ctx, errors);
-    checkEasyDays(week, label, ctx, strengthCount, errors);
-    checkStrengthWeek(week, label, ctx, strengthCount, optionalStrength, plan?.phase === 'taper' || !!plan?.deload || final, errors);
+    checkEasyDays(week, label, ctx, strengthCount, placement);
+    checkStrengthWeek(week, label, ctx, strengthCount, optionalStrength, plan?.phase === 'taper' || !!plan?.deload || final, placement);
   });
   if (ctx.running === 'programmed' && ctx.crossWeek !== false) checkLongRuns(block, ctx, errors);
   if (ctx.running === 'programmed') checkLongRunTargets(block, ctx, errors);
-  if (ctx.crossWeek !== false) checkRaceSims(block, ctx, errors);
+  if (ctx.crossWeek !== false) checkRaceSims(block, ctx, placement);
   return errors;
 }
 
@@ -590,8 +597,9 @@ function checkDays(week: BlockWeek, label: string, ctx: BlockContext, errors: st
 
 const isRecoverySession = (s: Session) =>
   s.session_type === 'recovery' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && p.run_type === 'recovery'));
-const isEasySession = (s: Session) =>
-  s.session_type === 'easy_steady' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && EASY_RUN_TYPES.includes(p.run_type ?? '')));
+// The key session (also the week's main aerobic run before intervals start) is never an easy day.
+const isEasySession = (s: Session) => !s.key_session && (
+  s.session_type === 'easy_steady' || (s.parts.length > 0 && s.parts.every((p) => p.format === 'Run' && EASY_RUN_TYPES.includes(p.run_type ?? ''))));
 const isStrengthOnly = (s: Session) =>
   s.parts.some((p) => p.format === 'Strength') && s.parts.every((p) => p.format === 'Strength' || p.format === 'Mobility');
 
@@ -1003,9 +1011,17 @@ function validateSession(s: Session, where: string, deload: boolean, final: bool
     return;
   }
   const total = ctx.frame.warmup_min + ctx.frame.cooldown_min + s.parts.reduce((m, p) => m + p.minutes, 0);
+  const longRun = s.parts.some((p) => p.format === 'Run' && p.run_type === 'long');
+  // With the skeleton, each session has its slot's minutes (short shakeouts, race-week and taper sessions).
+  if (s.target_min !== undefined && !longRun) {
+    if (Math.abs(total - s.target_min) > tol) {
+      errors.push(`${where}: with the ${ctx.frame.warmup_min} min warm-up and ${ctx.frame.cooldown_min} min cool-down it lasts ${total} min; this session is ${s.target_min} min (±${tol}).`);
+    }
+    s.parts.forEach((part, k) => validatePart(part, k, `${where}, part ${k + 1} (${part.format})`, ctx, errors));
+    return;
+  }
   const minTotal = deload ? Math.floor(ctx.minutesPerSession * ctx.settings.deloadSessionMinRatio) : ctx.minutesPerSession - tol;
   // A long run may make its session longer than usual, up to LONG_RUN_SESSION_MAX.
-  const longRun = s.parts.some((p) => p.format === 'Run' && p.run_type === 'long');
   const maxTotal = longRun ? Math.max(ctx.minutesPerSession + tol, LONG_RUN_SESSION_MAX) : ctx.minutesPerSession + tol;
   if (total < minTotal || total > maxTotal) {
     errors.push(`${where}: with the ${ctx.frame.warmup_min} min warm-up and ${ctx.frame.cooldown_min} min cool-down it lasts ${total} min; sessions must be ${ctx.minutesPerSession} min (±${tol})${deload ? `, or down to ${minTotal} min in a deload week` : ''}.`);

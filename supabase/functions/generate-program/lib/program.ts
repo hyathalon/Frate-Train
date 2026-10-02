@@ -184,6 +184,45 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
   };
 }
 
+/** A paused plan gets no new plans (previews, confirmations or re-plans). */
+function assertNotPaused(athlete: AthleteRow) {
+  if (athlete.plan_paused_since) {
+    throw new HttpError(409, 'plan_paused', 'Your plan is paused. Restart it to build a new plan.');
+  }
+}
+
+/**
+ * Pause or restart an athlete's plan. Coaches can do it for any athlete (on request:
+ * injury, illness, travel); app_monthly athletes can pause their own. Pausing stops
+ * new plans; the paused days extend the plan's end date. Logged in plan_pauses.
+ */
+export async function pausePlan(deps: Deps, caller: Caller, body: Record<string, unknown>) {
+  const athlete = await resolveAthlete(deps.admin, caller, body.athlete_id, { forBuilding: false });
+  if (caller.role !== 'coach' && athlete.plan !== 'app_monthly') {
+    throw new HttpError(403, 'not_allowed', 'To pause your plan, please contact us.');
+  }
+  if (athlete.plan_paused_since) throw new HttpError(409, 'already_paused', 'The plan is already paused.');
+  const reason = typeof body.reason === 'string' && body.reason.trim() ? body.reason.trim().slice(0, 200) : (caller.role === 'coach' ? '' : 'athlete pause');
+  if (!reason) throw new HttpError(400, 'invalid_input', 'Give a reason for the pause (e.g. injury, illness, travel).');
+  const now = deps.now().toISOString();
+  const { error } = await deps.admin.from('plan_pauses').insert({ athlete_id: athlete.id, paused_at: now, paused_by: caller.userId, reason });
+  if (error) throw new Error(`Could not record the pause: ${error.message}`);
+  await deps.admin.from('athletes').update({ plan_paused_since: now }).eq('id', athlete.id);
+  return { athlete_id: athlete.id, paused_since: now };
+}
+
+export async function resumePlan(deps: Deps, caller: Caller, body: Record<string, unknown>) {
+  const athlete = await resolveAthlete(deps.admin, caller, body.athlete_id, { forBuilding: false });
+  if (caller.role !== 'coach' && athlete.plan !== 'app_monthly') throw new HttpError(403, 'not_allowed', 'To restart your plan, please contact us.');
+  if (!athlete.plan_paused_since) throw new HttpError(409, 'not_paused', "The plan isn't paused.");
+  const now = deps.now();
+  const days = Math.max(0, Math.round((now.getTime() - new Date(athlete.plan_paused_since).getTime()) / 86_400_000));
+  await deps.admin.from('plan_pauses').update({ resumed_at: now.toISOString(), resumed_by: caller.userId })
+    .eq('athlete_id', athlete.id).is('resumed_at', null);
+  await deps.admin.from('athletes').update({ plan_paused_since: null, plan_paused_days: (athlete.plan_paused_days ?? 0) + days }).eq('id', athlete.id);
+  return { athlete_id: athlete.id, paused_days_added: days, plan_paused_days: (athlete.plan_paused_days ?? 0) + days };
+}
+
 /** Onboarding 2d: race simulations. Missing → plan_for_me. */
 function parseRaceSims(value: unknown): RaceSims {
   if (value === undefined || value === null) return { choice: 'plan_for_me' };
@@ -426,6 +465,7 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
   const { admin } = deps;
   const settings = await loadSettings(admin);
   const athlete = await resolveAthlete(admin, caller, body.athlete_id, { forBuilding: true });
+  assertNotPaused(athlete);
   // From the saved onboarding answers (step 6), or inputs sent directly; inputs override answers.
   const raw = body.use_preferences
     ? { ...programInputsFromAnswers(await loadAnswers(admin, athlete.id)), ...((body.inputs ?? {}) as Record<string, unknown>) }
@@ -544,6 +584,7 @@ export async function confirm(deps: Deps, caller: Caller, body: Record<string, u
   if (error) throw new Error(`Could not load the program: ${error.message}`);
   if (!program) throw new HttpError(404, 'program_not_found', 'That program could not be found.');
   const athlete = await resolveAthlete(admin, caller, program.athlete_id, { forBuilding: true });
+  assertNotPaused(athlete);
 
   const endWeek = Math.min(BLOCK_WEEKS, program.total_weeks);
   const blockResponse = (status: string) => ({ program_id: program.id, block_no: 1, weeks: [1, endWeek], status });
