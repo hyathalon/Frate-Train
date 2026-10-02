@@ -55,7 +55,7 @@ In plain terms:
 | **Aerobic threshold** (marathon–half pace) | upper Z2 – low Z3 | More ST recruitment without high lactate | Base; often inside a long run | Controlled, rhythmic, not a race simulation |
 | **Lactate threshold** (15 km / hybrid-race pace) | Z3 | ST + some FT-a; steady moderate lactate; improves clearance and reuse | Year-round; more in base and race lead-up | Often in blocks, e.g. 20 min + short easy + 10 min |
 | **Above threshold / critical velocity** (10 km–5 km pace) | Z4 | More FT-a while still building aerobic capacity | Once LT work has been maximised and a fresh stimulus is needed | Threshold's faster, punchier cousin, not all-out |
-| **VO2max intervals** (3 km–5 km pace) | upper Z4 – Z5 | ST + lots of FT-a and some FT-b. VO2 takes ~90 s–2 min to reach its ceiling, so reps last 2–5 min with **standing** rest ≈ half the work time | Focused blocks once threshold and CV work are established | Aerobic Engine pillar. Standing (or stationary) recovery only: a jog recovery turns it into threshold work, not true VO2max training. Quality over quantity; not a year-round staple |
+| **VO2max intervals** (3 km–5 km pace) | upper Z4 – Z5 | ST + lots of FT-a and some FT-b. Reps last **1–3 min** (Coach decision) with **standing** rest ≈ half the work time, so VO2 stays high from rep to rep | Focused blocks once threshold and CV work are established | Aerobic Engine pillar. Standing (or stationary) recovery only: a jog recovery turns it into threshold work, not true VO2max training. Quality over quantity; not a year-round staple |
 | **Speed endurance** (30–90 s reps) | Z5 | Fitness: FT-a/FT-b under high lactate; holding speed and form as fatigue builds | Mainly specific phase, focused blocks | Full passive recovery (2–3× the work time); stop when mechanics break |
 | **Sprint intervals / hill sprints** (30 s or less) | Z5 (short) | **Running economy**, not fitness: neural drive, mechanics, fast-twitch recruitment | Year-round, little and often | Full recovery; stop when mechanics break |
 
@@ -83,7 +83,7 @@ The Magness session types in §4 carry straight over to ergs and low-impact moda
 - **Aerobic volume:** Z2 erg/bike/elliptical. Easy (RPE 5–6) when it replaces an easy run, the long-run effort (RPE 5–6, or 6–7 for advanced) when it replaces a long run. Adds aerobic volume without running impact.
 - **Progression:** e.g. SkiErg or bike building Z1 → Z3 across the session.
 - **Threshold blocks:** Z3 erg blocks (e.g. 20 min + short easy + 10 min). Pool running or bike for a zero- or low-impact threshold session.
-- **Critical velocity / VO2max:** Z4 reps, and Z4–5 VO2max reps of 2–5 min with stationary rest ≈ half the work time (stop or sit still, not easy spinning). Air bike or BikeErg suit these well.
+- **Critical velocity / VO2max:** Z4 reps, and Z4–5 VO2max reps of 1–3 min with stationary rest ≈ half the work time (stop or sit still, not easy spinning). Air bike or BikeErg suit these well.
 - **Stations** (sled, wall balls, lunges, carries, burpee broad jumps): prescribe by Zone/RPE from the same scale. Station output is mostly judged by effort, not % threshold.
 
 ## 6. How zones are shown and used (coach decisions)

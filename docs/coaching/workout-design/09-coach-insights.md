@@ -30,7 +30,7 @@ Bayens's 5-run week: Mon aerobic + strides · Tue tempo + compromised · Wed no-
 - Easy, recovery, optional and maintain sessions can always repeat.
 
 ## 5. Taper (Coach decision)
-- **Hyathlon races: 8–14 days.** Longer after a bigger training block. Volume down **40–60%**, e.g. normal threshold 8 × 4 min → taper 4 × 4 min; normal long run 75 min → 35 min.
+- **Hyathlon races scale with training volume (Coach decision).** Low-volume athletes (3 or fewer runs a week): about 7 days; not much changes except session types (e.g. last long run with efforts about 6 days out, then an easy race week). Higher-volume athletes: **8–14 days.** Longer after a bigger training block. Volume down **40–60%**, e.g. normal threshold 8 × 4 min → taper 4 × 4 min; normal long run 75 min → 35 min.
 - **Keep intensity and keep frequency:** train as often, just less each time. Short hard efforts keep legs and nervous system switched on.
 - **Strength tapers for power, not just volume:** sled, wall balls and lunges need fresh, fast muscle. Maintain load with fewer sets and reps done fast (see `06`).
 - Watch readiness (sleep, HRV if available, energy, fatigue) through the taper.

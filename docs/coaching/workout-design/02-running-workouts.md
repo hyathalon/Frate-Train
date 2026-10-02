@@ -15,7 +15,7 @@ Read `00-training-zones.md` (5-zone model, session types) and `01-workout-design
 | Aerobic threshold (marathon–half pace) | upper Z2 – low Z3 (7–8) | Aerobic Engine, Threshold | ST recruitment without high lactate; often inside the long run |
 | Lactate threshold (15 km / hybrid-race pace) | Z3 (8–8.5) | Threshold | Clear and reuse lactate; often in blocks (e.g. 20 + 10 min) |
 | Above threshold / critical velocity (10 km–5 km) | Z4 (8.5–9.5) | Threshold, Aerobic Engine | Fresh stimulus once LT is maximised |
-| VO2max intervals (3–5 km) | upper Z4 – Z5 (9–10) | Aerobic Engine (ceiling) | 2–5 min reps, **standing** rest ≈ half the work time (a jog recovery makes it threshold work); focused blocks only |
+| VO2max intervals (3–5 km) | upper Z4 – Z5 (9–10) | Aerobic Engine (ceiling) | 1–3 min reps, **standing** rest ≈ half the work time (a jog recovery makes it threshold work); focused blocks only |
 | Speed endurance (30–90 s reps) | Z5 (9.5–10), full recovery | Aerobic Engine | Fitness: holding speed and form under high lactate; focused blocks |
 | Sprint intervals / hill sprints (30 s or less) | Z5 (short), full recovery | Economy | Running economy: neural drive, mechanics, fast-twitch recruitment |
 | Race-specific / compromised runs | Z3–Z4 | Durability, Fatigue Management | Running well when already fatigued; race rhythm |
@@ -47,7 +47,7 @@ From a high-level marathon program (about 130–140 km/week). **Advanced Hyathlo
 - Doubles only for athletes who can train twice a day and are at high volume.
 - **Build weeks stay steady** rather than big waves; progress one thing at a time.
 - **Medium-long run** is a session type: longer than an easy run, shorter than the long run, easy effort.
-- **Taper (about 3 weeks):** about **80%**, then **60%**, then about **30%** of usual volume in race week (plus the race). **Taper by event:** **Hyathlon races: 8–14 days**, volume down 40–60%, keep intensity and frequency (`09` §5). **Marathon:** by program length: 12+ weeks → 3 weeks; 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week. **Half marathon:** under 8 weeks → 1 week (race week); 8+ weeks → 2 weeks. Rest days and optional aerobic runs appear; quality stays but shortens. **Race week:** a short race-effort session about 5 days out, an easy run with a few efforts, a short shakeout the day before, then the race.
+- **Taper (about 3 weeks):** about **80%**, then **60%**, then about **30%** of usual volume in race week (plus the race). **Taper by event:** **Hyathlon races: scale with volume.** Low volume (3 or fewer runs a week): about 7 days, frequency and intensity kept, session types change (shorter efforts), no big volume cut. Higher volume (4+ runs a week): **8–14 days**, volume down 40–60%, keep intensity and frequency (`09` §5). **Marathon:** by program length: 12+ weeks → 3 weeks; 6–11 weeks → 2 weeks; up to 5 weeks → race week + 1 week. **Half marathon:** under 8 weeks → 1 week (race week); 8+ weeks → 2 weeks. Rest days and optional aerobic runs appear; quality stays but shortens. **Race week:** a short race-effort session about 5 days out, an easy run with a few efforts, a short shakeout the day before, then the race.
 
 ## 2. Manipulators applied to running
 
@@ -96,7 +96,7 @@ Remove knowledge: no watch or splits, unknown rep count or rep length, "hold Z3 
 | 13 km long run @ RPE 5–6 (6–7 advanced) | 15 km | 13 km with 20 min @ Z3 in the middle |
 | LT blocks: 20 min + 10 min @ Z3 / 2 min easy | 25 + 10 min, or 3×12 min | Same blocks with a 1 min break, or a Z2 float instead of easy jog |
 | 4×1 km @ Z4 / 2 min | 5×1 km | 4×1 km with a 200 m surge to Z5 in each |
-| VO2max 4×3 min @ Z4–5 / 90 s | 5×3 min, or 4×4 min | Faster logged output at the same zone |
+| VO2max 5×2 min @ Z4–5 / 60 s | 6×2 min, or 5×3 min | Faster logged output at the same zone |
 | 8×1 km compromised (1 km + station) @ Z3–Z4 | 9 rounds | Same zone with a longer/heavier station, or faster logged run splits |
 
 ## 4. Frequency guide (from Step 5)

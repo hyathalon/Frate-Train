@@ -3,17 +3,31 @@
 **Purpose:** The exact questions, answer options and app rules for sign-up, the weekly check-in, session logging, the weekly adjustment, athlete control and pillar suggestions. Replaces the check-in spec in `HANDOFF-for-vscode-claude.md` (task 2), which said energy/sleep "good / OK / poor".
 
 Principles:
-- Onboarding takes about 3 minutes. The weekly check-in takes 30–60 seconds.
+- Onboarding takes about 4 minutes. The weekly check-in takes 30–60 seconds.
 - Follow-up questions only appear when needed.
 - All readiness sliders go the same way: **10 = good**.
 - No "HYROX" in the app. Use general Hyathlon language.
 - Body reports are health data (see §4).
+- **Tiers** (see `product-tiers-and-safety.md`): **app tiers** (app_weekly, app_12wk) collect **no health data**: pre-exercise screening only, and the weekly check-in asks how they want the week instead of body reports. **Coaching tiers** (coach_run, coach_hybrid) add Screen 5, the body check, fuelling questions and a 30-minute set-up consultation.
 
 `Field` = suggested app field name. Map equipment answers to the existing equipment vocabulary in the code.
 
 ---
 
 ## 1. Onboarding (sign-up)
+
+### Screen 0: Before you start (all tiers)
+**Pre-exercise screening** `screening` (based on the Australian adult pre-exercise screening tool, APSS). Yes / No to each:
+1. Has a doctor ever said you have a heart condition or high blood pressure?
+2. Do you feel pain in your chest at rest, during daily activities or when you're active?
+3. Have you lost balance because of dizziness, or lost consciousness, in the last 12 months? (Answer No if it was from over-breathing during hard exercise.)
+4. Have you been diagnosed with another chronic medical condition?
+5. Do you take prescribed medication for a chronic medical condition?
+6. Do you have (or have you had in the last 12 months) a bone, joint or soft-tissue problem that could get worse if you're more active? (Answer No if it doesn't limit you now.)
+7. Has a doctor ever said you should only do medically supervised activity?
+- All No → continue.
+- Any Yes → *"Please check with your doctor or medical professional before starting. Once they've cleared you, tick below to continue."* Tick box: **"I've been cleared for physical activity by a medical professional."** `clearance_confirmed`
+- *Legal review: what to store. Proposed: store only "screening complete" and "clearance confirmed", not the individual answers.*
 
 ### Screen 1: Your goal
 **1. What's your main goal event?** *(required)* `event_goal`
@@ -29,6 +43,15 @@ Principles:
   - **C: Training race / practice.** Train through it, little or no taper.
 - The main goal event (Q1) is an **A race** by default; the athlete can change it.
 - Helper text: "You can add events and change their priority any time from your calendar."
+
+**1e. What's your big goal, and why does it matter to you?** *(optional, short text)* `goal_why`
+- Helper text: "Remember the why, and the process takes care of itself." The app uses it in the plan summary, weekly focus lines and low-motivation weeks.
+
+**1f. What matters most to you in a program?** `program_wants` (select up to 3)
+- Flexibility to move sessions · Clear structure · Accountability · Variety · Fuelling advice · Injury-smart training
+
+**1g. Anything big coming up?** *(optional)* `life_events[]` — Move · New job · Travel · Busy work period · Other (text) + rough date
+- The app plans lighter or more flexible weeks around them.
 
 **1c. When was your last race?** `last_race`
 - In the last 4 weeks → what was it (Hyathlon race / marathon or longer / half marathon / 10 km or shorter / other) + date
@@ -56,6 +79,8 @@ Principles:
 **3. How long have you been training consistently?** `training_age`
 - Less than 6 months · 6–12 months · 1–3 years · 3+ years
 
+**3c. How have you trained over the last 6 months?** `recent_training` (select any) — On my own · A running app · An AI plan · A coach · A club or group · Gym classes
+
 **3b. What holds you back most in a race?** `limiters` (select up to 2)
 - Running · Strength · Strength endurance (stations fall apart late in the race) · Aerobic fitness · Not sure
 - "Strength endurance" allows a 3rd strength session a week.
@@ -63,6 +88,9 @@ Principles:
 ### Screen 2: Your running *(skipped if Q2 = No running)*
 **4. How many times a week do you run at the moment?** `runs_per_week`
 - 0 · 1 · 2 · 3 · 4 · 5+
+
+**4c. Roughly how many km a week have you run lately?** `weekly_km_band` — 0–10 · 10–20 · 20–40 · 40–60 · 60+
+- Sets the starting running volume, together with Q4 and Q5.
 
 **4b. Have you done interval sessions before (e.g. reps with recoveries)?** `interval_experience` — Yes · No
 - No → first week is aerobic runs only; 30 s efforts come before the first interval session (`07` §4).
@@ -72,12 +100,15 @@ Principles:
 - Tick box: "I haven't run in the last 3 weeks" (saves 0)
 - Tick box: "Not sure" → follow-up: **"Can you run 20 minutes without stopping?"** `can_run_20_min` — Yes (normal programming) · No (Beginner 2)
 - Sets the starting running level (`07` §1): 0 → Beginner 1 (walk–run); under 20 min → Beginner 2; 20+ min → normal programming.
-- **Beginners (0 or under 20 min) also see a pre-exercise screening prompt** (e.g. the ESSA screening tool): "If you answer yes to any question, check with your doctor before starting."
+- (The pre-exercise screening now happens for everyone on Screen 0.)
 
 **6. Do you have a recent race or time-trial result?** *(optional)* `recent_result`
 - Distance or event · time · date
 - For a Hyathlon race, also: **average run pace** (e.g. 4:45 /km). This is the best anchor for your personal zones.
 - Helper text: "This helps us set your personal training zones. Skip it if you don't have one."
+
+**6b. Your best times** *(optional)* `best_times` — 5 km · 10 km · half marathon · marathon (time + year)
+- More anchors for personal zones and realistic goals. Shown as effort (RPE) in sessions, never as pace targets.
 
 ### Screen 3: Your week
 **7. How many days a week can you realistically train?** `days_available`
@@ -129,7 +160,7 @@ Principles:
 
 **15. Anything you dislike or won't do?** *(optional text)* `dislikes`
 
-### Screen 5: Your body *(member accounts only, after the consent step; see §11)*
+### Screen 5: Your body *(coaching tiers only, after the consent step; see §11)*
 **16. Is there anything you're currently noticing in your body?** `current_body_reports`
 - No
 - Yes → same body-report questions as the weekly check-in (§2, Q4–Q7)
@@ -138,7 +169,21 @@ Principles:
 
 **18. Would you like your program to take your menstrual cycle into account?** `cycle_tracking` — No · Yes → cycle length and last start date, plus *optional*: when in your cycle you usually feel strongest, and when you feel weakest or more tired
 
+**19. Fuelling and hydration** *(coaching tiers)* `fuelling`
+- How's your fuelling in long sessions and races? Going well · Stomach issues with gels or food · Not sure what to take · I don't fuel
+- Would you like information about our nutrition partner? Yes · No
+
 Footer text: "We use this to adjust your training. It isn't medical advice. If something persists or worsens, check with your medical professional."
+
+### After onboarding: "Your plan" summary
+Before the first block is generated, the athlete sees a short **"Your plan"** screen, like a coach's proposal:
+- Runs and sessions per week, and how it fits around their own classes or strength.
+- The phases to their A race (or rolling blocks with no event), and the key focus of each.
+- What the long run builds towards.
+- What the app will watch for (e.g. "we'll keep easy days easy and build gradually").
+- Their goal and why (Q1e), in their words.
+Buttons: **Looks good, build my plan** · **Change something**.
+- **Coaching tiers:** the coach checks and edits this summary at the set-up consultation before the plan is released.
 
 ---
 
@@ -159,7 +204,12 @@ Footer text: "We use this to adjust your training. It isn't medical advice. If s
 - 0 = not at all · 10 = can't wait
 - Not part of the readiness score. Low (4 or less) or dropping 2+ below the athlete's average → easy sessions switch to compliance formats (`09` §8) until it recovers.
 
-### Body check
+### How do you want this week? *(app tiers: replaces the body check)*
+**4a. How do you want this week to go?** `week_choice`
+- Train as planned · Go a bit easier · Avoid running this week (off-feet) · Rest
+- The app adjusts the week to the choice and doesn't ask why. If the athlete mentions pain or injury in the chat, the AI doesn't assess it: stop if anything hurts, see a medical professional, choose "avoid running" or "rest", and offers a coach credit or a coaching tier.
+
+### Body check *(coaching tiers only, with consent)*
 **4. Anything you're noticing in your body?** `body_reports[].category`
 - 😊 Nothing
 - 👀 Awareness: *I can feel it, but it doesn't hurt or change how I move.*
@@ -291,6 +341,13 @@ At the end of each week (after the check-in, or on the athlete's chosen day if t
 | Modify a session (fewer sets, shorter, lower effort, swap to an off-feet alternative) | ✅ | ✅ with a reason chip; coach sees it |
 | Add a session (their own or from the workout builder) | ✅ | ✅ |
 | Lock a session (e.g. a Saturday group run) so the app always plans around it | ✅ | ✅ |
+**On the day:**
+- Every hard session shows: *"Too hard today? Lower the RPE first; if it's still too much, walk."*
+- **Rest day swap:** the athlete can turn a rest day into an easy walk or cross-training session (30 min or less, RPE 1–4). It counts in load.
+- **Two sessions in a day:** at least 6 hours apart where possible.
+
+**Back-to-back interval days (hard rule):** the app never plans two interval sessions on consecutive days. If the athlete moves one so two interval sessions sit back to back, a warning appears: *"Two interval sessions on back-to-back days increases injury risk and you won't get the most out of the second one."* with a one-tap option **"Make it an aerobic run"** (same duration, RPE 5–6, no efforts). The athlete can still keep it as is.
+
 | Delete a key session | ✅ | ❌ Coach only (athlete can move or modify it, or mark it missed) |
 
 - Everything the athlete adds, moves or modifies is logged and **counts in their load**, so next week accounts for it.
@@ -353,8 +410,8 @@ Buttons: **Looks good** · **Change something**
 
 ---
 
-## 11. Member-only features (consent required)
-Behind the privacy checklist and an explicit consent step. Not available to self-serve athletes.
+## 11. Coaching-tier features (consent required)
+Coaching tiers only (coach_run, coach_hybrid), behind the privacy checklist and an explicit consent step. Not available on app tiers. (In this doc, "self-serve athlete" = app tiers; "coached member" = coaching tiers.)
 - **Body reports** (onboarding Q16, weekly check-in Q4–Q7) and the wait-and-watch / off-feet rules.
 - **Injury history** (Q17): athletes with a recent calf, Achilles or bone-stress injury start with no hills and nothing faster than 5–15 km effort; hills, VO2max and speed return once the first block goes well.
 - **Return to run after a longer injury:** a walk–run progression (stages), then a short easy test run, with off-feet bike/erg sessions keeping fitness. Progression follows the athlete's medical professional; the app gives considerations only.
@@ -382,8 +439,9 @@ Behind the privacy checklist and an explicit consent step. Not available to self
 | Marathon or longer | 3 weeks (easy running and off-feet only) |
 | Half marathon | 1 week |
 | Hyathlon race | 1 week (no intensity in the first 48–72 h; quality from day 4–7 after the test) |
-| 10 km or shorter | Straight back into it |
+| 10 km or shorter | Advanced, no niggles: straight back into it. Beginners, intermediates or anyone with a current/recent niggle: no quality session the following week (easy runs and the long run only) |
 
+- **More recovery for some athletes:** beginners, intermediates and anyone with a current or recent niggle get a rest day + short shakeout before a C race, and no quality session the week after a 10 km or shorter. Advanced athletes with no niggles get at most one lighter day before and go straight back.
 - **An event can hold several races** (e.g. singles + doubles + relay in one competition). Two or more races → about 10 days before quality sessions *(proposed)*.
 - **First quality session after a race** starts with a "test the system" check: longer warm-up and a few strides; if pace, breathing or HR don't feel normal, it becomes easy aerobic instead (`09` §6).
 - **After an event**, the athlete is asked: *"What do you want training to look like now?"* — Recover, then keep building to my next event · Maintain for a while · Take a break · New goal (rebuild my plan).

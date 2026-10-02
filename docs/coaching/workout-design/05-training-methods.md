@@ -20,7 +20,7 @@ Race-pace references (e.g. "15 km pace") are only there to help the athlete pict
 | Tempo / aerobic threshold | upper Z2 – low Z3 | RPE 7–8 · Steady | 5–40 min blocks | Easy jog, about half the work time | 20–40 min | Aerobic Engine, Threshold |
 | Lactate threshold / cruise intervals | Z3 | RPE 8–8.5 · Mod. Hard | 2–5 min reps, or 10–20 min blocks | Short: no longer than the work (work:rest 1:1 to 2:1), standing or easy jog | 10–30 min | Threshold |
 | Critical velocity (above threshold) | Z4 | RPE 8.5–9.5 · Hard | 1–5 min reps | About half to equal the work time | 12–25 min | Threshold, Aerobic Engine |
-| VO2max intervals | upper Z4 – Z5 | RPE 9–10 · Hard → Very Hard | 2–5 min reps | About half the work time, **standing** | 10–24 min | Aerobic Engine |
+| VO2max intervals | upper Z4 – Z5 | RPE 9–10 · Hard → Very Hard | 1–3 min reps | About half the work time, **standing** | 10–24 min | Aerobic Engine |
 | Speed endurance (long sprints) | Z5 | RPE 9.5–10 · Very Hard | 30–90 s, 6–10 reps | 2–3× the work time, passive | n/a | Aerobic Engine (fitness) |
 | Sprint intervals (short sprints) | Z5 | RPE 10 · Very Hard | 20–30 s, 6–10 reps | 2–4× the work time, passive | n/a | Economy (running economy) |
 | Hill sprints | Z5 (short) | RPE 9.5–10 · Very Hard | 8–10 s, 4–10 reps, often placed by time inside an easy run | Full walk-down | n/a | Economy, Balanced Athleticism |
@@ -59,7 +59,7 @@ All sessions include a warm-up and cool-down at RPE 1–4 (strides or drills can
 - Use once LT work is established and a fresh stimulus is needed.
 
 ### VO2max intervals: upper Z4 – Z5, RPE 9–10
-- "3–5 km effort". Reps of 2–5 min (VO2 takes about 90 s–2 min to reach its ceiling).
+- "3–5 km effort". Reps of 1–3 min (Coach decision), standing rest about half the work time.
 - **Recovery is standing, about half the work time** (the old document said 1:1). A jog recovery turns it into threshold work, not true VO2max training.
 - Pillar: **Aerobic Engine** (the booklet listed it under Threshold).
 - Focused blocks only, once LT and CV work are established. Not a year-round staple. Monitor recovery.
@@ -90,7 +90,7 @@ Every method above carries over to ergs, bike, elliptical and pool running at th
 | Intensity as %VO2max, %MHR, %HRR | Zone (internal) + RPE and feel word (athlete-facing) |
 | Tempo 79–88% MHR and LT 82–91% MHR overlapped | Tempo RPE 7–8, LT RPE 8–8.5, CV RPE 8.5–9.5: separate bands |
 | LT = 10 km–21.1 km pace | LT = 15 km–half effort; 10 km effort = CV (Z4) |
-| VO2max 2–4 min, recovery 1:1, "88–84% HRR" (typo), Threshold pillar | 2–5 min, standing recovery about half the work time, Aerobic Engine pillar |
+| VO2max 2–4 min, recovery 1:1, "88–84% HRR" (typo), Threshold pillar | 1–3 min, standing recovery about half the work time, Aerobic Engine pillar |
 | Long run 74–88% MHR, 26–35 km | Long run RPE 5–6 (6–7 advanced), usually 60–90 min (advanced up to 90–120), set from the athlete's recent longest run |
 | Recovery run <76% MHR, "60–90 sec slower than marathon pace" | Z1, RPE 1–4 |
 | General aerobic "up to 16 km" | Z2, RPE 5–6 (Easy), shorter than the long run |

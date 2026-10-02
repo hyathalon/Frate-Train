@@ -45,7 +45,7 @@ If the work is too easy to create adaptation but frequent enough to create fatig
 Strength is not seasoning to dabble through the week: a little lift here, a little circuit there, a few accessories on a recovery day. Those days stop being easy and become moderately hard. Once that happens, recovery drops, quality sessions suffer and injury risk goes up.
 
 - **No strength, circuits or accessories on recovery (RPE 1–4) or easy (RPE 5–6) days.** Short strides on an easy run are neural work, not dabbling, and stay allowed.
-- **Pair strength with quality running days** (the recommended default). Strength is **its own session on the same day**: the run first, strength later that day (a double day, like a running double). Hard days stay hard and easy days stay easy.
+- **Pair strength with quality running days** (the recommended default). Strength is **its own session on the same day**: the run first, strength later that day, **at least 6 hours apart where possible** (a double day, like a running double). Hard days stay hard and easy days stay easy.
 - If the athlete can't train twice in a day, the strength session goes straight after the run in the same visit, still as its own session.
 - A strength session that is the **second session of the day is 30–45 min**, not the athlete's full session length.
 - **The athlete chooses.** At onboarding (and any time in settings) they can pick "Same day as my hard sessions" or "On its own days". On its own days, a strength day counts as a hard day: never the day after a key session that needs recovery, never on a recovery day, and followed by an easy or recovery day. They can still move individual sessions week to week.

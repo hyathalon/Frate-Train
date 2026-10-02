@@ -108,6 +108,7 @@ So: generate by the rules below, but always respect the athlete's own choices, l
 - Beginners still get a real quality session, just a smaller dose (e.g. 4–6 × 3 min at RPE 8 with 2 min easy, or a short compromised session with long rests), not an easy circuit.
 
 1. Place the **key sessions** first (the build stimuli for this phase).
+   - **Hard rule, no exceptions:** never two interval (quality) sessions on back-to-back days.
 2. Space repeats of the same stimulus:
    - Building: every ~7–14 days (avg ~10).
    - Maintaining: every ~14+ days.

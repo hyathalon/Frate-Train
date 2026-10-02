@@ -17,7 +17,7 @@ The Magness session types carry over to cross-training (`00` §4–5):
 | Progression | Z1/Z2 → Z3 | SkiErg, row, bike | Aerobic Engine, Threshold | Broader fibre recruitment |
 | Threshold blocks | Z3 (8–8.5) | Any erg; pool = zero-impact threshold | Threshold | Lactate clearance; e.g. 20 + 10 min blocks |
 | Critical velocity | Z4 (8.5–9.5) | BikeErg, air bike, SkiErg, row | Threshold, Aerobic Engine | Fresh stimulus above threshold |
-| VO2max intervals | upper Z4 – Z5 | Air bike, BikeErg, SkiErg | Aerobic Engine (ceiling) | 2–5 min reps, stationary rest ≈ half the work time |
+| VO2max intervals | upper Z4 – Z5 | Air bike, BikeErg, SkiErg | Aerobic Engine (ceiling) | 1–3 min reps, stationary rest ≈ half the work time |
 | Sprint / power | Z5, full recovery | Air bike, BikeErg | Economy, Balanced Athleticism | Neural drive; ~1–2 min max, usually much shorter |
 | Station technique / skill | Z1–Z2 | Stations | Economy | Efficient mechanics, pacing, transitions |
 | Strength endurance circuits | Z2–Z4 | Stations, strength | Balanced Athleticism | Hold force output over many reps |
@@ -88,7 +88,7 @@ Hide the erg monitor, don't give the station order or round count, "hold Z3 unti
 |---|---|---|
 | 5×500 m row @ Z3 / 1 min | 6×500 m, or 5×600 m | 45 s rest, or faster logged split in Z3 |
 | BikeErg threshold 20 + 10 min @ Z3 | 25 + 10 min, or 3×12 min | 1 min break instead of 2, or higher logged watts in Z3 |
-| Air bike VO2 4×3 min @ Z4–5 / 90 s | 5×3 min | Higher logged watts at the same zone |
+| Air bike VO2 5×2 min @ Z4–5 / 60 s | 6×2 min, or 5×3 min | Higher logged watts at the same zone |
 | 4 rounds: 1 km run + 20 wall balls @ Z3–Z4 | 5 rounds, or 25 wall balls | Wall balls unbroken in the same zone, or rest cut |
 | Sled push 4×25 m (Z3 load) / 2 min | 5×25 m, or 4×30 m | Heavier load at Z4, or 90 s rest, or a 200 m run in the recovery |
 | Strength circuit 3 rounds @ Z3 / 2 min | 4 rounds | Same circuit, 1 min rest or a run between rounds |

@@ -198,7 +198,7 @@ Steady continuous · long run with steady (or race-effort) finish · progressive
 - **VO2 recovery:** the bank uses short *float* recoveries for VO2 work. App rule: **standing recovery, about half the work time**; a jog float turns it into threshold work.
 - **Some sessions need a coach check before import:**
   - "VO2 reps 5 × 200 m, 45 s float" is really short speed / economy work (30 s or less), not VO2.
-  - VO2 ladders up to 5–7 min at 3 km pace are very long reps for that effort (VO2 reps are 2–5 min).
+  - VO2 ladders up to 5–7 min at 3 km pace are very long reps for that effort (VO2 reps are 1–3 min).
   - **Race week** includes a 4-5-6-7 min VO2 ladder. That conflicts with the race-week rule (a short sharpener at least 4–5 days out: 15 min just slower than race effort).
 - **Coach-influence labels** (Norwegian, Didyk, Sang, Magness) are useful internally for variety, but aren't shown to athletes.
 - Everything else follows the usual rules: one lever changed per session, quality sessions spaced, interference rule, etc.
