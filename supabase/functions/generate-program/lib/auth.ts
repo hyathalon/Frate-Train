@@ -12,7 +12,7 @@ export interface AthleteRow {
   timezone: string;
   coach_user_id: string | null;
   athlete_type: string | null;
-  plan?: 'app_weekly' | 'app_12wk' | 'coach_run' | 'coach_hybrid' | null; // billing keeps these up to date
+  plan?: 'app_monthly' | 'app_12wk' | 'coach_run' | 'coach_hybrid' | null; // billing keeps these up to date
   plan_started_at?: string | null;
   paid_weeks?: number;
 }

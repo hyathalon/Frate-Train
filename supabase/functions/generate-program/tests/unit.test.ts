@@ -931,12 +931,12 @@ Deno.test('re-plans: included by plan, then $10 extras; coaching plans unlimited
   assert.throws(() => assertCanReplan(app(4, 2, 0, 0, 0)), (e: HttpError) => e.code === 'replans_used' && /another for \$10/.test(e.message));
   assert.equal(assertCanReplan({ kind: 'member' }), null);
   assert.equal(assertCanReplan({ kind: 'coach', builds: { used: 0, limit: 100, left: 100 }, resetsAt: null }), null);
-  const settings = { replan_weekly_every_weeks: 4, replan_12wk_included: 3 };
+  const settings = { replan_monthly_every_weeks: 4, replan_12wk_included: 3 };
   const athlete = (plan: string, paid: number) => ({ plan, paid_weeks: paid, plan_started_at: '2026-10-05' }) as unknown as AthleteRow;
-  // app_weekly: nothing before 4 paid weeks; then 1 per 4-week window, counted from the window's start.
-  assert.deepEqual(replanWindow(athlete('app_weekly', 3), settings), { included: 0, since: '2026-10-05' });
-  assert.deepEqual(replanWindow(athlete('app_weekly', 4), settings), { included: 1, since: '2026-11-02' });
-  assert.deepEqual(replanWindow(athlete('app_weekly', 9), settings), { included: 1, since: '2026-11-30' });
+  // app_monthly: nothing before 4 paid weeks; then 1 per 4-week window, counted from the window's start.
+  assert.deepEqual(replanWindow(athlete('app_monthly', 3), settings), { included: 0, since: '2026-10-05' });
+  assert.deepEqual(replanWindow(athlete('app_monthly', 4), settings), { included: 1, since: '2026-11-02' });
+  assert.deepEqual(replanWindow(athlete('app_monthly', 9), settings), { included: 1, since: '2026-11-30' });
   // app_12wk: 3 in the block.
   assert.deepEqual(replanWindow(athlete('app_12wk', 0), settings), { included: 3, since: '2026-10-05' });
   assert.equal(replanWindow(athlete('coach_hybrid', 0), settings), null);

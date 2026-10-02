@@ -32,14 +32,15 @@ Agreed features and changes that are deliberately not built yet.
 - **Race analysis:** splits vs expected, spotting going out too hard and fading.
 - **Runs outside the program:** ask "How many runs do you do per week outside this program?" and use it to balance leg load (Fatigue Management). The program itself has no standalone running sessions.
 
-## Plans and coaching (agreed 2 Oct 2026; plan types and credit rules are in the database, not yet the screens or payments)
+## Plans and coaching (final pricing, 2 Oct 2026; plan types and credit rules are in the database, not yet the screens or payments)
 
-- **Payments** for the four plans (app_weekly $24.95/week, cancel any time, paid to the end of the week, one reminder before each charge: pause or renew; app_12wk $239 up front, no pause or refund; coach_run $150/month; coach_hybrid $250/month), extra re-plans ($10 each) and coach credits ($30 each). Billing keeps `athletes.plan`, `plan_started_at` and `paid_weeks` up to date.
+- **Brand:** sold as Hyathlon (Hyathlon Performance / Hyathlon Coaching), with no links to Frate Train.
+- **Payments** (AUD): app_monthly $75/month (cancel any time, paid to the end of the month, one reminder before each charge: pause or renew; a pause stops new plans, no refund of the current month); app_12wk $149 up front (no pause, no refund); coach_run $165/month; coach_hybrid $275/month. Re-plans: app_monthly 1 per 4 paid weeks (first after 4, no carry-over), app_12wk 3, extra $10, coaching unlimited. Billing keeps `athletes.plan`, `plan_started_at` and `paid_weeks` up to date.
+- **Coach credits** ($30 each, half units): written reply 1, short video reply 2, extra video form checks 1 (up to 2 exercises), online Q&A call 3 (up to 20 min), running gait analysis 4.5 ($135: athlete uploads running video; coach sends findings and drills).
+- **Coaching tiers:** both get a 30-min set-up consultation, written weekly coach review of flags and the week, the coach editor, flag review, health features with consent, unlimited re-plans, replies "within 24–48 hours". coach_run gets the AI strength program but no coach feedback or form checks on strength; coach_hybrid adds coach-reviewed strength and video form checks on up to 2 exercises a week. Seats: coach_hybrid 8–10 per coach, coach_run about 15; new members shared across coaches.
 - **App-tier weekly check-in:** "train as planned / go a bit easier / avoid running (off-feet) / rest" instead of pain scores. No health data on app tiers; pre-exercise screening only. No human at sign-up.
 - **App-tier chat and pain:** the AI never assesses pain. It says to stop, see a medical professional, choose "avoid running" or "rest", and offers a coach credit or a coaching tier.
-- **Coaching tiers** (coach_run and coach_hybrid; coach_hybrid adds strength programming): 30-min set-up call (goal, days, equipment, race date, red rules; nothing clinical), written weekly coach review, coach editor, flag review, health features with consent, unlimited re-plans. Replies shown as "within 24–48 hours" (internal target 24 h for coach_hybrid). Seats: coach_hybrid 8–10 per coach, coach_run about 15; new members shared across coaches.
-- **Coach credits:** written reply 1, short video reply 2, online Q&A call 4 (max 10 minutes).
 - **Coach editor inside the app:** coaches program directly (no Final Surge import).
 - **Return to run:** the app generates a return-to-run program from the `07` templates; a coach reviews it against the athlete's medical advice before release (coaching tiers, or a coach credit on app tiers).
-- **Back-to-back interval sessions moved by the athlete:** show "Two interval sessions on back-to-back days increases injury risk and you won't get the most out of the second one." with a one-tap "Make it an aerobic run" (same duration, RPE 5–6, no efforts); the athlete can keep it (6.4/6.5).
-
+- **Back-to-back interval sessions moved by the athlete:** a warning with a one-tap "Make it an aerobic run" (same duration, RPE 5–6, no efforts); the athlete can keep it (6.4/6.5).
+- **Onboarding (6.3):** `no_run_days` (multi-select, optional; helper "E.g. your gym class mornings"); event form option "controlled / training run".

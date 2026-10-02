@@ -178,6 +178,7 @@ export function programInputsFromAnswers(a: Answers): Record<string, unknown> {
     repeat_preference: a.repeat_preference ?? null,
     dislikes: a.dislikes ?? null,
     preferred_long_run_day: a.preferred_long_run_day ?? null,
+    no_run_days: a.no_run_days ?? [],
   };
 }
 

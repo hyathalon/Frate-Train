@@ -68,7 +68,7 @@ export async function appAllowance(
     admin.from('athlete_credit_ledger').select('kind, delta').eq('athlete_id', athlete.id),
   ]);
   if (ledger.error) throw new Error(`Could not read credits: ${ledger.error.message}`);
-  const balance = (kind: string) => ledger.data.filter((r) => r.kind === kind).reduce((sum, row) => sum + row.delta, 0);
+  const balance = (kind: string) => ledger.data.filter((r) => r.kind === kind).reduce((sum, row) => sum + Number(row.delta), 0);
   const credits = balance('confirmation');
 
   return {
@@ -144,7 +144,7 @@ export function assertCanConfirm(allowance: AppAllowance | CoachAllowance): 'mon
 
 /**
  * The re-plans an app plan includes, and since when they're counted:
- * - app_weekly: 1 per 4 weeks of paid time; the first after 4 paid weeks; unused
+ * - app_monthly: 1 per 4 weeks of paid time; the first after 4 paid weeks; unused
  *   don't carry over (each 4-week window starts afresh).
  * - app_12wk: 3 in the 12-week block.
  * No plan yet (before billing): none included.
@@ -153,8 +153,8 @@ export function replanWindow(athlete: AthleteRow, settings: Settings): { include
   const start = athlete.plan_started_at;
   if (!start) return null;
   if (athlete.plan === 'app_12wk') return { included: setting(settings, 'replan_12wk_included'), since: start };
-  if (athlete.plan === 'app_weekly') {
-    const every = setting(settings, 'replan_weekly_every_weeks');
+  if (athlete.plan === 'app_monthly') {
+    const every = setting(settings, 'replan_monthly_every_weeks');
     const paid = athlete.paid_weeks ?? 0;
     if (paid < every) return { included: 0, since: start };
     // Each block of 4 paid weeks opens a window with 1 re-plan, from the end of that block.
@@ -183,14 +183,14 @@ export function assertCanReplan(allowance: AppAllowance | CoachAllowance | { kin
     { allowance });
 }
 
-/** Coach credits (separate from re-plans): 1 credit = $30; a written reply costs 1, a short video 2, a Q&A call 4. */
+/** Coach credits (separate from re-plans; half units allowed): 1 credit = $30; reply 1, short video 2, form checks 1, Q&A call 3, gait analysis 4.5. */
 export async function coachCredits(admin: SupabaseClient, athleteId: string): Promise<number> {
   const { data, error } = await admin.from('athlete_credit_ledger').select('delta').eq('athlete_id', athleteId).eq('kind', 'coach_credit');
   if (error) throw new Error(`Could not read coach credits: ${error.message}`);
-  return Math.max(0, data.reduce((sum, r) => sum + r.delta, 0));
+  return Math.max(0, data.reduce((sum, r) => sum + Number(r.delta), 0));
 }
 
-export function coachCreditCost(settings: Settings, kind: 'reply' | 'video' | 'call'): number {
+export function coachCreditCost(settings: Settings, kind: 'reply' | 'video' | 'form_check' | 'call' | 'gait'): number {
   return setting(settings, `coach_credit_cost_${kind}`);
 }
 

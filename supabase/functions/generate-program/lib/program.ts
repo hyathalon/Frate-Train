@@ -172,9 +172,13 @@ function parseProfileExtras(body: Record<string, unknown>): Partial<ProgramInput
       if (!text(e.name, 80) || !isValidDate(e.date) || !['A', 'B', 'C'].includes(priority as string)) {
         throw new HttpError(400, 'invalid_input', 'Each event needs a name, a date and a priority (A, B or C).');
       }
-      return { name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date, event_priority: priority as 'A' | 'B' | 'C' };
+      return {
+        name: text(e.name, 80)!, type: oneOf(e.type, EVENT_TYPES, 'other', `Event type: ${EVENT_TYPES.join(', ')}.`), date: e.date,
+        event_priority: priority as 'A' | 'B' | 'C', controlled: e.controlled === true,
+      };
     }),
     race_sims: parseRaceSims(body.race_sims),
+    no_run_days: Array.isArray(body.no_run_days) ? DAYS.filter((d) => (body.no_run_days as unknown[]).includes(d)) as string[] : [],
     repeat_preference: body.repeat_preference == null ? null
       : oneOf(body.repeat_preference, ['same_two_weeks', 'alternate', 'always_new'] as const, 'always_new', 'Repeat preference: same_two_weeks, alternate or always_new.'),
   };
@@ -427,8 +431,6 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
     ? { ...programInputsFromAnswers(await loadAnswers(admin, athlete.id)), ...((body.inputs ?? {}) as Record<string, unknown>) }
     : body.inputs;
   const inputs = parseInputs(raw);
-  // coach_run includes no strength programming (their own strength or classes still count).
-  if (athlete.plan === 'coach_run' && inputs.strength_choice !== 'own') inputs.strength_choice = 'none';
   const race = await requireRaceOption(admin, inputs.race_option_id);
   await checkCrossTraining(admin, inputs.cross_training_preferences);
 
@@ -799,7 +801,7 @@ async function generateBlockWeeks(a: {
 function postEventWeeks(inputs: ProgramInputs, startDate: string): number[] {
   const raced = [
     ...(inputs.last_race ? [inputs.last_race.date] : []),
-    ...(inputs.other_events ?? []).filter((e) => e.event_priority === 'A' || e.event_priority === 'B').map((e) => e.date),
+    ...(inputs.other_events ?? []).filter((e) => !e.controlled).map((e) => e.date), // C races count as raced hard unless controlled
   ];
   const weeks = new Set<number>();
   for (const d of raced) {
