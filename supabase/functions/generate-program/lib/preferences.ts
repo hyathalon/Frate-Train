@@ -58,15 +58,20 @@ const DIVISIONS: Record<string, { option: string; label: string }> = {
   doubles: { option: 'hyathlon-doubles', label: 'Doubles' },
 };
 
-/** Days to suggest for Q7/Q8: the given number, spread as evenly as possible over the days not ruled out. */
-export function suggestTrainingDays(daysAvailable: number, unavailable: string[]): Day[] {
+/**
+ * Days to suggest for Q7/Q8: the given number, spread as evenly as possible over the
+ * days not ruled out, always including the preferred long-run day (Q2b) if given.
+ */
+export function suggestTrainingDays(daysAvailable: number, unavailable: string[], longRunDay?: string | null): Day[] {
   const open = DAYS.filter((d) => !unavailable.includes(d));
   if (daysAvailable >= open.length) return [...open];
+  const mustHave = longRunDay && open.includes(longRunDay as Day) ? DAYS.indexOf(longRunDay as Day) : null;
   let best: number[] = [];
   let bestScore = -1;
   const idx = open.map((d) => DAYS.indexOf(d));
   const choose = (start: number, picked: number[]) => {
     if (picked.length === daysAvailable) {
+      if (mustHave !== null && !picked.includes(mustHave)) return;
       // The smallest gap between training days around the week; larger is better, then fewer back-to-backs.
       const gaps = picked.map((d, i) => ((picked[(i + 1) % picked.length] - d + 7) % 7) || 7);
       const score = Math.min(...gaps) * 100 - gaps.filter((g) => g === 1).length;
@@ -79,10 +84,17 @@ export function suggestTrainingDays(daysAvailable: number, unavailable: string[]
   return best.map((i) => DAYS[i]);
 }
 
-/** Q2b: the preferred key day if it's a training day; otherwise the middle training day. */
-export function suggestKeyDay(trainingDays: string[], preferred: string | null | undefined): string {
-  if (preferred && trainingDays.includes(preferred)) return preferred;
-  return trainingDays[Math.floor(trainingDays.length / 2)];
+/**
+ * Q2b: the preferred key day if it's a training day, otherwise the middle training day,
+ * but never the day before the long run (nor the long-run day): it moves one training day earlier.
+ */
+export function suggestKeyDay(trainingDays: string[], preferred: string | null | undefined, longRunDay?: string | null): string {
+  const days = DAYS.filter((d) => trainingDays.includes(d)) as string[];
+  let i = preferred && days.includes(preferred) ? days.indexOf(preferred) : Math.floor(days.length / 2);
+  // Never the long-run day itself or the day before it: move one training day earlier (at most twice).
+  const blocked = longRunDay ? [longRunDay, DAYS[(DAYS.indexOf(longRunDay as Day) + 6) % 7]] : [];
+  for (let k = 0; k < 2 && blocked.includes(days[i]) && days.length > 2; k++) i = (i - 1 + days.length) % days.length;
+  return days[i];
 }
 
 /** Library equipment names for the athlete's Q11 + Q12 answers. */
@@ -129,7 +141,7 @@ export function programInputsFromAnswers(a: Answers): Record<string, unknown> {
 
   const trainingDays = Array.isArray(a.training_days) && a.training_days.length
     ? asStrings(a.training_days)
-    : suggestTrainingDays(Number(a.days_available), asStrings(a.days_unavailable));
+    : suggestTrainingDays(Number(a.days_available), asStrings(a.days_unavailable), a.preferred_long_run_day as string | null);
   const running = a.running_choice === 'program' ? { mode: 'programmed' }
     : a.running_choice === 'own_plan' ? { mode: 'own_plan', own_runs: a.own_runs ?? [] }
     : { mode: 'none' };
@@ -138,7 +150,7 @@ export function programInputsFromAnswers(a: Answers): Record<string, unknown> {
     race_name: g.name ?? null,
     race_date: g.date,
     training_days: trainingDays,
-    key_session_day: suggestKeyDay(trainingDays, a.preferred_key_day as string | null),
+    key_session_day: suggestKeyDay(trainingDays, a.preferred_key_day as string | null, a.preferred_long_run_day as string | null),
     minutes_per_session: SESSION_MINUTES[String(a.session_min)],
     goal: goalText(a),
     strengths: [],

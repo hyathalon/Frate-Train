@@ -12,6 +12,9 @@ export interface AthleteRow {
   timezone: string;
   coach_user_id: string | null;
   athlete_type: string | null;
+  plan?: 'app_weekly' | 'app_12wk' | 'coach_run' | 'coach_hybrid' | null; // billing keeps these up to date
+  plan_started_at?: string | null;
+  paid_weeks?: number;
 }
 
 export interface Caller {
@@ -21,7 +24,7 @@ export interface Caller {
 }
 
 export const ATHLETE_COLUMNS =
-  'id, user_id, name, tier, level, equipment, training_locations, timezone, coach_user_id, athlete_type';
+  'id, user_id, name, tier, level, equipment, training_locations, timezone, coach_user_id, athlete_type, plan, plan_started_at, paid_weeks';
 
 /** Only a signed-in coach, or a signed-in user with an athlete row, may call the function. */
 export async function authenticate(req: Request, admin: SupabaseClient): Promise<Caller> {

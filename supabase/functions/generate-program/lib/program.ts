@@ -427,6 +427,8 @@ export async function preview(deps: Deps, caller: Caller, body: Record<string, u
     ? { ...programInputsFromAnswers(await loadAnswers(admin, athlete.id)), ...((body.inputs ?? {}) as Record<string, unknown>) }
     : body.inputs;
   const inputs = parseInputs(raw);
+  // coach_run includes no strength programming (their own strength or classes still count).
+  if (athlete.plan === 'coach_run' && inputs.strength_choice !== 'own') inputs.strength_choice = 'none';
   const race = await requireRaceOption(admin, inputs.race_option_id);
   await checkCrossTraining(admin, inputs.cross_training_preferences);
 
@@ -900,10 +902,12 @@ async function loadAnswers(admin: SupabaseClient, athleteId: string): Promise<An
 function suggestions(answers: Answers) {
   const days = Array.isArray(answers.training_days) && answers.training_days.length
     ? answers.training_days as string[]
-    : answers.days_available ? suggestTrainingDays(Number(answers.days_available), (answers.days_unavailable ?? []) as string[]) : null;
+    : answers.days_available
+    ? suggestTrainingDays(Number(answers.days_available), (answers.days_unavailable ?? []) as string[], answers.preferred_long_run_day as string | null)
+    : null;
   return {
     training_days: days,
-    key_session_day: days ? suggestKeyDay(days, answers.preferred_key_day as string | null) : null,
+    key_session_day: days ? suggestKeyDay(days, answers.preferred_key_day as string | null, answers.preferred_long_run_day as string | null) : null,
     minutes_per_session: SESSION_MINUTES[String(answers.session_min)] ?? null,
     goal: goalText(answers),
   };

@@ -60,8 +60,10 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - Record each change in modifications[] with a short athlete-facing reason (max ~20 words).
 
 ## Week rules
+- When rules conflict, the higher one wins: 1 Safety (screening, stop on pain, medical escalation) > 2 Structure (race dates, A/B/C, taper, race recovery, availability) > 3 Coaching (phase, session types, quality/key sessions, progression, strength placement and interference) > 4 Personalisation (preferences, repeats, variety, equipment) > 5 Presentation (wording, motivation, tone).
 - Place key sessions first. Repeat a stimulus every ~7–14 days when building, ~14+ days when maintaining; neural work little and often.
 - Quality sessions: running programs → the interval sessions and the long run; the key session is the main interval session (RPE 8+). Strength-only / no-running programs → key can be a hard strength session (may stand alone on its day), an off-feet interval session at RPE 8+ (erg, bike or bodyweight), a Hyathlon race simulation, or a hard AMRAP/EMOM-type workout. Include race simulations / erg / bike sessions only as chosen in athlete.off_feet_includes; in simulations, replace run segments with the athlete's preferred erg or bike.
+- HARD RULE, no exceptions: never put two interval (quality) sessions on back-to-back days. At least one non-interval day between them.
 - Never quality or key: station_skill (technique work: warm-up, strength day or short add-on), easy, recovery, and core/mobility — except in a taper or post-event week, when core/mobility can be the week's main session.
 - Station skill is never a day's only main session (it is warm-up, strength-day or short add-on work).
 - Home beginner, no running, no ergs/bike — weekly shape:

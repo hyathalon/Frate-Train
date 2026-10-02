@@ -293,6 +293,7 @@ export function validateBlock(block: Block, ctx: BlockContext): string[] {
     if (keys.length === 1) checkKeySession(keys[0], week.week, label, plan?.phase === 'taper' || week.week === ctx.finalWeek || (ctx.postEventWeeks ?? []).includes(week.week), ctx, errors);
     if (ctx.runningBeginner) checkBeginnerWeek(week, label, errors);
     checkStationSkillDays(week, label, errors);
+    checkBackToBackIntervals(week, previous, label, errors);
 
     // Progression: one lever, matching the outline.
     if (plan && week.progression.lever !== plan.lever) {
@@ -475,6 +476,31 @@ function checkHomeOffFeetWeek(week: BlockWeek, label: string, ctx: BlockContext,
     const easy = isEasySession(s) || isRecoverySession(s);
     if (!easy || s.parts.some((p) => p.format !== 'Aerobic' && p.format !== 'Mobility')) {
       errors.push(`${label}: "${s.title}" on ${s.day}: other days are rest, or an easy brisk walk (RPE 5–6) and mobility; no circuits or hard work.`);
+    }
+  }
+}
+
+const INTERVAL_FORMATS = ['HIIT', 'Tabata', 'Compromised', 'CompromisedRun', 'RaceSim'];
+const INTERVAL_TYPES = ['lactate_threshold', 'critical_velocity', 'vo2max', 'speed', 'compromised'];
+
+/** An interval (quality) session: a key run, interval-type work, or an interval session type. */
+export function isIntervalSession(s: Session): boolean {
+  return INTERVAL_TYPES.includes(s.session_type)
+    || s.parts.some((p) => INTERVAL_FORMATS.includes(p.format) || (p.format === 'Run' && p.run_type === 'key'));
+}
+
+/**
+ * HARD RULE, no exceptions: never two interval (quality) sessions on back-to-back days,
+ * including Sunday → Monday across weeks. Optional sessions count.
+ */
+function checkBackToBackIntervals(week: BlockWeek, previous: BlockWeek | undefined, label: string, errors: string[]) {
+  const on = (w: BlockWeek | undefined, day: string) => w?.sessions.find((s) => s.day === day && isIntervalSession(s));
+  for (let i = 0; i < DAYS.length; i++) {
+    const today = on(week, DAYS[i]);
+    if (!today) continue;
+    const before = i > 0 ? on(week, DAYS[i - 1]) : on(previous, 'Sun');
+    if (before) {
+      errors.push(`${label}: "${before.title}" (${i > 0 ? DAYS[i - 1] : 'Sun, the week before'}) and "${today.title}" (${DAYS[i]}) are interval sessions on back-to-back days; leave at least one non-interval day between them (hard rule).`);
     }
   }
 }

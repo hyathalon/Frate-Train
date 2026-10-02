@@ -18,8 +18,8 @@ export interface AppAllowance {
   previews: Counter;
   confirmations: Counter;
   credits: number; // purchased confirmations left (used after the monthly ones)
-  modifications: Counter; // plan changes (athlete-requested replans) this month (§16)
-  modificationCredits: number; // purchased plan changes left (used after the monthly ones)
+  replans: Counter; // re-plans included in the athlete's plan, in the current window
+  replanCredits: number; // purchased re-plans left ($10 each), used after the included ones
   resetsOn: string; // first day of next month, athlete's timezone
   timezone: string;
 }
@@ -60,10 +60,11 @@ export async function appAllowance(
       .eq('status', 'ok')
       .gte('created_at', since);
 
-  const [previews, confirmations, modifications, ledger] = await Promise.all([
+  const window = replanWindow(athlete, settings);
+  const [previews, confirmations, replans, ledger] = await Promise.all([
     countEvents(base().eq('counts_as', 'preview')),
     countEvents(base().eq('counts_as', 'confirmation').eq('paid_with', 'monthly')),
-    countEvents(base().eq('counts_as', 'modification').eq('paid_with', 'monthly')),
+    window ? countEvents(replanBase(admin, athlete, window.since)) : Promise.resolve(0),
     admin.from('athlete_credit_ledger').select('kind, delta').eq('athlete_id', athlete.id),
   ]);
   if (ledger.error) throw new Error(`Could not read credits: ${ledger.error.message}`);
@@ -75,8 +76,8 @@ export async function appAllowance(
     previews: counter(previews, setting(settings, 'app_monthly_outline_previews')),
     confirmations: counter(confirmations, setting(settings, 'app_monthly_confirmations')),
     credits: Math.max(0, credits),
-    modifications: counter(modifications, setting(settings, 'app_monthly_modifications')),
-    modificationCredits: Math.max(0, balance('modification')),
+    replans: counter(replans, window?.included ?? 0),
+    replanCredits: Math.max(0, balance('replan')),
     resetsOn,
     timezone: athlete.timezone,
   };
@@ -142,17 +143,55 @@ export function assertCanConfirm(allowance: AppAllowance | CoachAllowance): 'mon
 }
 
 /**
- * Which allowance an athlete-requested replan ("Rebuild my plan", regenerate a week)
- * uses: members and coaches none (unlimited / their daily builds), self-serve
- * athletes the monthly plan changes, then purchased ones. Charged only on success.
+ * The re-plans an app plan includes, and since when they're counted:
+ * - app_weekly: 1 per 4 weeks of paid time; the first after 4 paid weeks; unused
+ *   don't carry over (each 4-week window starts afresh).
+ * - app_12wk: 3 in the 12-week block.
+ * No plan yet (before billing): none included.
  */
-export function assertCanModify(allowance: AppAllowance | CoachAllowance | { kind: 'member' }): 'monthly' | 'credit' | null {
+export function replanWindow(athlete: AthleteRow, settings: Settings): { included: number; since: string } | null {
+  const start = athlete.plan_started_at;
+  if (!start) return null;
+  if (athlete.plan === 'app_12wk') return { included: setting(settings, 'replan_12wk_included'), since: start };
+  if (athlete.plan === 'app_weekly') {
+    const every = setting(settings, 'replan_weekly_every_weeks');
+    const paid = athlete.paid_weeks ?? 0;
+    if (paid < every) return { included: 0, since: start };
+    // Each block of 4 paid weeks opens a window with 1 re-plan, from the end of that block.
+    const since = new Date(new Date(`${start}T00:00:00Z`).getTime() + Math.floor(paid / every) * every * 7 * 86_400_000).toISOString().slice(0, 10);
+    return { included: 1, since };
+  }
+  return null;
+}
+
+function replanBase(admin: SupabaseClient, athlete: AthleteRow, since: string) {
+  return admin.from('generation_events').select('id', { count: 'exact', head: true })
+    .eq('athlete_id', athlete.id).eq('status', 'ok').eq('counts_as', 'replan').eq('paid_with', 'included').gte('created_at', since);
+}
+
+/**
+ * Which allowance an athlete-requested re-plan ("Rebuild my plan", regenerate a week)
+ * uses: coaching plans, members and coaches none (unlimited); app plans the included
+ * re-plans, then purchased ones ($10 each). Charged only on success.
+ */
+export function assertCanReplan(allowance: AppAllowance | CoachAllowance | { kind: 'member' }): 'included' | 'credit' | null {
   if (allowance.kind !== 'app') return null;
-  if (allowance.modifications.left > 0) return 'monthly';
-  if (allowance.modificationCredits > 0) return 'credit';
-  throw new HttpError(429, 'monthly_modifications_used',
-    `You've used your ${allowance.modifications.limit} plan changes for this month. Get 4 more for $10, or keep editing sessions yourself for free.`,
+  if (allowance.replans.left > 0) return 'included';
+  if (allowance.replanCredits > 0) return 'credit';
+  throw new HttpError(429, 'replans_used',
+    "You've used the re-plans included in your plan. Get another for $10, or keep editing sessions yourself for free.",
     { allowance });
+}
+
+/** Coach credits (separate from re-plans): 1 credit = $30; a written reply costs 1, a short video 2, a Q&A call 4. */
+export async function coachCredits(admin: SupabaseClient, athleteId: string): Promise<number> {
+  const { data, error } = await admin.from('athlete_credit_ledger').select('delta').eq('athlete_id', athleteId).eq('kind', 'coach_credit');
+  if (error) throw new Error(`Could not read coach credits: ${error.message}`);
+  return Math.max(0, data.reduce((sum, r) => sum + r.delta, 0));
+}
+
+export function coachCreditCost(settings: Settings, kind: 'reply' | 'video' | 'call'): number {
+  return setting(settings, `coach_credit_cost_${kind}`);
 }
 
 function assertCoach(allowance: CoachAllowance) {

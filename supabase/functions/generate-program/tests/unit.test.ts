@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { AthleteRow } from '../lib/auth.ts';
 import { availableFormats, type Candidates, type Exercise, filterExercises, type RaceOption, type SessionFormat, type Template } from '../lib/candidates.ts';
 import { HttpError } from '../lib/http.ts';
-import { type AppAllowance, assertCanConfirm, assertCanModify, assertCanPreview, type CoachAllowance } from '../lib/limits.ts';
+import { type AppAllowance, assertCanConfirm, assertCanPreview, assertCanReplan, type CoachAllowance, replanWindow } from '../lib/limits.ts';
 import { athleteFieldsFromAnswers, checkAnswers, programInputsFromAnswers, suggestKeyDay, suggestTrainingDays } from '../lib/preferences.ts';
 import { parseInputs } from '../lib/program.ts';
 import { COACHING_RULES } from '../lib/prompts.ts';
@@ -164,7 +164,7 @@ function week(n: number, reps: number, deload = false) {
         { format: 'HIIT', template_id: null, run_type: null, minutes: 15, items: [item('BIKE', `hard, RPE ${reps}`)] },
         { format: 'Aerobic', template_id: null, run_type: null, minutes: 15, items: [item('BIKE', 'steady, RPE 6-7')] },
       ] },
-    { day: 'Sat', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
+    { day: 'Sun', title: 'Compromised', key_session: false, pillar: 'Fatigue Management', optional: true, slot: 'compromised', ...META,
       parts: [{ format: 'Compromised', template_id: null, run_type: null, minutes: 30, items: [item('RUN', '400 m run, RPE 8', { run_minutes: 6 }), item('WB', `${reps * 2} wall balls`)] }] },
   ];
   if (deload) sessions.splice(0, 1); // drop Monday: 2 core sessions instead of 3
@@ -194,7 +194,7 @@ const BLOCK_OUTLINE_WEEKS = outline().weeks.map((w) => ({ ...w, phase: 'base' as
 const OUTLINE_CTX = { running: 'none' as const, strengthPref: 1, raceDay: 'Sat' };
 
 const ctx: BlockContext = {
-  startWeek: 1, endWeek: 4, outlineWeeks: BLOCK_OUTLINE_WEEKS, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat'], canDouble: 'no', strengthPref: 1,
+  startWeek: 1, endWeek: 4, outlineWeeks: BLOCK_OUTLINE_WEEKS, trainingDays: ['Mon', 'Wed', 'Fri', 'Sat', 'Sun'], canDouble: 'no', strengthPref: 1,
   strengthPlacement: 'own_days', raceDay: 'Sat', keySessionDay: 'Wed',
   minutesPerSession: 45, frame: { warmup_min: 10, cooldown_min: 5 }, candidates, timings,
   settings: { minutesTolerance: 5, deloadMin: 0.6, deloadMax: 0.7, deloadSessionMinRatio: 0.5, runShareMax: 0.25 },
@@ -599,8 +599,9 @@ Deno.test('before the first interval session the key session is the main aerobic
   b3.weeks[1].sessions[2].day = 'Tue'; // Mon, Tue, Wed
   assert.match(week(validateBlock(b3, { ...ctx, runningBeginner: true, trainingDays: ['Mon', 'Tue', 'Wed', 'Sat'] }), 2), /never train 3 days in a row \(Mon–Wed\)/);
   const lr = block();
-  lr.weeks[1].sessions[2].parts = [run('long', 30, '30 min @ RPE 6-8 Steady, week 2')]; // Friday long run, Saturday compromised after it
-  assert.match(week(validateBlock(lr, { ...programmed, runningBeginner: true }), 2), /the day after the long run \(Sat\) is the absorption run or cross-training/);
+  lr.weeks[1].sessions[2].parts = [run('long', 30, '30 min @ RPE 5-6 Easy, week 2')];
+  lr.weeks[1].sessions[2].day = 'Sat'; // Saturday long run, Sunday's compromised session after it
+  assert.match(week(validateBlock(lr, { ...programmed, runningBeginner: true }), 2), /the day after the long run \(Sun\) is the absorption run or cross-training/);
 });
 
 Deno.test('race week: strength moves to at least 5 days before the race, in code', () => {
@@ -814,6 +815,22 @@ Deno.test('repeats follow repeat_preference; race simulations spaced; no long-ru
   assert.throws(() => parseInputs({ ...baseInputs, race_sims: { choice: 'sometimes' } }), /Race simulations: plan_for_me/);
 });
 
+Deno.test('HARD RULE: never two interval sessions on back-to-back days (incl. Sunday → Monday)', () => {
+  const week2 = (e: string[]) => e.filter((x) => x.startsWith('Week 2')).join(' | ');
+  // Friday's bike intervals moved to Thursday: right after Wednesday's key session.
+  const b = block();
+  b.weeks[1].sessions[2].day = 'Thu';
+  assert.match(week2(validateBlock(b, { ...ctx, trainingDays: ['Mon', 'Wed', 'Thu', 'Sat', 'Sun'] })),
+    /"Compromised \+ Tabata" \(Wed\) and "Bike" \(Thu\) are interval sessions on back-to-back days; .*\(hard rule\)/);
+  // Across the week boundary: Sunday's optional compromised session, then an interval session on Monday.
+  const c = block();
+  c.weeks[1].sessions[0] = structuredClone(c.weeks[1].sessions[2]); // Friday's bike intervals on Monday
+  c.weeks[1].sessions[0].day = 'Mon';
+  assert.match(week2(validateBlock(c, ctx)), /\(Sun, the week before\) and "Bike" \(Mon\) are interval sessions on back-to-back days/);
+  // The fixture as is (Wed, Fri, Sun) passes.
+  assert.doesNotMatch(validateBlock(block(), ctx).join(' '), /back-to-back days/);
+});
+
 Deno.test('deload trimming: shortens database-timed parts, never strength or the key session', () => {
   const b = block();
   const previous = b.weeks[1]; // 3 core sessions, 135 min
@@ -901,19 +918,28 @@ Deno.test('parseInputs: training days, key day, minutes and the optional coach i
   assert.match(code({ ...baseInputs, cross_training_preferences: Array(9).fill('Rower') }), /up to 8/);
 });
 
-const app = (previewsLeft: number, confirmationsLeft: number, credits: number, modificationsLeft = 2, modificationCredits = 0): AppAllowance => ({
+const app = (previewsLeft: number, confirmationsLeft: number, credits: number, replansLeft = 1, replanCredits = 0): AppAllowance => ({
   kind: 'app', previews: { used: 4 - previewsLeft, limit: 4, left: previewsLeft },
   confirmations: { used: 2 - confirmationsLeft, limit: 2, left: confirmationsLeft }, credits,
-  modifications: { used: 2 - modificationsLeft, limit: 2, left: modificationsLeft }, modificationCredits,
+  replans: { used: 1 - replansLeft, limit: 1, left: replansLeft }, replanCredits,
   resetsOn: '2026-10-01', timezone: 'Australia/Sydney',
 });
 
-Deno.test('plan changes (modification credits): monthly, then purchased; members and coaches unlimited', () => {
-  assert.equal(assertCanModify(app(4, 2, 0, 1, 0)), 'monthly');
-  assert.equal(assertCanModify(app(4, 2, 0, 0, 3)), 'credit');
-  assert.throws(() => assertCanModify(app(4, 2, 0, 0, 0)), (e: HttpError) => e.code === 'monthly_modifications_used' && /Get 4 more for \$10/.test(e.message));
-  assert.equal(assertCanModify({ kind: 'member' }), null);
-  assert.equal(assertCanModify({ kind: 'coach', builds: { used: 0, limit: 100, left: 100 }, resetsAt: null }), null);
+Deno.test('re-plans: included by plan, then $10 extras; coaching plans unlimited', () => {
+  assert.equal(assertCanReplan(app(4, 2, 0, 1, 0)), 'included');
+  assert.equal(assertCanReplan(app(4, 2, 0, 0, 3)), 'credit');
+  assert.throws(() => assertCanReplan(app(4, 2, 0, 0, 0)), (e: HttpError) => e.code === 'replans_used' && /another for \$10/.test(e.message));
+  assert.equal(assertCanReplan({ kind: 'member' }), null);
+  assert.equal(assertCanReplan({ kind: 'coach', builds: { used: 0, limit: 100, left: 100 }, resetsAt: null }), null);
+  const settings = { replan_weekly_every_weeks: 4, replan_12wk_included: 3 };
+  const athlete = (plan: string, paid: number) => ({ plan, paid_weeks: paid, plan_started_at: '2026-10-05' }) as unknown as AthleteRow;
+  // app_weekly: nothing before 4 paid weeks; then 1 per 4-week window, counted from the window's start.
+  assert.deepEqual(replanWindow(athlete('app_weekly', 3), settings), { included: 0, since: '2026-10-05' });
+  assert.deepEqual(replanWindow(athlete('app_weekly', 4), settings), { included: 1, since: '2026-11-02' });
+  assert.deepEqual(replanWindow(athlete('app_weekly', 9), settings), { included: 1, since: '2026-11-30' });
+  // app_12wk: 3 in the block.
+  assert.deepEqual(replanWindow(athlete('app_12wk', 0), settings), { included: 3, since: '2026-10-05' });
+  assert.equal(replanWindow(athlete('coach_hybrid', 0), settings), null);
 });
 
 Deno.test('onboarding answers → generator inputs and library terms', () => {
@@ -923,6 +949,12 @@ Deno.test('onboarding answers → generator inputs and library terms', () => {
   assert.deepEqual(suggestTrainingDays(7, ['Sun']), ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
   assert.equal(suggestKeyDay(['Mon', 'Wed', 'Fri'], 'Fri'), 'Fri');
   assert.equal(suggestKeyDay(['Mon', 'Wed', 'Fri'], 'Tue'), 'Wed');
+  // The preferred long-run day is always a training day; the key day is never the day before it.
+  assert.ok(suggestTrainingDays(3, [], 'Sun').includes('Sun'));
+  assert.equal(suggestKeyDay(['Mon', 'Wed', 'Fri', 'Sat'], 'Fri', 'Sat'), 'Wed');
+  assert.equal(suggestKeyDay(['Mon', 'Wed', 'Fri', 'Sat'], null, 'Fri'), 'Wed'); // the middle day is the long-run day itself
+  assert.equal(suggestKeyDay(['Mon', 'Wed', 'Thu', 'Fri'], 'Thu', 'Fri'), 'Wed'); // Thu is the day before the long run
+
   const answers = {
     event_goal: { kind: 'hyathlon', division: 'pro', name: 'Sydney', date: '2027-01-23' },
     running_choice: 'program', days_available: 4, days_unavailable: ['Sun'], session_min: '45_60', preferred_key_day: 'Tue',

@@ -272,6 +272,9 @@ export type Database = {
           id: string
           level: string | null
           name: string | null
+          paid_weeks: number
+          plan: string | null
+          plan_started_at: string | null
           tier: string
           timezone: string
           training_days_per_week: number | null
@@ -291,6 +294,9 @@ export type Database = {
           id?: string
           level?: string | null
           name?: string | null
+          paid_weeks?: number
+          plan?: string | null
+          plan_started_at?: string | null
           tier?: string
           timezone?: string
           training_days_per_week?: number | null
@@ -310,6 +316,9 @@ export type Database = {
           id?: string
           level?: string | null
           name?: string | null
+          paid_weeks?: number
+          plan?: string | null
+          plan_started_at?: string | null
           tier?: string
           timezone?: string
           training_days_per_week?: number | null
