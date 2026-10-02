@@ -1,6 +1,6 @@
 # Skeleton Rules — what the code decides before the AI writes anything
 
-**Purpose:** The program generator is being split in two. **Code** builds the *skeleton*: every week's days, AM/PM order, slot types, counts and minutes, from the rules below. **Claude** then fills each slot: exercises, doses, cues, titles, notes and the week's wording. The validator stays as a safety net. *Draft for coach review, 2 Oct 2026, updated with the coach's answers. Nothing here is built yet.*
+**Purpose:** The program generator is being split in two. **Code** builds the *skeleton*: every week's days, AM/PM order, slot types, counts and minutes, from the rules below. **Claude** then fills each slot: exercises, doses, cues, titles, notes and the week's wording. The validator stays as a safety net. *Approved by the coach, 2 Oct 2026 (with changes).*
 
 **Rule order** (from `product-tiers-and-safety.md` §3): Safety > Structure > Coaching > Personalisation > Presentation. When two rules below clash, the higher one wins.
 
@@ -13,7 +13,7 @@
   - **Low volume** (3 or fewer runs a week): ~7 days. Race week only; frequency and intensity kept, session types change (shorter efforts); last long run (with efforts) ~6 days out.
   - **Higher volume** (4+ runs a week): 8–14 days. Race week + the week before; volume down 40–60%.
   - Marathon / half marathon (later): by program length (marathon 12+ weeks → 3 weeks; 6–11 → 2; up to 5 → race week + 1. Half: under 8 weeks → race week; 8+ → 2 weeks).
-- **Deload:** every 4th week (3 up, 1 down), never inside the taper; ~60–70% of the previous week's volume.
+- **Deload (by weekly running time):** more than 5 h of running a week → every 4th week is a deload (3 up, 1 down; ~60–70% volume), never inside the taper. Up to 5 h a week (typically 3–4 runs) → no fixed deload; volume keeps building, and a race week, C-race week or low-readiness week acts as the lighter week.
 - **Two A races:** each gets its own taper and race recovery; the weeks between follow the same build → specific order, shortened.
 - **B race:** 3–5 lighter days before it (volume down ~20–30%), one short sharpener, no long run that week; recovery by event type.
 - **C race:** train through it. It replaces that day's key or long session and counts in load. Treated as **raced hard** (full recovery by event and level) unless the athlete marks it "controlled / training run". Before it: advanced athletes with no niggles get at most one lighter day; beginners, intermediates or anyone with a current or recent niggle get a rest day + a short shakeout. A B or C race in the last 10–14 days before an A Hyathlon race gets a "controlled effort" note.
@@ -25,13 +25,13 @@
 - **No-running days** (`no_run_days`, onboarding: "E.g. your gym class mornings"): runs never go there; their classes or strength can.
 - **Long-run day:** the preferred long-run day if it's a running day; otherwise the last weekend training day; otherwise the last running day of the week.
 - **Key day:** the preferred key day if it's a running day; otherwise the middle running day; never the long-run day or the day before it (moved one running day earlier).
-- **HARD RULE: no two interval (quality) sessions on back-to-back days,** including Sunday → Monday across weeks. Interval = key run, second quality run, compromised, race simulation, HIIT/Tabata. The long run with efforts counts as quality.
+- **HARD RULE: no two interval (quality) sessions on back-to-back days,** including Sunday → Monday across weeks. Interval = key run, second quality run, compromised, race simulation, HIIT/Tabata. The long run with efforts counts as quality. The athlete's own classes don't count as interval sessions for this rule.
 
 ## 3. Slots and counts per week
 | Slot | How many | Where |
 |---|---|---|
 | **Key session** | 1 | Key day. Running programs: the main interval run (RPE 8+), from the first interval week (before it: the main aerobic run; 30 s efforts first). No-running: hard strength (may stand alone), off-feet intervals at RPE 8+, a race simulation or a hard AMRAP/EMOM. |
-| **Long run** | 1 (none in race week) | Long-run day. Minutes from the long-run stages (bands 50–60 → 60–70 → 70–80, then LR 1–7b; LR 5+ advanced only). Efforts only for well-conditioned athletes, never beginners. |
+| **Long run** | 1 (none in race week) | Long-run day. Minutes from the long-run stages (bands 50–60 → 60–70 → 70–80, then LR 1–7b; LR 5+ advanced only). Efforts only from about the 4th long run of the program, and only for well-conditioned athletes (never beginners). |
 | **Second quality run** | 0–1 | Only with 4+ runs a week, intermediate/advanced, build/specific phase; ≥1 non-interval day from the key session and the long run with efforts. |
 | **Compromised / hybrid** | 1 a week from the build phase; entry-level sessions for athletes with 0–2 Hyathlon races | A running day that isn't next to another interval day. Counts as quality. If the athlete's own classes include a Hyathlon-style/compromised class, that class counts as it (no extra session). |
 | **Race simulation** | per `race_sims` | *plan_for_me:* full sim every 3–4 weeks (specific phase; any phase for no-running), replacing that week's key session. *my_plan:* the athlete's type and frequency, as the key session. *none:* never. Always an easy day after; none in race week (last one 7–10+ days before the A race). |
@@ -50,6 +50,7 @@
 
 ## 5. Minutes
 - Two sessions in a day: at least 6 h apart where possible ("at least 6 h after your run").
+- Easy and absorption runs use the athlete's session time (walk–run beginners can be shorter, per the `07` templates).
 - Every session is the athlete's minutes per session (±5), except: second-of-day strength (30/45-min template), long runs (stage minutes), deload sessions (down to half), taper (scaled), lead-in and race-week sessions (short).
 
 ## 6. No-running athletes
@@ -60,7 +61,8 @@ Off-feet only: no runs anywhere. Erg and bike sessions only if chosen (Q2c); rac
 - **Go a bit easier:** same slots; lower end of ranges; key session shortened.
 - **Avoid running (off-feet):** every run slot becomes the same purpose off-feet (preferred modality).
 - **Rest:** the week's slots become rest or optional easy sessions; the next key session stays.
-- **Low readiness (coaching tiers):** the deload shape for that week.
+- **App tiers** use `week_choice` (the four options above). **All tiers:** low readiness (fresh / energy / sleep) → the deload shape for that week.
+- **Coaching tiers also:** a body report 3/10 or less = wait and watch (no change); 4/10+ or Pain = affected sessions fully off-feet, same purpose.
 - **Less availability:** keep the key session and long run; drop optional, then easy, then extra strength.
 
 ## 8. When a block still fails

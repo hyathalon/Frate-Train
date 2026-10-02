@@ -150,6 +150,7 @@ Last rep should feel fast/controlled, except deliberate hard sessions where prod
 - CrossFit-style WODs are hard sessions: same consolidation rule as strength.
 - Phases (base → build → specific → taper): base = Easy (5–6) volume + long run (5–6; 6–7 advanced), LT emphasis, speed, technique, general strength; build = threshold and durability: LT/CV work progresses, back-to-back and repeated-effort sessions, first compromised work, strength maintained; specific = race-effort/compromised up to weekly, CV/VO2 blocks, surges/constraints; taper = cut volume (Hyathlon: 8–14 days, down 40–60%; marathon and half marathon by program length, as in the taper rule), keep intensity and frequency, no long run in final week.
 - Program start: if the athlete starts mid-week, fill the days up to Sunday with an easy lead-in (absorption/easy runs or rest, no quality, no long run with efforts). Program weeks then run Monday to Sunday.
+- Deloads: athletes running more than 5 h a week → every 4th week is a deload (3 up, 1 down; ~60–70% volume). Up to 5 h a week (typically 3–4 runs) → no fixed deload; volume keeps building, and a race week, C-race week or low-readiness week acts as the lighter week. Easy and absorption runs use the athlete's session time (walk–run beginners can be shorter).
 
 ## Strength work
 - Hierarchy: aerobic = frequency → volume → intensity; strength = INTENSITY → volume → frequency. A set too easy to create adaptation is not made productive by repeating it.
